@@ -1,0 +1,31 @@
+import random
+
+def cast_hexagrams():
+    current = []
+    secondary = []
+    for i in range(0, 6):
+        s = random.choices((0, 1), k = 3)
+        s.sort()
+        to_append = 'G'
+        if s == [1, 1, 1]:
+            current.append('G')
+            secondary.append('L')
+        elif s == [0, 0, 0]:
+            current.append('L')
+            secondary.append('G')
+        else:
+            if s == [0, 1, 1]:
+                to_append = 'L'
+            current.append(to_append)
+            secondary.append(to_append)
+
+    if current == secondary:
+        return [get_hexagram(''.join(current)), None]
+    return [get_hexagram(''.join(current)), get_hexagram(''.join(secondary))]
+
+def get_text(hexagram):
+    return hexagram.split(' ')[1]
+
+def get_hexagram(key):
+    vals = {'LLLLLL': '1 Creative', 'GGGGGG': '2 Receptive', 'GLGGGL': '3 Difficulty', 'LGGGLG': '4 Folly', 'GLGLLL': '5 Waiting', 'LLLGLG': '6 Conflict', 'GGGGLG': '7 Army', 'GLGGGG': '8 Union', 'LGLLLL': '14 Possession', 'LLLGLL': '10 Treading', 'GGGLLL': '11 Peace', 'LLLGGG': '12 Standstill', 'LLLLGL': '13 Fellowship', 'GGGLGG': '15 Modesty', 'GGLGGG': '16 Enthusiasm', 'GLLGGL': '17 Following', 'LGGLLG': '18 Decay', 'GGGGLL': '19 Approach', 'LLGGGG': '20 View', 'LGLGGL': '21 Biting', 'LGGLGL': '22 Grace', 'LGGGGG': '23 Splitting', 'GGGGGL': '24 Return', 'LLLGGL': '25 Innocence', 'LGGLLL': '26 Taming', 'LGGGGL': '27 Mouth', 'GLLLLG': '28 Preponderance', 'GLGGLG': '29 Abysmal', 'LGLLGL': '30 Clinging', 'GLLLGG': '31 Influence', 'GGLLLG': '32 Duration', 'LLLLGG': '33 Retreat', 'GGLLLL': '34 Power', 'LGLGGG': '35 Progress', 'GGGLGL': '36 Darkening', 'LLGLGL': '37 Family', 'LGLGLL': '38 Opposition', 'GLGLGG': '39 Obstruction', 'GGLGLG': '40 Deliverance', 'LGGGLL': '41 Decrease', 'LLGGGL': '42 Increase', 'GLLLLL': '43 Resoluteness', 'LLLLLG': '44 Coming', 'GLLGGG': '45 Gathering', 'GGGLLG': '46 Pushing', 'GLLGLG': '47 Oppression', 'GLGLLG': '48 Well', 'GLLLGL': '49 Revolution', 'LGLLLG': '50 Caldron', 'GGLGGL': '51 Arousing', 'LGGLGG': '52 Still', 'LLGLGG': '53 Development', 'GGLGLL': '54 Marrying', 'GGLLGL': '55 Abundance', 'LGLLGG': '56 Wanderer', 'LLGLLG': '57 Gentle', 'GLLGLL': '58 Joyous', 'LLGGLG': '59 Dispersion', 'GLGGLL': '60 Limitation', 'LLGGLL': '61 Truth', 'GGLLGG': '62 Small', 'GLGLGL': '63 After', 'LGLGLG': '64 Before'}
+    return vals.get(key, None)
