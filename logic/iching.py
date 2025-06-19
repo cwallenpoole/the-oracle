@@ -1,4 +1,26 @@
+from docarray import BaseDoc, DocList
+
+import os
 import random
+import re
+
+class IChingLine(BaseDoc):
+    Quote: str
+    Text: str
+
+class IChingAbout(BaseDoc):
+    Above: str
+    Below: str
+    Description: str
+
+class IChingHexagram(BaseDoc):
+    Symbol: str
+    Number: int
+    Title: str
+    About: IChingAbout
+    Judgement: IChingLine
+    Image: IChingLine
+    Lines: DocList
 
 def cast_hexagrams():
     current = []
@@ -20,12 +42,123 @@ def cast_hexagrams():
             secondary.append(to_append)
 
     if current == secondary:
-        return [get_hexagram(''.join(current)), None]
-    return [get_hexagram(''.join(current)), get_hexagram(''.join(secondary))]
+        return [get_hexagram_section_from_hexagram(current), None]
+    return [get_hexagram_section_from_hexagram(current), get_hexagram_section_from_hexagram(secondary)]
 
-def get_text(hexagram):
+def get_text_from_hexagram(hexagram):
     return hexagram.split(' ')[1]
 
+def get_num_from_hexagram(hexagram):
+    return int(hexagram.split(' ')[0])
+
 def get_hexagram(key):
-    vals = {'LLLLLL': '1 Creative', 'GGGGGG': '2 Receptive', 'GLGGGL': '3 Difficulty', 'LGGGLG': '4 Folly', 'GLGLLL': '5 Waiting', 'LLLGLG': '6 Conflict', 'GGGGLG': '7 Army', 'GLGGGG': '8 Union', 'LGLLLL': '14 Possession', 'LLLGLL': '10 Treading', 'GGGLLL': '11 Peace', 'LLLGGG': '12 Standstill', 'LLLLGL': '13 Fellowship', 'GGGLGG': '15 Modesty', 'GGLGGG': '16 Enthusiasm', 'GLLGGL': '17 Following', 'LGGLLG': '18 Decay', 'GGGGLL': '19 Approach', 'LLGGGG': '20 View', 'LGLGGL': '21 Biting', 'LGGLGL': '22 Grace', 'LGGGGG': '23 Splitting', 'GGGGGL': '24 Return', 'LLLGGL': '25 Innocence', 'LGGLLL': '26 Taming', 'LGGGGL': '27 Mouth', 'GLLLLG': '28 Preponderance', 'GLGGLG': '29 Abysmal', 'LGLLGL': '30 Clinging', 'GLLLGG': '31 Influence', 'GGLLLG': '32 Duration', 'LLLLGG': '33 Retreat', 'GGLLLL': '34 Power', 'LGLGGG': '35 Progress', 'GGGLGL': '36 Darkening', 'LLGLGL': '37 Family', 'LGLGLL': '38 Opposition', 'GLGLGG': '39 Obstruction', 'GGLGLG': '40 Deliverance', 'LGGGLL': '41 Decrease', 'LLGGGL': '42 Increase', 'GLLLLL': '43 Resoluteness', 'LLLLLG': '44 Coming', 'GLLGGG': '45 Gathering', 'GGGLLG': '46 Pushing', 'GLLGLG': '47 Oppression', 'GLGLLG': '48 Well', 'GLLLGL': '49 Revolution', 'LGLLLG': '50 Caldron', 'GGLGGL': '51 Arousing', 'LGGLGG': '52 Still', 'LLGLGG': '53 Development', 'GGLGLL': '54 Marrying', 'GGLLGL': '55 Abundance', 'LGLLGG': '56 Wanderer', 'LLGLLG': '57 Gentle', 'GLLGLL': '58 Joyous', 'LLGGLG': '59 Dispersion', 'GLGGLL': '60 Limitation', 'LLGGLL': '61 Truth', 'GGLLGG': '62 Small', 'GLGLGL': '63 After', 'LGLGLG': '64 Before'}
+    vals = {
+        'LLLLLL': '1 Creative', 'GGGGGG': '2 Receptive', 'GLGGGL': '3 Difficulty', 'LGGGLG': '4 Folly',
+        'GLGLLL': '5 Waiting', 'LLLGLG': '6 Conflict', 'GGGGLG': '7 Army', 'GLGGGG': '8 Union',
+        'LGLLLL': '14 Possession', 'LLLGLL': '10 Treading', 'GGGLLL': '11 Peace', 'LLLGGG': '12 Standstill',
+        'LLLLGL': '13 Fellowship', 'GGGLGG': '15 Modesty', 'GGLGGG': '16 Enthusiasm', 'GLLGGL': '17 Following',
+        'LGGLLG': '18 Decay', 'GGGGLL': '19 Approach', 'LLGGGG': '20 View', 'LGLGGL': '21 Biting',
+        'LGGLGL': '22 Grace', 'LGGGGG': '23 Splitting', 'GGGGGL': '24 Return', 'LLLGGL': '25 Innocence',
+        'LGGLLL': '26 Taming', 'LGGGGL': '27 Mouth', 'GLLLLG': '28 Preponderance', 'GLGGLG': '29 Abysmal',
+        'LGLLGL': '30 Clinging', 'GLLLGG': '31 Influence', 'GGLLLG': '32 Duration', 'LLLLGG': '33 Retreat',
+        'GGLLLL': '34 Power', 'LGLGGG': '35 Progress', 'GGGLGL': '36 Darkening', 'LLGLGL': '37 Family',
+        'LGLGLL': '38 Opposition', 'GLGLGG': '39 Obstruction', 'GGLGLG': '40 Deliverance',
+        'LGGGLL': '41 Decrease', 'LLGGGL': '42 Increase', 'GLLLLL': '43 Resoluteness', 'LLLLLG': '44 Coming',
+        'GLLGGG': '45 Gathering', 'GGGLLG': '46 Pushing', 'GLLGLG': '47 Oppression', 'GLGLLG': '48 Well',
+        'GLLLGL': '49 Revolution', 'LGLLLG': '50 Caldron', 'GGLGGL': '51 Arousing', 'LGGLGG': '52 Still',
+        'LLGLGG': '53 Development', 'GGLGLL': '54 Marrying', 'GGLLGL': '55 Abundance', 'LGLLGG': '56 Wanderer',
+        'LLGLLG': '57 Gentle', 'GLLGLL': '58 Joyous', 'LLGGLG': '59 Dispersion', 'GLGGLL': '60 Limitation',
+        'LLGGLL': '61 Truth', 'GGLLGG': '62 Small', 'GLGLGL': '63 After', 'LGLGLG': '64 Before'
+    }
     return vals.get(key, None)
+
+def get_hexagram_section_from_hexagram(current):
+    return get_hexagram_section(get_num_from_hexagram(get_hexagram(''.join(current))))
+
+def get_text():
+    with open(os.path.join(os.path.dirname(__file__), 'I-Ching-texts.md'), 'r') as file:
+        text = file.read()
+    return text
+
+def get_hexagram_section(number):
+    text = get_text()
+    # Find the section for the given number
+    pattern = re.compile(rf"^## {number}\. (?P<title>[^\n]+) (?P<symbol>[^\n]+)$", re.MULTILINE)
+    match = pattern.search(text)
+    if not match:
+        return None
+    start = match.start()
+    # Find the start of the next section or end of file
+    next_section = re.search(r"^## \d+\.", text[start+1:], re.MULTILINE)
+    end = start + next_section.start() if next_section else len(text)
+    section = text[start:end]
+
+    # Title
+    title = match.group('title').strip()
+    symbol = match.group('symbol').strip()
+
+    # About
+    above = re.search(r"> above\s+(.+)", section)
+    below = re.search(r"> below\s+(.+)", section)
+    description_match = re.search(r"> below.+\n\n(.+?)(?=\n## THE JUDGMENT)", section, re.DOTALL)
+    description = description_match.group(1).strip() if description_match else ""
+    
+    judge_pos = section.find('### THE JUDGEMENT') + len('### THE JUDGEMENT')
+    image_pos = section.find('#### THE IMAGE')
+    lines_pos = section.find('#### THE LINES')
+
+    judge_section = section[judge_pos: image_pos]
+    image_section = section[image_pos + len('### THE IMAGE'): lines_pos]
+
+    judge_quote = []
+    judge_text = []
+    for line in judge_section.splitlines():
+        if not line:
+            continue
+        if line.startswith('>'):
+            judge_quote.append(line.strip('> #'))
+        else:
+            judge_text.append(line)
+
+    image_quote = []
+    image_text = []
+    for line in image_section.splitlines():
+        if not line:
+            continue
+        if line.startswith('>'):
+            image_quote.append(line.strip('> #'))
+        else:
+            image_text.append(line)
+
+    # Lines
+    lines_section = re.search(r"#### THE LINES\n(.+)", section, re.DOTALL)
+    lines = []
+    if lines_section:
+        for m in re.finditer(r"(?P<ln>(^>[^\n]+\n)+)(?P<txt>[^>]+)", lines_section.group(1), re.DOTALL | re.MULTILINE):
+            quote = "\n".join([l.strip() for l in m.group('ln').splitlines()[1:]])
+            text = m.group('txt').strip()
+            lines.append(IChingLine(Quote=quote, Text=text))
+
+    docLines = DocList[IChingLine](lines)
+    return IChingHexagram(
+        Symbol = symbol,
+        Number = int(number),
+        Title = title,
+        About = IChingAbout(
+            Above = above.group(1).strip() if above else "",
+            Below = below.group(1).strip() if below else "",
+            Description =  description
+        ),
+        Judgement = IChingLine(
+            Quote = "\n".join(judge_quote),
+            Text = "\n".join(judge_text)
+        ),
+        Image = IChingLine(
+            Quote = "\n".join(image_quote),
+            Text = "\n".join(image_text)
+        ),
+        Lines=lines
+    )
+
+if __name__ == '__main__':
+    print(repr(cast_hexagrams()))
