@@ -3,6 +3,7 @@ from docarray import BaseDoc, DocList
 import os
 import random
 import re
+import pdb
 
 class IChingLine(BaseDoc):
     Quote: str
@@ -21,8 +22,30 @@ class IChingHexagram(BaseDoc):
     Judgement: IChingLine
     Image: IChingLine
     Lines: DocList
+    Content: str
 
-def cast_hexagrams():
+    def __str__(self):
+        base = f'{self.Number} {self.Title}\n{self.About.Above}\n{self.About.Below}\n{self.About.Description}'
+        return base
+
+class Reading:
+    Current: IChingHexagram
+    Future: IChingHexagram
+
+    def __init__(self):
+        self.Current = None
+        self.Future = None
+
+    def has_transition(self):
+        return self.Future is not None
+
+    def __str__(self):
+        base = f'*{self.Current.Number} {self.Current.Title}*\n{self.Current.About.Above}\n{self.Current.About.Below}\n{self.Current.About.Description}'
+        if self.has_transition():
+            return f'{base}\ntransitioning to\n*{self.Future.Number} {self.Future.Title}*\n{self.Future.About.Above}\n{self.Future.About.Below}\n{self.Future.About.Description}'
+        return base
+
+def cast_hexagrams() -> Reading:
     current = []
     secondary = []
     for i in range(0, 6):
@@ -41,9 +64,11 @@ def cast_hexagrams():
             current.append(to_append)
             secondary.append(to_append)
 
-    if current == secondary:
-        return [get_hexagram_section_from_hexagram(current), None]
-    return [get_hexagram_section_from_hexagram(current), get_hexagram_section_from_hexagram(secondary)]
+    reading = Reading()
+    reading.Current = get_hexagram_section_from_hexagram(current)
+    if current != secondary:
+        reading.Future = get_hexagram_section_from_hexagram(secondary)
+    return reading
 
 def get_text_from_hexagram(hexagram):
     return hexagram.split(' ')[1]
@@ -80,16 +105,20 @@ def get_text():
         text = file.read()
     return text
 
+def get_hgram_text(hgram: IChingHexagram):
+    return hgram.Content
+
 def get_hexagram_section(number):
     text = get_text()
     # Find the section for the given number
-    pattern = re.compile(rf"^## {number}\. (?P<title>[^\n]+) (?P<symbol>[^\n]+)$", re.MULTILINE)
+    pattern = re.compile(rf"^##\s+{number}\.\s+(?P<title>.+?)\s+(?P<symbol>䷀|䷁|䷂|䷃|䷄|䷅|䷆|䷇|䷈|䷉|䷊|䷋|䷌|䷍|䷎|䷏|䷐|䷑|䷒|䷓|䷔|䷕|䷖|䷗|䷘|䷙|䷚|䷛|䷜|䷝|䷞|䷟|䷠|䷡|䷢|䷣|䷤|䷥|䷦|䷧|䷨|䷩|䷪|䷫|䷬|䷭|䷮|䷯|䷰|䷱|䷲|䷳|䷴|䷵|䷶|䷷|䷸|䷹|䷺|䷻|䷼|䷽|䷾|䷿)$", re.MULTILINE)
     match = pattern.search(text)
+
     if not match:
         return None
     start = match.start()
     # Find the start of the next section or end of file
-    next_section = re.search(r"^## \d+\.", text[start+1:], re.MULTILINE)
+    next_section = re.search(r"^##\s+\d+\.", text[start+1:], re.MULTILINE)
     end = start + next_section.start() if next_section else len(text)
     section = text[start:end]
 
@@ -102,7 +131,7 @@ def get_hexagram_section(number):
     below = re.search(r"> below\s+(.+)", section)
     description_match = re.search(r"> below.+\n\n(.+?)(?=\n## THE JUDGMENT)", section, re.DOTALL)
     description = description_match.group(1).strip() if description_match else ""
-    
+
     judge_pos = section.find('### THE JUDGEMENT') + len('### THE JUDGEMENT')
     image_pos = section.find('#### THE IMAGE')
     lines_pos = section.find('#### THE LINES')
@@ -157,7 +186,8 @@ def get_hexagram_section(number):
             Quote = "\n".join(image_quote),
             Text = "\n".join(image_text)
         ),
-        Lines=lines
+        Lines=lines,
+        Content = section,
     )
 
 if __name__ == '__main__':

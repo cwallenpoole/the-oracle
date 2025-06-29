@@ -1,0 +1,246 @@
+{% extends "base.html" %}
+
+{% block title %}All Hexagrams - The Oracle{% endblock %}
+
+{% block extra_css %}
+<style>
+.hexagram-card {
+    transition: all 0.3s ease;
+    border: 1px solid var(--bs-border-color);
+    height: 100%;
+}
+
+.hexagram-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-color: var(--oracle-primary);
+}
+
+.hexagram-symbol {
+    font-size: 2rem;
+    color: var(--oracle-primary);
+}
+
+.hexagram-number {
+    font-weight: 700;
+    color: var(--oracle-primary);
+}
+
+.search-section {
+    background: linear-gradient(135deg, var(--oracle-primary) 0%, var(--oracle-secondary) 100%);
+    color: white;
+    margin: -2rem -15px 2rem -15px;
+    padding: 2rem 15px;
+}
+
+.quick-nav {
+    background-color: var(--bs-light);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+    .hexagram-card {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Search Section -->
+    <div class="search-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <h2 class="text-center mb-4">
+                        <i class="bi bi-grid-3x3-gap"></i> All 64 Hexagrams
+                    </h2>
+                    <p class="text-center mb-4 opacity-75">
+                        Explore the complete I Ching hexagram collection. Each hexagram contains ancient wisdom for guidance and reflection.
+                    </p>
+
+                    <!-- Search Box -->
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="hexagramSearch" class="form-control"
+                               placeholder="Search by number, title, or description...">
+                        <button class="btn btn-light" type="button" id="clearSearch">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Quick Navigation -->
+        <div class="quick-nav">
+            <h6 class="mb-3"><i class="bi bi-signpost-2"></i> Quick Navigation</h6>
+            <div class="row g-2">
+                <div class="col-6 col-md-3">
+                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="scrollToRange(1, 16)">
+                        1-16
+                    </button>
+                </div>
+                <div class="col-6 col-md-3">
+                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="scrollToRange(17, 32)">
+                        17-32
+                    </button>
+                </div>
+                <div class="col-6 col-md-3">
+                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="scrollToRange(33, 48)">
+                        33-48
+                    </button>
+                </div>
+                <div class="col-6 col-md-3">
+                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="scrollToRange(49, 64)">
+                        49-64
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Info -->
+        <div id="searchResults" class="alert alert-info d-none">
+            <i class="bi bi-info-circle"></i> <span id="resultCount"></span>
+        </div>
+
+        <!-- Hexagrams Grid -->
+        <div class="row g-4" id="hexagramsGrid">
+            {% for hexagram in hexagrams %}
+            <div class="col-lg-3 col-md-4 col-sm-6 hexagram-item"
+                 data-number="{{ hexagram.number }}"
+                 data-title="{{ hexagram.title.lower() }}"
+                 data-description="{{ hexagram.description.lower() }}">
+                <div class="card hexagram-card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="text-center mb-3">
+                            <div class="hexagram-symbol mb-2">{{ hexagram.symbol }}</div>
+                            <h5 class="card-title hexagram-number mb-1">{{ hexagram.number }}</h5>
+                            <h6 class="card-subtitle text-muted">{{ hexagram.title }}</h6>
+                        </div>
+
+                        <p class="card-text flex-grow-1 small text-muted">
+                            {{ hexagram.description }}
+                        </p>
+
+                        <div class="mt-auto">
+                            <a href="{{ url_for('hexagram_detail', number=hexagram.number, name=hexagram.url_name) }}"
+                               class="btn btn-oracle w-100">
+                                <i class="bi bi-book-half"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="text-center py-5 d-none">
+            <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
+            <h4 class="text-muted mt-3">No hexagrams found</h4>
+            <p class="text-muted">Try adjusting your search terms</p>
+            <button class="btn btn-oracle" onclick="clearSearch()">
+                <i class="bi bi-arrow-clockwise"></i> Show All Hexagrams
+            </button>
+        </div>
+
+        <!-- Back to Oracle -->
+        <div class="text-center mt-5 mb-4">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-stars"></i> Return to Oracle
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('hexagramSearch');
+    const clearButton = document.getElementById('clearSearch');
+    const hexagramItems = document.querySelectorAll('.hexagram-item');
+    const searchResults = document.getElementById('searchResults');
+    const resultCount = document.getElementById('resultCount');
+    const noResults = document.getElementById('noResults');
+    const hexagramsGrid = document.getElementById('hexagramsGrid');
+
+    function performSearch() {
+        const query = searchInput.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        hexagramItems.forEach(item => {
+            const number = item.dataset.number;
+            const title = item.dataset.title;
+            const description = item.dataset.description;
+
+            const matches = query === '' ||
+                           number.includes(query) ||
+                           title.includes(query) ||
+                           description.includes(query);
+
+            if (matches) {
+                item.style.display = '';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        // Update search results info
+        if (query === '') {
+            searchResults.classList.add('d-none');
+            noResults.classList.add('d-none');
+            hexagramsGrid.style.display = '';
+        } else {
+            if (visibleCount > 0) {
+                searchResults.classList.remove('d-none');
+                noResults.classList.add('d-none');
+                hexagramsGrid.style.display = '';
+                resultCount.textContent = `Found ${visibleCount} hexagram${visibleCount !== 1 ? 's' : ''} matching "${query}"`;
+            } else {
+                searchResults.classList.add('d-none');
+                noResults.classList.remove('d-none');
+                hexagramsGrid.style.display = 'none';
+            }
+        }
+    }
+
+    function clearSearch() {
+        searchInput.value = '';
+        performSearch();
+        searchInput.focus();
+    }
+
+    // Search functionality
+    searchInput.addEventListener('input', performSearch);
+    clearButton.addEventListener('click', clearSearch);
+
+    // Quick navigation
+    window.scrollToRange = function(start, end) {
+        const firstItem = document.querySelector(`[data-number="${start}"]`);
+        if (firstItem) {
+            firstItem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
+
+    window.clearSearch = clearSearch;
+
+    // Enter key support
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Reading Detail - The Oracle{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mt-3">
+    <ol class="breadcrumb breadcrumb-oracle">
+        <li class="breadcrumb-item">
+            <a href="{{ url_for('index') }}" class="text-white">
+                <i class="bi bi-house"></i> Home
+            </a>
+        </li>
+        <li class="breadcrumb-item active text-white" aria-current="page">
+            <i class="bi bi-eye"></i> Reading Detail
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <!-- Reading Header -->
+    <div class="card card-oracle mb-4">
+        <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, var(--oracle-primary) 0%, var(--oracle-secondary) 100%);">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-eye"></i> Your Reading
+                </h4>
+                <small class="text-white-50">
+                    <i class="bi bi-calendar3"></i>
+                    {{ reading_entry.reading_dt[:10] if reading_entry.reading_dt else 'Unknown Date' }}
+                </small>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Question -->
+            <div class="mb-4">
+                <h5 class="text-primary">
+                    <i class="bi bi-question-circle"></i> Your Question
+                </h5>
+                <blockquote class="blockquote">
+                    <p class="fs-5 mb-0">{{ reading_entry.question }}</p>
+                </blockquote>
+            </div>
+
+            <!-- Hexagram -->
+            <div class="mb-4">
+                <h5 class="text-primary">
+                    <i class="bi bi-hexagon"></i> Hexagram Cast
+                </h5>
+                <div class="d-flex align-items-start">
+                    <div class="hexagram-display me-3">
+                        {% set hexagram_parts = reading_entry.hexagram.split(' transitioning to ') %}
+                        <span class="badge text-wrap" style="background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: white; white-space: normal; line-height: 1.2; font-size: 1rem;">
+                            {{ hexagram_parts[0] }}
+                        </span>
+                        {% if hexagram_parts|length > 1 %}
+                        <div class="transition-text" style="font-size: 0.8em; font-family: 'Times New Roman', Georgia, serif; font-style: italic; font-weight: 500; color: #8b4513; margin-top: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.1); letter-spacing: 0.5px;">
+                            transitioning to
+                        </div>
+                        <span class="badge text-wrap" style="background: linear-gradient(135deg, #cd853f 0%, #a0522d 100%); color: white; white-space: normal; line-height: 1.2; font-size: 0.9em; margin-top: 4px; display: inline-block;">
+                            {{ hexagram_parts[1] }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="align-self-center">
+                        <small class="text-muted">This was the hexagram that emerged from your casting</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Reading -->
+    <div class="card card-oracle mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-book-half"></i> Complete Reading
+            </h5>
+        </div>
+        <div class="card-body reading-content">
+            {{ enhanced_reading | safe }}
+        </div>
+    </div>
+
+    <!-- Reading Metadata -->
+    <div class="card card-oracle mb-4">
+        <div class="card-header">
+            <h6 class="mb-0">
+                <i class="bi bi-info-circle"></i> Reading Information
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-2">
+                        <strong><i class="bi bi-person"></i> Seeker:</strong> {{ reading_entry.username }}
+                    </p>
+                    <p class="mb-2">
+                        <strong><i class="bi bi-calendar3"></i> Date:</strong>
+                        {{ reading_entry.reading_dt[:19].replace('T', ' ') if reading_entry.reading_dt else 'Unknown' }}
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-2">
+                        <strong><i class="bi bi-hash"></i> Reading ID:</strong>
+                        <code>{{ reading_entry.reading_id }}</code>
+                    </p>
+                    <p class="mb-2">
+                        <strong><i class="bi bi-link-45deg"></i> Shareable Path:</strong>
+                        <code>/reading/{{ reading_entry.get_reading_path() }}</code>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="text-center">
+        <a href="{{ url_for('index') }}" class="btn btn-oracle me-3">
+            <i class="bi bi-arrow-left"></i> Back to Oracle
+        </a>
+        <a href="{{ url_for('hexagrams_list') }}" class="btn btn-outline-primary">
+            <i class="bi bi-book"></i> Explore Hexagrams
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.reading-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.reading-content p {
+    margin-bottom: 1.2rem;
+}
+
+.reading-content h1, .reading-content h2, .reading-content h3 {
+    color: var(--oracle-primary);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+.reading-content blockquote {
+    border-left: 4px solid var(--oracle-primary);
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: #6c757d;
+}
+
+.hexagram-link {
+    color: var(--oracle-primary);
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px dotted var(--oracle-primary);
+}
+
+.hexagram-link:hover {
+    color: var(--oracle-secondary);
+    border-bottom-color: var(--oracle-secondary);
+}
+
+.hexagram-display {
+    max-width: 300px;
+    word-wrap: break-word;
+}
+
+.hexagram-display .badge {
+    max-width: 100%;
+    word-wrap: break-word;
+}
+</style>
+{% endblock %}

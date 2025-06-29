@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}{{ hexagram.number }}: {{ hexagram.title }} - The Oracle{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mt-3">
+    <ol class="breadcrumb breadcrumb-oracle">
+        <li class="breadcrumb-item">
+            <a href="{{ url_for('index') }}" class="text-white">
+                <i class="bi bi-house"></i> Home
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{{ url_for('hexagrams_list') }}" class="text-white">
+                <i class="bi bi-book"></i> Hexagrams
+            </a>
+        </li>
+        <li class="breadcrumb-item active text-white" aria-current="page">
+            {{ hexagram.number }}: {{ hexagram.title }}
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <div class="display-1 mb-3">{{ hexagram.symbol }}</div>
+        <h1 class="display-4 mb-2">
+            <span class="badge bg-primary me-3">{{ hexagram.number }}</span>
+            {{ hexagram.title }}
+        </h1>
+    </div>
+
+    <!-- Trigram Structure -->
+    <div class="card card-oracle mb-4">
+        <div class="card-header">
+            <h4 class="mb-0">
+                <i class="bi bi-triangle"></i> Trigram Structure
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-6">
+                    <h5 class="text-primary">Upper Trigram</h5>
+                    <p class="fs-6 mb-2">{{ hexagram.About.Above }}</p>
+                    <a href="{{ url_for('trigrams_list', return_to=request.url) }}#{{ hexagram.About.Above | sanitize_css_selector }}"
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-info-circle"></i> Learn More
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="text-primary">Lower Trigram</h5>
+                    <p class="fs-6 mb-2">{{ hexagram.About.Below }}</p>
+                    <a href="{{ url_for('trigrams_list', return_to=request.url) }}#{{ hexagram.About.Below | sanitize_css_selector }}"
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-info-circle"></i> Learn More
+                    </a>
+                </div>
+            </div>
+
+            <!-- Separator -->
+            <hr class="my-4">
+        </div>
+    </div>
+
+    <!-- Description -->
+    {% if hexagram.About.Description %}
+    <div class="card card-oracle mb-4">
+        <div class="card-header">
+            <h4 class="mb-0">
+                <i class="bi bi-book-half"></i> Overview
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="reading-content p-3">
+                {% set description_lines = hexagram.About.Description.split('\n') %}
+                {% if description_lines %}
+                    <!-- First line larger -->
+                    <p class="fs-5 fw-bold text-primary mb-3">{{ description_lines[0] }}</p>
+                    <!-- Rest as markdown -->
+                    {% if description_lines|length > 1 %}
+                        {% set remaining_text = description_lines[1:]|join('\n') %}
+                        {{ remaining_text | markdown | safe }}
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- The Judgment -->
+    {% if hexagram.Judgement %}
+    <div class="card card-oracle mb-4">
+        <div class="card-header">
+            <h4 class="mb-0">
+                <i class="bi bi-scales"></i> The Judgment
+            </h4>
+        </div>
+        <div class="card-body">
+            {% if hexagram.Judgement.Quote %}
+            <blockquote class="blockquote text-center mb-4">
+                <p class="fs-5 fst-italic text-primary">
+                    {{ hexagram.Judgement.Quote | replace('\n', '<br>') | safe }}
+                </p>
+            </blockquote>
+            {% endif %}
+            {% if hexagram.Judgement.Text %}
+            <div class="reading-content p-3">
+                {{ hexagram.Judgement.Text | markdown | replace('  ', '</p><p>') | safe }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- The Image -->
+    {% if hexagram.Image %}
+    <div class="card card-oracle mb-4">
+        <div class="card-header">
+            <h4 class="mb-0">
+                <i class="bi bi-image"></i> The Image
+            </h4>
+        </div>
+        <div class="card-body">
+            {% if hexagram.Image.Quote %}
+            <blockquote class="blockquote text-center mb-4">
+                <p class="fs-6 fst-italic text-secondary">
+                    {{ hexagram.Image.Quote | replace('\n', '<br>') | safe }}
+                </p>
+            </blockquote>
+            {% endif %}
+            {% if hexagram.Image.Text %}
+            <div class="reading-content p-3">
+                {{ hexagram.Image.Text | replace('\n', '<br>') | safe }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- The Lines -->
+    {% if hexagram.Lines %}
+    <div class="card card-oracle mb-4">
+        <div class="card-header">
+            <h4 class="mb-0">
+                <i class="bi bi-list-ol"></i> The Lines
+            </h4>
+        </div>
+        <div class="card-body">
+            <div class="accordion" id="linesAccordion">
+                {% for line in hexagram.Lines %}
+                <div class="accordion-item border-0 mb-3">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#line{{ loop.index }}"
+                                aria-expanded="false">
+                            <strong>Line {{ loop.index }}</strong>
+                            {% if line.Quote %}
+                            <span class="text-muted ms-2 small">{{ line.Quote.split('\n')[0][:50] }}...</span>
+                            {% endif %}
+                        </button>
+                    </h2>
+                    <div id="line{{ loop.index }}" class="accordion-collapse collapse"
+                         data-bs-parent="#linesAccordion">
+                        <div class="accordion-body">
+                            {% if line.Quote %}
+                            <blockquote class="blockquote mb-3">
+                                <p class="fst-italic text-primary">
+                                    {{ line.Quote | replace('\n', '<br>') | safe }}
+                                </p>
+                            </blockquote>
+                            {% endif %}
+                            {% if line.Text %}
+                            <div class="reading-content p-3">
+                                {{ line.Text | replace('\n', '<br>') | safe }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Navigation -->
+    <div class="row mt-5">
+        <div class="col-md-4">
+            {% if hexagram.Number > 1 %}
+            <a href="{{ url_for('hexagram_detail', number=hexagram.Number-1, name='previous') }}"
+               class="btn btn-outline-secondary w-100">
+                <i class="bi bi-arrow-left"></i> Previous Hexagram
+            </a>
+            {% endif %}
+        </div>
+        <div class="col-md-4 text-center">
+            <a href="{{ url_for('hexagrams_list') }}" class="btn btn-oracle w-100">
+                <i class="bi bi-grid-3x3-gap"></i> All Hexagrams
+            </a>
+        </div>
+        <div class="col-md-4">
+            {% if hexagram.Number < 64 %}
+            <a href="{{ url_for('hexagram_detail', number=hexagram.Number+1, name='next') }}"
+               class="btn btn-outline-secondary w-100">
+                Next Hexagram <i class="bi bi-arrow-right"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card card-oracle mt-4">
+        <div class="card-body text-center">
+            <h6 class="card-title">
+                <i class="bi bi-magic"></i> Inspired by this hexagram?
+            </h6>
+            <p class="card-text text-muted">
+                Return to the Oracle to ask a question and receive a personalized reading
+            </p>
+            <a href="{{ url_for('index') }}" class="btn btn-oracle">
+                <i class="bi bi-stars"></i> Get a Reading
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-expand first line if no hash in URL
+    if (!window.location.hash) {
+        const firstLine = document.querySelector('#line1');
+        if (firstLine) {
+            const collapse = new bootstrap.Collapse(firstLine, { toggle: false });
+            collapse.show();
+        }
+    }
+
+    // Smooth scroll to specific line if hash is present
+    if (window.location.hash.startsWith('#line')) {
+        const target = document.querySelector(window.location.hash);
+        if (target) {
+            setTimeout(() => {
+                target.scrollIntoView({ behavior: 'smooth' });
+                const collapse = new bootstrap.Collapse(target, { toggle: false });
+                collapse.show();
+            }, 100);
+        }
+    }
+});
+</script>
+{% endblock %}

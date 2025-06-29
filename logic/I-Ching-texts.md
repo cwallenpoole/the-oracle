@@ -20,7 +20,7 @@ of the Deity. In relation to the human world, it denotes the creative action of
 the holy man or sage, of the ruler or leader of men, who through his power
 awakens and develops their higher nature.
 
-## THE JUDGMENT
+### THE JUDGMENT
 
 > ##### THE CREATIVE works sublime success,
 > ##### Furthering through perseverance.
@@ -1974,8 +1974,7 @@ We join the community without separate aims of our own.
 
 
 
-<A NAME="14"></A>
-> #####  14. Ta Yu / Possession in Great Measure ䷍
+##  14. Ta Yu / Possession in Great Measure ䷍
 
 > above  LI  THE CLINGING, FIRE ☲
 > below  CH'IEN  THE CREATIVE, HEAVEN ☰
@@ -6788,8 +6787,7 @@ on the basis of what is possible at the moment.
 
 
 
-<A NAME="50"></A>
-> ##### 50. Ting / The CAULDRON ䷱
+## 50. Ting / The CAULDRON ䷱
 
 > above  LI  THE CLINGING, FIRE ☲
 > below  SUN  THE GENTLE, WIND ☴
@@ -7517,9 +7515,7 @@ preserve the forms. This impious, irreverent attitude bodes no good for a
 marriage.
 
 
-
-<A NAME="55"></A>
-> ##### 55. Fêng / Abundance [Fullness] ䷶
+## 55. Fêng / Abundance [Fullness] ䷶
 
 > above  CHêN  THE AROUSING, THUNDER ☳
 > below  LI  THE CLINGING, FIRE ☲
@@ -8154,7 +8150,7 @@ that is already upon them. In this way he does what is right.
 
 
 
-## 60. Chieh / Limitation ䷻ 
+## 60. Chieh / Limitation ䷻
 
 > above K'AN  THE ABYSMAL, WATER ☵
 > below TUI  THE JOYOUS, LAKE ☱

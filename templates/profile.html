@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile - The Oracle{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mt-3">
+    <ol class="breadcrumb breadcrumb-oracle">
+        <li class="breadcrumb-item">
+            <a href="{{ url_for('index') }}" class="text-white">
+                <i class="bi bi-house"></i> Home
+            </a>
+        </li>
+        <li class="breadcrumb-item active text-white" aria-current="page">
+            <i class="bi bi-person-gear"></i> Edit Profile
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card card-oracle">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, var(--oracle-primary) 0%, var(--oracle-secondary) 100%);">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person-gear"></i> Edit Your Profile
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('profile') }}">
+                        <!-- Username Display -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-person-circle text-primary"></i> Username
+                            </label>
+                            <div class="form-control-plaintext bg-light rounded p-3">
+                                <strong>{{ username }}</strong>
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-info-circle"></i> Username cannot be changed
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Birthdate -->
+                        <div class="mb-4">
+                            <label for="birthdate" class="form-label">
+                                <i class="bi bi-calendar-heart text-primary"></i> Birthdate
+                            </label>
+                            <input
+                                type="date"
+                                class="form-control"
+                                id="birthdate"
+                                name="birthdate"
+                                value="{{ user_birthdate or '' }}"
+                            >
+                            <div class="form-text">
+                                <i class="bi bi-lightbulb"></i>
+                                Your birthdate helps personalize your I Ching experience
+                            </div>
+                        </div>
+
+                        <!-- About Me -->
+                        <div class="mb-4">
+                            <label for="about_me" class="form-label">
+                                <i class="bi bi-quote text-primary"></i> About Me
+                            </label>
+                            <textarea
+                                class="form-control"
+                                id="about_me"
+                                name="about_me"
+                                rows="4"
+                                placeholder="Tell us about yourself, your spiritual journey, or what brings you to the I Ching..."
+                            >{{ user_about_me or '' }}</textarea>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                Share your thoughts, goals, or anything you'd like to remember about your journey
+                            </div>
+                        </div>
+
+                        <!-- Password Section -->
+                        <hr class="my-4">
+                        <h5 class="mb-3">
+                            <i class="bi bi-shield-lock text-warning"></i> Change Password
+                        </h5>
+
+                        <div class="mb-3">
+                            <label for="current_password" class="form-label">
+                                <i class="bi bi-lock"></i> Current Password
+                            </label>
+                            <input
+                                type="password"
+                                class="form-control"
+                                id="current_password"
+                                name="current_password"
+                                placeholder="Enter your current password"
+                            >
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                Required only if you want to change your password
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="new_password" class="form-label">
+                                <i class="bi bi-key"></i> New Password
+                            </label>
+                            <input
+                                type="password"
+                                class="form-control"
+                                id="new_password"
+                                name="new_password"
+                                placeholder="Enter new password"
+                            >
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="confirm_new_password" class="form-label">
+                                <i class="bi bi-key-fill"></i> Confirm New Password
+                            </label>
+                            <input
+                                type="password"
+                                class="form-control"
+                                id="confirm_new_password"
+                                name="confirm_new_password"
+                                placeholder="Confirm new password"
+                            >
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-between">
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-oracle">
+                                <i class="bi bi-check-circle"></i> Update Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Profile Tips -->
+            <div class="card card-oracle mt-4">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-lightbulb text-warning"></i> Profile Tips
+                    </h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Your birthdate can add personal context to your readings
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            The "About Me" section helps you track your spiritual journey
+                        </li>
+                        <li class="mb-0">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Leave password fields empty if you don't want to change it
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

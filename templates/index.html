@@ -1,39 +1,197 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>I Ching Readings</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-</head>
-<body class="container mt-5">
-    <h2 class="mb-4">Welcome, {{ session.username }}</h2>
-    <form method="post" action="{{ url_for('index') }}">
-        <div class="mb-3">
-            <label for="question" class="form-label">Enter your question:</label>
-            <textarea class="form-control" name="question" rows="3"></textarea>
-        </div>
-        <button type="submit" class="btn btn-success">Get Reading</button>
-    </form>
+{% extends "base.html" %}
 
-    <p>{{ reading.replace('\n', '</p>\n<p>')|safe }}</p>
-    <h3 class="mt-5">Your Last 10 Readings</h3>
-    <table class="table table-bordered table-striped mt-3">
-        <thead class="table-dark">
-            <tr>
-                <th>Type</th>
-                <th>Question</th>
-                <th>Tokens</th>
-                <th>Reading</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for question, hexagram, reading in history %}
-            <tr>
-                <td>{{ question }}</td>
-                <td>{{ hexagram }}</td>
-                <td>{{ reading.replace('\n', '<br />')|safe }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</body>
-</html>
+{% block title %}Home - The Oracle{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <div class="row">
+        <!-- Left Column - User Profile -->
+        <div class="col-lg-4 mb-4">
+            {% if user_birthdate or user_about_me %}
+            <div class="card card-oracle mb-4">
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <h4 class="card-title mb-2">
+                            <i class="bi bi-person-circle" style="color: #d4af37;"></i> Welcome, {{ username }}
+                        </h4>
+                        <div class="profile-badge" style="background: linear-gradient(135deg, #8b1538 0%, #5d0e29 100%); color: white; border-radius: 20px; padding: 0.5rem 1rem; display: inline-block;">
+                            <i class="bi bi-star"></i> Oracle Seeker
+                        </div>
+                    </div>
+
+                    <div class="profile-info">
+                        {% if user_birthdate %}
+                        <p class="mb-2">
+                            <i class="bi bi-calendar-heart" style="color: #d4af37;"></i>
+                            <strong>Born:</strong> {{ user_birthdate }}
+                        </p>
+                        {% endif %}
+                        {% if user_about_me %}
+                        <p class="text-muted fst-italic mb-0">
+                            <i class="bi bi-quote"></i> {{ user_about_me }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Navigation in Left Column -->
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <div class="card card-oracle h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-book display-6" style="color: #d4af37;" class="mb-3"></i>
+                            <h6 class="card-title">Explore Hexagrams</h6>
+                            <p class="card-text small">Study all 64 hexagrams and their meanings</p>
+                            <a href="{{ url_for('hexagrams_list') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #cd853f 0%, #a0522d 100%); color: white; border: none;">
+                                <i class="bi bi-arrow-right"></i> View All
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 mb-3">
+                    <div class="card card-oracle h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-triangle display-6" style="color: #d4af37;" class="mb-3"></i>
+                            <h6 class="card-title">Learn Trigrams</h6>
+                            <p class="card-text small">Understand the eight fundamental trigrams</p>
+                            <a href="{{ url_for('trigrams_list') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #cd853f 0%, #a0522d 100%); color: white; border: none;">
+                                <i class="bi bi-arrow-right"></i> Learn More
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Main Content -->
+        <div class="col-lg-8">
+            <!-- Reading Form -->
+    <div class="card card-oracle mb-4">
+        <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, var(--oracle-primary) 0%, var(--oracle-secondary) 100%);">
+            <h5 class="mb-0">
+                <i class="bi bi-magic"></i> Seek Wisdom from the I Ching
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{{ url_for('index') }}">
+                <div class="mb-3">
+                    <label for="question" class="form-label">
+                        <i class="bi bi-question-circle"></i> What guidance do you seek?
+                    </label>
+                    <textarea
+                        class="form-control"
+                        id="question"
+                        name="question"
+                        rows="3"
+                        placeholder="Enter your question here... Be specific and thoughtful in your inquiry."
+                        required
+                    ></textarea>
+                    <div class="form-text">
+                        <i class="bi bi-lightbulb"></i>
+                        The more thoughtful your question, the more meaningful your reading will be.
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-lg" style="background: linear-gradient(135deg, #8b1538 0%, #5d0e29 100%); border: none; color: white; transition: transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <i class="bi bi-stars"></i> Cast the Hexagrams
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reading Result -->
+    {% if reading %}
+    <div class="card card-oracle mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="bi bi-eye"></i> Your Reading
+            </h5>
+        </div>
+        <div class="card-body reading-content">
+            {{ reading|safe }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Readings History -->
+    {% if history %}
+    <div class="card card-oracle">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-clock-history"></i> Your Recent Readings
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th scope="col" style="width: 140px;">
+                                <i class="bi bi-question-circle"></i> Question
+                            </th>
+                            <th scope="col" style="width: 120px;">
+                                <i class="bi bi-hexagon"></i> Hexagram
+                            </th>
+                            <th scope="col">
+                                <i class="bi bi-book-half"></i> Reading
+                            </th>
+                            <th scope="col" style="width: 80px;">
+                                <i class="bi bi-calendar3"></i> Date
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in history %}
+                        <tr>
+                            <td style="width: 140px;">
+                                <div style="max-width: 140px; white-space: normal; line-height: 1.3;" title="{{ entry.question }}">
+                                    <a href="{{ url_for('reading_detail', reading_path=entry.reading_path) }}"
+                                       class="text-decoration-none">
+                                        {{ entry.question }}
+                                    </a>
+                                </div>
+                            </td>
+                            <td style="width: 120px;">
+                                {% set hexagram_parts = entry.hexagram.split(' transitioning to ') %}
+                                <span class="badge text-wrap" style="background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: white; white-space: normal; line-height: 1.2;">
+                                    {{ hexagram_parts[0] }}
+                                </span>
+                                {% if hexagram_parts|length > 1 %}
+                                <div class="transition-text" style="font-size: 0.75em; font-family: 'Times New Roman', Georgia, serif; font-style: italic; font-weight: 500; color: #8b4513; margin-top: 3px; text-shadow: 0 1px 2px rgba(0,0,0,0.1); letter-spacing: 0.5px;">
+                                    transitioning to
+                                </div>
+                                <span class="badge text-wrap" style="background: linear-gradient(135deg, #cd853f 0%, #a0522d 100%); color: white; white-space: normal; line-height: 1.2; font-size: 0.8em;">
+                                    {{ hexagram_parts[1] }}
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                 <div style="white-space: normal; line-height: 1.4; max-height: 4.2em; overflow: hidden;" title="{{ entry.reading_html|striptags }}">
+                                     {{ entry.reading_html|striptags|truncate(300) }}
+                                 </div>
+                             </td>
+                            <td style="width: 80px;">
+                                <small class="text-muted">
+                                    {{ entry.reading_dt[5:10] if entry.reading_dt else 'Unknown' }}
+                                </small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card-footer text-center">
+            <small class="text-muted">
+                <i class="bi bi-info-circle"></i>
+                Showing your {{ history|length }} most recent readings
+            </small>
+        </div>
+    </div>
+    {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

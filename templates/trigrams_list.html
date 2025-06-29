@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}Trigrams - The Oracle{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mt-3">
+    <ol class="breadcrumb breadcrumb-oracle">
+        <li class="breadcrumb-item">
+            <a href="{{ url_for('index') }}" class="text-white">
+                <i class="bi bi-house"></i> Home
+            </a>
+        </li>
+        <li class="breadcrumb-item">
+            <a href="{{ url_for('hexagrams_list') }}" class="text-white">
+                <i class="bi bi-book"></i> Hexagrams
+            </a>
+        </li>
+        <li class="breadcrumb-item active text-white" aria-current="page">
+            <i class="bi bi-triangle"></i> Trigrams
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 mb-3">
+            <i class="bi bi-triangle text-primary"></i> The Eight Trigrams
+        </h1>
+        <p class="lead text-muted">
+            The fundamental building blocks of all 64 hexagrams
+        </p>
+    </div>
+
+    <!-- Introduction -->
+    <div class="card card-oracle mb-5">
+        <div class="card-body">
+            <h5 class="card-title">
+                <i class="bi bi-info-circle text-primary"></i> Understanding Trigrams
+            </h5>
+            <p class="card-text">
+                Each hexagram is composed of two trigrams - an upper and a lower. These eight trigrams represent
+                the fundamental forces and elements of the universe according to I Ching philosophy. Each trigram
+                has its own meaning, attributes, and symbolic associations that contribute to the overall meaning
+                of any hexagram it appears in.
+            </p>
+        </div>
+    </div>
+
+    <!-- Trigrams Grid -->
+    <div class="row">
+        {% for trigram in trigrams %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="card card-oracle h-100" id="{{ trigram.id }}">
+                <div class="card-header text-center">
+                    <div class="display-3 mb-2">{{ trigram.symbol }}</div>
+                    <h4 class="mb-1">{{ trigram.name }}</h4>
+                    <p class="text-muted mb-0">{{ trigram.chinese }}</p>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="bi bi-tags"></i> Attributes
+                        </h6>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for attribute in trigram.attributes %}
+                            <span class="badge bg-light text-dark">{{ attribute }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="bi bi-book"></i> Meaning
+                        </h6>
+                        <p class="card-text small">{{ trigram.description }}</p>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent text-center">
+                    <small class="text-muted">
+                        <i class="bi bi-link-45deg"></i>
+                        This trigram appears in multiple hexagrams
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Trigram Relationships -->
+    <div class="card card-oracle mt-5">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-diagram-3"></i> Trigram Relationships
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-primary">Yang Trigrams (More Yang Lines)</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <span class="me-2">☰</span> <strong>Heaven</strong> - Pure Yang, all solid lines
+                        </li>
+                        <li class="mb-2">
+                            <span class="me-2">☳</span> <strong>Thunder</strong> - Yang below, movement
+                        </li>
+                        <li class="mb-2">
+                            <span class="me-2">☵</span> <strong>Water</strong> - Yang in middle, flow
+                        </li>
+                        <li class="mb-2">
+                            <span class="me-2">☶</span> <strong>Mountain</strong> - Yang above, stillness
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-primary">Yin Trigrams (More Yin Lines)</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <span class="me-2">☷</span> <strong>Earth</strong> - Pure Yin, all broken lines
+                        </li>
+                        <li class="mb-2">
+                            <span class="me-2">☴</span> <strong>Wind</strong> - Yin below, gentle penetration
+                        </li>
+                        <li class="mb-2">
+                            <span class="me-2">☲</span> <strong>Fire</strong> - Yin in middle, clinging
+                        </li>
+                        <li class="mb-2">
+                            <span class="me-2">☱</span> <strong>Lake</strong> - Yin above, joyful
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Family Relationships -->
+    <div class="card card-oracle mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-people"></i> The Trigram Family
+            </h5>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-3">
+                Traditional I Ching assigns family relationships to the trigrams based on their structure:
+            </p>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-primary">Father & Mother</h6>
+                    <ul class="list-unstyled">
+                        <li><span class="me-2">☰</span> <strong>Heaven</strong> - The Father</li>
+                        <li><span class="me-2">☷</span> <strong>Earth</strong> - The Mother</li>
+                    </ul>
+
+                    <h6 class="text-primary mt-4">Sons</h6>
+                    <ul class="list-unstyled">
+                        <li><span class="me-2">☳</span> <strong>Thunder</strong> - Eldest Son</li>
+                        <li><span class="me-2">☵</span> <strong>Water</strong> - Middle Son</li>
+                        <li><span class="me-2">☶</span> <strong>Mountain</strong> - Youngest Son</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-primary">Daughters</h6>
+                    <ul class="list-unstyled">
+                        <li><span class="me-2">☴</span> <strong>Wind</strong> - Eldest Daughter</li>
+                        <li><span class="me-2">☲</span> <strong>Fire</strong> - Middle Daughter</li>
+                        <li><span class="me-2">☱</span> <strong>Lake</strong> - Youngest Daughter</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="text-center mt-5">
+        <a href="{{ return_to }}" class="btn btn-oracle me-3">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <a href="{{ url_for('hexagrams_list') }}" class="btn btn-outline-primary">
+            <i class="bi bi-book"></i> View All Hexagrams
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle hash navigation to specific trigrams
+    if (window.location.hash) {
+        try {
+            const target = document.querySelector(window.location.hash);
+            if (target) {
+                setTimeout(() => {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Highlight the target briefly
+                    target.classList.add('border-primary', 'border-3');
+                    setTimeout(() => {
+                        target.classList.remove('border-primary', 'border-3');
+                    }, 3000);
+                }, 100);
+            }
+        } catch (e) {
+            // Handle invalid CSS selectors gracefully
+            console.warn('Invalid CSS selector in hash:', window.location.hash);
+        }
+    }
+
+    // Add click handlers for trigram cards to update hash
+    document.querySelectorAll('.card[id]').forEach(card => {
+        card.addEventListener('click', function() {
+            window.location.hash = '#' + this.id;
+        });
+    });
+});
+</script>
+{% endblock %}
