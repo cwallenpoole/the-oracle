@@ -126,18 +126,17 @@ def get_hexagram_section(number):
     title = match.group('title').strip()
     symbol = match.group('symbol').strip()
 
+    [pre_judge, post_judge] = section.split('### THE IMAGE')
     # About
-    above = re.search(r"> above\s+(.+)", section)
-    below = re.search(r"> below\s+(.+)", section)
-    description_match = re.search(r"> below.+\n\n(.+?)(?=\n## THE JUDGMENT)", section, re.DOTALL)
+    above = re.search(r"> above\s+(.+)", pre_judge)
+    below = re.search(r"> below\s+(.+)", pre_judge)
+    description_match = re.search(r"> below.+\n\n(.+?)(?=\n### THE JUDGMENT)", pre_judge, re.DOTALL)
     description = description_match.group(1).strip() if description_match else ""
 
-    judge_pos = section.find('### THE JUDGEMENT') + len('### THE JUDGEMENT')
-    image_pos = section.find('#### THE IMAGE')
-    lines_pos = section.find('#### THE LINES')
 
-    judge_section = section[judge_pos: image_pos]
-    image_section = section[image_pos + len('### THE IMAGE'): lines_pos]
+    [judge_section, post_judge] = section.split('### THE IMAGE')
+    if judge_section.find('### THE JUDGMENT') != -1:
+        import pdb; pdb.set_trace()
 
     judge_quote = []
     judge_text = []
@@ -151,6 +150,7 @@ def get_hexagram_section(number):
 
     image_quote = []
     image_text = []
+    [image_section, lines_section] = post_image.split('#### THE LINES')
     for line in image_section.splitlines():
         if not line:
             continue
@@ -160,10 +160,9 @@ def get_hexagram_section(number):
             image_text.append(line)
 
     # Lines
-    lines_section = re.search(r"#### THE LINES\n(.+)", section, re.DOTALL)
     lines = []
     if lines_section:
-        for m in re.finditer(r"(?P<ln>(^>[^\n]+\n)+)(?P<txt>[^>]+)", lines_section.group(1), re.DOTALL | re.MULTILINE):
+        for m in re.finditer(r"(?P<ln>(^>[^\n]+\n)+)(?P<txt>[^>]+)", lines_section, re.DOTALL | re.MULTILINE):
             quote = "\n".join([l.strip() for l in m.group('ln').splitlines()[1:]])
             text = m.group('txt').strip()
             lines.append(IChingLine(Quote=quote, Text=text))

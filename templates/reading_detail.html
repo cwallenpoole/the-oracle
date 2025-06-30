@@ -19,6 +19,53 @@
 
 {% block content %}
 <div class="p-4">
+    <!-- Hexagram Cast -->
+    <div class="card card-oracle mb-4">
+        <div class="card-body p-4">
+            <h5 class="text-primary mb-3">
+                <i class="bi bi-hexagon"></i> Hexagram Cast
+            </h5>
+
+            {% set current_num = reading_entry.reading.Current.Number %}
+
+            <div class="hexagram-horizontal">
+                <!-- Primary Hexagram -->
+                <div class="hexagram-item">
+                    <a href="{{ url_for('hexagram_detail',
+                        number=current_num, name=create_hexagram_url_name(reading_entry.reading.Current.Title)) }}" class="hexagram-link">
+                        <div class="hexagram-symbol-large">
+                            {{ hexagram_symbols[current_num] or '䷿' }}
+                        </div>
+                        <div class="hexagram-name">
+                            {{ reading_entry.reading.Current.Title }}
+                        </div>
+                    </a>
+                </div>
+
+                {% if reading_entry.reading.Future %}
+                <!-- Transition Connector -->
+                <div class="transition-connector">
+                    transitioning to
+                </div>
+
+                <!-- Future Hexagram -->
+                {% set future_num = reading_entry.reading.Future.Number %}
+                <div class="hexagram-item">
+                    <a href="{{ url_for('hexagram_detail', number=future_num, name=create_hexagram_url_name(
+                        reading_entry.reading.Future.Title)) }}" class="hexagram-link">
+                        <div class="hexagram-symbol-large">
+                            {{ hexagram_symbols[future_num] or '䷿' }}
+                        </div>
+                        <div class="hexagram-name">
+                            {{ reading_entry.reading.Future.Title }}
+                        </div>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <!-- Reading Header -->
     <div class="card card-oracle mb-4">
         <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, var(--oracle-primary) 0%, var(--oracle-secondary) 100%);">
@@ -33,39 +80,25 @@
             </div>
         </div>
         <div class="card-body">
-            <!-- Question -->
+            <!-- Question with Truncation -->
             <div class="mb-4">
                 <h5 class="text-primary">
                     <i class="bi bi-question-circle"></i> Your Question
                 </h5>
-                <blockquote class="blockquote">
-                    <p class="fs-5 mb-0">{{ reading_entry.question }}</p>
-                </blockquote>
-            </div>
-
-            <!-- Hexagram -->
-            <div class="mb-4">
-                <h5 class="text-primary">
-                    <i class="bi bi-hexagon"></i> Hexagram Cast
-                </h5>
-                <div class="d-flex align-items-start">
-                    <div class="hexagram-display me-3">
-                        {% set hexagram_parts = reading_entry.hexagram.split(' transitioning to ') %}
-                        <span class="badge text-wrap" style="background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: white; white-space: normal; line-height: 1.2; font-size: 1rem;">
-                            {{ hexagram_parts[0] }}
-                        </span>
-                        {% if hexagram_parts|length > 1 %}
-                        <div class="transition-text" style="font-size: 0.8em; font-family: 'Times New Roman', Georgia, serif; font-style: italic; font-weight: 500; color: #8b4513; margin-top: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.1); letter-spacing: 0.5px;">
-                            transitioning to
-                        </div>
-                        <span class="badge text-wrap" style="background: linear-gradient(135deg, #cd853f 0%, #a0522d 100%); color: white; white-space: normal; line-height: 1.2; font-size: 0.9em; margin-top: 4px; display: inline-block;">
-                            {{ hexagram_parts[1] }}
-                        </span>
-                        {% endif %}
+                <div class="question-container">
+                    <div id="question-preview" class="question-preview">
+                        <blockquote class="blockquote">
+                            <div class="fs-5 mb-0 markdown-content">{{ reading_entry.question | markdown | safe }}</div>
+                        </blockquote>
                     </div>
-                    <div class="align-self-center">
-                        <small class="text-muted">This was the hexagram that emerged from your casting</small>
+                    <div id="question-full" class="question-full" style="display: none;">
+                        <blockquote class="blockquote">
+                            <div class="fs-5 mb-0 markdown-content">{{ reading_entry.question | markdown | safe }}</div>
+                        </blockquote>
                     </div>
+                    <button id="question-toggle" class="btn btn-link p-0 text-primary" style="display: none;">
+                        <small>Show more</small>
+                    </button>
                 </div>
             </div>
         </div>
@@ -129,6 +162,9 @@
 
 {% block extra_css %}
 <style>
+/* Reading page specific enhancements */
+
+/* Additional reading content enhancements */
 .reading-content {
     font-size: 1.1rem;
     line-height: 1.8;
@@ -139,39 +175,178 @@
 }
 
 .reading-content h1, .reading-content h2, .reading-content h3 {
-    color: var(--oracle-primary);
     margin-top: 2rem;
     margin-bottom: 1rem;
 }
 
 .reading-content blockquote {
-    border-left: 4px solid var(--oracle-primary);
     padding-left: 1rem;
     margin: 1.5rem 0;
     font-style: italic;
-    color: #6c757d;
+    background: linear-gradient(90deg, rgba(255,215,0,0.1), transparent);
 }
 
-.hexagram-link {
-    color: var(--oracle-primary);
-    text-decoration: none;
-    font-weight: 500;
-    border-bottom: 1px dotted var(--oracle-primary);
+/* Hexagram display specific styling */
+
+/* Question truncation styles */
+.question-preview .markdown-content {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    line-height: 1.5;
+    max-height: 4.5em;
 }
 
-.hexagram-link:hover {
-    color: var(--oracle-secondary);
-    border-bottom-color: var(--oracle-secondary);
+.question-container {
+    position: relative;
 }
 
-.hexagram-display {
-    max-width: 300px;
-    word-wrap: break-word;
+.question-toggle-fade {
+    background: linear-gradient(transparent, rgba(255,255,255,0.9));
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2rem;
+    pointer-events: none;
 }
 
-.hexagram-display .badge {
-    max-width: 100%;
-    word-wrap: break-word;
+/* Markdown content styling */
+.markdown-content h1, .markdown-content h2, .markdown-content h3,
+.markdown-content h4, .markdown-content h5, .markdown-content h6 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.markdown-content p {
+    margin-bottom: 0.75rem;
+}
+
+.markdown-content blockquote {
+    padding-left: 1rem;
+    margin: 1rem 0;
+    font-style: italic;
+    background: linear-gradient(90deg, rgba(255,215,0,0.1), transparent);
+}
+
+.markdown-content ul, .markdown-content ol {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+}
+
+.markdown-content code {
+    background: linear-gradient(135deg, var(--oracle-black) 0%, var(--oracle-black-light) 100%);
+    color: var(--oracle-gold);
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.9em;
+    border: 1px solid var(--oracle-gold-dark);
+}
+
+.markdown-content pre {
+    background: linear-gradient(135deg, var(--oracle-black) 0%, var(--oracle-black-light) 100%);
+    color: var(--oracle-gold);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    border: 2px solid var(--oracle-gold-dark);
+}
+
+/* Hexagram horizontal layout */
+.hexagram-horizontal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+}
+
+.hexagram-symbol-large {
+    font-size: 4rem;
+    color: var(--oracle-gold);
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+}
+
+.hexagram-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--oracle-red);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    margin-top: 0.5rem;
+}
+
+.transition-connector {
+    color: var(--oracle-red-dark);
+    font-weight: bold;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+}
+
+.hexagram-item {
+    text-align: center;
+    min-width: 150px;
+}
+
+/* Toggle button styling */
+#question-toggle {
+    font-weight: bold;
 }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const questionPreview = document.getElementById('question-preview');
+    const questionFull = document.getElementById('question-full');
+    const questionToggle = document.getElementById('question-toggle');
+
+    // Check if question content is truncated
+    const previewContent = questionPreview.querySelector('.markdown-content');
+    const fullContent = questionFull.querySelector('.markdown-content');
+
+    if (previewContent && fullContent) {
+        // Clone the full content to measure its height
+        const tempDiv = fullContent.cloneNode(true);
+        tempDiv.style.position = 'absolute';
+        tempDiv.style.visibility = 'hidden';
+        tempDiv.style.height = 'auto';
+        tempDiv.style.maxHeight = 'none';
+        tempDiv.style.webkitLineClamp = 'none';
+        tempDiv.style.display = 'block';
+        document.body.appendChild(tempDiv);
+
+        const fullHeight = tempDiv.scrollHeight;
+        const previewHeight = previewContent.scrollHeight;
+
+        document.body.removeChild(tempDiv);
+
+        // If content is actually truncated, show the toggle button
+        if (fullHeight > previewHeight || previewContent.scrollHeight > 72) { // 4.5em ≈ 72px
+            questionToggle.style.display = 'block';
+
+            let isExpanded = false;
+
+            questionToggle.addEventListener('click', function() {
+                if (!isExpanded) {
+                    questionPreview.style.display = 'none';
+                    questionFull.style.display = 'block';
+                    questionToggle.innerHTML = '<small>Show less</small>';
+                    isExpanded = true;
+                } else {
+                    questionPreview.style.display = 'block';
+                    questionFull.style.display = 'none';
+                    questionToggle.innerHTML = '<small>Show more</small>';
+                    isExpanded = false;
+                }
+            });
+        }
+    }
+});
+</script>
 {% endblock %}

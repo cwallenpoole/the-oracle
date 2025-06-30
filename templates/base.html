@@ -12,45 +12,90 @@
     <!-- Custom CSS -->
     <style>
         :root {
-            --oracle-primary: #667eea;
-            --oracle-secondary: #764ba2;
-            --oracle-accent: #f093fb;
+            --oracle-red: #8B0000;
+            --oracle-red-light: #DC143C;
+            --oracle-red-dark: #4B0000;
+            --oracle-gold: #FFD700;
+            --oracle-gold-dark: #B8860B;
+            --oracle-black: #1a1a1a;
+            --oracle-black-light: #2d2d2d;
+
+            /* Legacy compatibility for templates still using old names */
+            --oracle-primary: var(--oracle-red);
+            --oracle-secondary: var(--oracle-red-light);
+            --oracle-accent: var(--oracle-gold);
         }
 
         body {
-            background: linear-gradient(135deg, var(--oracle-primary) 0%, var(--oracle-secondary) 100%);
+            background: linear-gradient(135deg, var(--oracle-red-dark) 0%, var(--oracle-black) 30%, var(--oracle-red-dark) 100%);
+            color: var(--oracle-gold);
             min-height: 100vh;
             font-family: 'Georgia', serif;
         }
 
+        .main-container {
+            background: linear-gradient(135deg, rgba(139,0,0,0.4) 0%, rgba(75,0,0,0.6) 50%, rgba(139,0,0,0.3) 100%);
+            min-height: calc(100vh - 200px);
+            padding: 2rem 0;
+        }
+
         .main-content {
-            background: rgba(255, 255, 255, 0.95);
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%) !important;
+            border: 3px solid var(--oracle-gold-dark);
             border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
             margin-top: 2rem;
             margin-bottom: 2rem;
+            color: var(--oracle-black);
         }
 
         .navbar-brand {
             font-weight: bold;
             font-size: 1.5rem;
+            color: var(--oracle-gold) !important;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--oracle-red) 0%, var(--oracle-red-dark) 100%) !important;
+            border-bottom: 3px solid var(--oracle-gold);
+            padding: 0.5rem 0;
+        }
+
+        .nav-link {
+            color: var(--oracle-gold) !important;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+        }
+
+        .nav-link:hover {
+            color: var(--oracle-red-light) !important;
+            background: rgba(255,215,0,0.1);
+            border-radius: 5px;
         }
 
         .btn-oracle {
-            background: linear-gradient(135deg, var(--oracle-primary) 0%, var(--oracle-secondary) 100%);
-            border: none;
-            color: white;
-            transition: transform 0.2s ease;
+            background: linear-gradient(135deg, var(--oracle-red) 0%, var(--oracle-red-dark) 100%);
+            border: 2px solid var(--oracle-gold-dark);
+            color: var(--oracle-gold);
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
         }
 
         .btn-oracle:hover {
             transform: translateY(-2px);
-            color: white;
+            color: var(--oracle-gold);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+            border-color: var(--oracle-gold);
         }
 
         .card-oracle {
-            border: none;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border: 3px solid var(--oracle-gold-dark);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+            color: var(--oracle-black);
             transition: transform 0.2s ease;
         }
 
@@ -58,43 +103,117 @@
             transform: translateY(-2px);
         }
 
+        .card-header {
+            background: linear-gradient(135deg, var(--oracle-red) 0%, var(--oracle-red-dark) 100%) !important;
+            border-bottom: 3px solid var(--oracle-gold) !important;
+            color: var(--oracle-gold) !important;
+        }
+
         .reading-content {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-left: 4px solid var(--oracle-primary);
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border-left: 4px solid var(--oracle-gold);
+            color: var(--oracle-black);
         }
 
         .hexagram-link {
-            color: var(--oracle-primary);
+            color: var(--oracle-red);
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
 
         .hexagram-link:hover {
-            color: var(--oracle-secondary);
+            color: var(--oracle-red-light);
             text-decoration: underline;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
 
         .profile-badge {
-            background: linear-gradient(135deg, var(--oracle-accent) 0%, var(--oracle-primary) 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--oracle-red) 0%, var(--oracle-red-dark) 100%);
+            color: var(--oracle-gold);
+            border: 1px solid var(--oracle-gold-dark);
             border-radius: 20px;
             padding: 0.5rem 1rem;
             display: inline-block;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
 
         .breadcrumb-oracle {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(139,0,0,0.2);
+            border: 1px solid var(--oracle-gold-dark);
             border-radius: 10px;
         }
 
         .breadcrumb-oracle .breadcrumb-item + .breadcrumb-item::before {
-            color: var(--oracle-primary);
+            color: var(--oracle-gold);
         }
 
         .alert-oracle {
-            border: none;
+            border: 2px solid var(--oracle-gold-dark);
             border-radius: 10px;
-            border-left: 4px solid var(--oracle-primary);
+            border-left: 4px solid var(--oracle-red);
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        }
+
+        /* Text color overrides for consistent theming */
+        .text-primary {
+            color: var(--oracle-red) !important;
+        }
+
+        .text-secondary {
+            color: var(--oracle-red-light) !important;
+        }
+
+        .text-muted {
+            color: var(--oracle-black-light) !important;
+        }
+
+        /* Icon styling */
+        .bi {
+            color: var(--oracle-gold);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* Footer styling */
+        footer {
+            background: linear-gradient(135deg, var(--oracle-red-dark) 0%, var(--oracle-black) 100%) !important;
+            border-top: 3px solid var(--oracle-gold);
+            color: var(--oracle-gold) !important;
+            padding: 1rem 0;
+            margin-top: 2rem;
+        }
+
+        /* Dropdown menu styling */
+        .dropdown-menu {
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+            border: 2px solid var(--oracle-gold-dark);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .dropdown-item {
+            color: var(--oracle-black);
+        }
+
+        .dropdown-item:hover {
+            background: linear-gradient(135deg, var(--oracle-red) 0%, var(--oracle-red-light) 100%);
+            color: var(--oracle-gold);
+        }
+
+        /* Form styling */
+        .form-control {
+            border: 2px solid var(--oracle-gold-dark);
+            color: var(--oracle-black);
+        }
+
+        .form-control:focus {
+            border-color: var(--oracle-red);
+            box-shadow: 0 0 0 0.2rem rgba(139,0,0,0.25);
+        }
+
+        .form-label {
+            color: var(--oracle-red);
+            font-weight: 600;
         }
     </style>
 
@@ -102,7 +221,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background: rgba(0, 0, 0, 0.1);">
+    <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('index') }}">
                 <i class="bi bi-yin-yang"></i> The Oracle
@@ -167,7 +286,7 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="container">
+    <div class="container main-container">
         {% block breadcrumb %}{% endblock %}
 
         <!-- Flash Messages -->
@@ -188,7 +307,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="text-center text-white py-4" style="background: rgba(0, 0, 0, 0.1);">
+    <footer class="text-center">
         <div class="container">
             <p class="mb-0">&copy; 2024 The Oracle - Ancient Wisdom for Modern Times</p>
         </div>

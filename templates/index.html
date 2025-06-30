@@ -154,17 +154,32 @@
                             </td>
                             <td style="width: 120px;">
                                 {% set hexagram_parts = entry.hexagram.split(' transitioning to ') %}
-                                <span class="badge text-wrap" style="background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: white; white-space: normal; line-height: 1.2;">
-                                    {{ hexagram_parts[0] }}
-                                </span>
-                                {% if hexagram_parts|length > 1 %}
-                                <div class="transition-text" style="font-size: 0.75em; font-family: 'Times New Roman', Georgia, serif; font-style: italic; font-weight: 500; color: #8b4513; margin-top: 3px; text-shadow: 0 1px 2px rgba(0,0,0,0.1); letter-spacing: 0.5px;">
-                                    transitioning to
+                                <div class="d-flex align-items-center">
+                                    <!-- Hexagram Symbol -->
+                                    {% set current_num = hexagram_parts[0].split(' ')[0] | int %}
+                                    <div class="hexagram-symbol me-2" style="font-size: 1.5rem; line-height: 1; color: #d4af37; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
+                                        {{ hexagram_symbols[current_num] or '䷿' }}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <span class="badge text-wrap" style="background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: white; white-space: normal; line-height: 1.2; font-size: 0.85rem;">
+                                            {{ hexagram_parts[0] }}
+                                        </span>
+                                        {% if hexagram_parts|length > 1 %}
+                                        <div class="transition-text" style="font-size: 0.65em; font-family: 'Times New Roman', Georgia, serif; font-style: italic; font-weight: 500; color: #8b4513; margin-top: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.1); letter-spacing: 0.5px;">
+                                            <em style="font-family: 'Brush Script MT', cursive, 'Times New Roman', serif; font-size: 1.1em; color: #654321; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">to</em>
+                                        </div>
+                                        <div class="d-flex align-items-center mt-1">
+                                            {% set future_num = hexagram_parts[1].split(' ')[0] | int %}
+                                            <div class="hexagram-symbol me-2" style="font-size: 1.2rem; line-height: 1; color: #cd853f; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
+                                                {{ hexagram_symbols[future_num] or '䷿' }}
+                                            </div>
+                                            <span class="badge text-wrap" style="background: linear-gradient(135deg, #cd853f 0%, #a0522d 100%); color: white; white-space: normal; line-height: 1.2; font-size: 0.75em;">
+                                                {{ hexagram_parts[1] }}
+                                            </span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
                                 </div>
-                                <span class="badge text-wrap" style="background: linear-gradient(135deg, #cd853f 0%, #a0522d 100%); color: white; white-space: normal; line-height: 1.2; font-size: 0.8em;">
-                                    {{ hexagram_parts[1] }}
-                                </span>
-                                {% endif %}
                             </td>
                             <td>
                                  <div style="white-space: normal; line-height: 1.4; max-height: 4.2em; overflow: hidden;" title="{{ entry.reading_html|striptags }}">

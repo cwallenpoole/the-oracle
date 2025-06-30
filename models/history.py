@@ -21,6 +21,7 @@ class HistoryEntry:
         self.reading_dt = reading_dt or datetime.now().isoformat()
         self.reading_id = reading_id or self._generate_reading_id()
         self.db_file = "data/users.db"
+        self.reading_path = self.get_reading_path()
 
         # Handle the reading_data parameter - could be string or Reading object
         if isinstance(reading_data, Reading):
@@ -45,7 +46,7 @@ class HistoryEntry:
     def reading(self) -> Reading:
         """Get the reading as a Reading object, parsing from string if necessary"""
         if self._reading_object is None:
-            self._reading_object = self._parse_reading_from_string(self._reading_string)
+            self._reading_object = self._parse_reading_from_string(self.hexagram)
         return self._reading_object
 
     @reading.setter
@@ -67,7 +68,7 @@ class HistoryEntry:
         return self._enhance_reading_with_links(reading_html)
 
     def _enhance_reading_with_links(self, reading_text: str) -> str:
-        """Enhance reading text by adding links to hexagrams"""
+        """Enhance reading text by adding links to hexagrams and styling transitions"""
         if not reading_text:
             return reading_text
 
@@ -112,6 +113,12 @@ class HistoryEntry:
         # Replace patterns like "Hexagram 20", "hexagram 20", "20: Title"
         enhanced = re.sub(r'[Hh]exagram (\d+)', replace_hexagram_ref, reading_text)
         enhanced = re.sub(r'(\d+):\s*[A-Za-z\']+', replace_hexagram_ref, enhanced)
+
+        # Style the "transitioning to" text
+        enhanced = enhanced.replace(
+            "transitioning to",
+            '<div class="transition-text" style="font-size: 0.9em; font-family: \'Times New Roman\', Georgia, serif; font-style: italic; font-weight: 500; color: #8b4513; margin: 8px 0; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.1); letter-spacing: 0.5px;"><em style="font-family: \'Brush Script MT\', cursive, \'Times New Roman\', serif; font-size: 1.3em; color: #654321; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">transitioning to</em></div>'
+        )
 
         return enhanced
 

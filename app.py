@@ -21,6 +21,14 @@ app.secret_key = os.getenv("FLASK_SECRET")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
+# Context processor to make hexagram symbols and utility functions available to all templates
+@app.context_processor
+def inject_hexagram_symbols():
+    return {
+        'hexagram_symbols': get_hexagram_symbols(),
+        'create_hexagram_url_name': create_hexagram_url_name
+    }
+
 DB_FILE = "data/users.db"
 
 # Hexagram utility functions
@@ -84,6 +92,15 @@ def parse_hexagram_url(url_path):
         return None, None
     except ValueError:
         return None, None
+
+def get_hexagram_symbols():
+    """Get mapping of hexagram numbers to their Unicode symbols"""
+    symbols = {}
+    for i in range(1, 65):
+        hex_obj = iching.get_hexagram_section(i)
+        if hex_obj and hex_obj.Symbol:
+            symbols[i] = hex_obj.Symbol
+    return symbols
 
 def get_trigram_info():
     """Get information about the 8 trigrams"""
@@ -164,7 +181,7 @@ def get_trigram_info():
     return trigrams
 
 def enhance_reading_with_links(reading_text):
-    """Enhance reading text by adding links to hexagrams"""
+    """Enhance reading text by adding links to hexagrams and styling transitions"""
     if not reading_text:
         return reading_text
 
@@ -181,6 +198,12 @@ def enhance_reading_with_links(reading_text):
     # Replace patterns like "Hexagram 20", "hexagram 20", "20: Title"
     enhanced = re.sub(r'[Hh]exagram (\d+)', replace_hexagram_ref, reading_text)
     enhanced = re.sub(r'(\d+):\s*[A-Za-z\']+', replace_hexagram_ref, enhanced)
+
+    # Style the "transitioning to" text
+    enhanced = enhanced.replace(
+        "transitioning to",
+        '<div class="transition-text" style="font-size: 0.9em; font-family: \'Times New Roman\', Georgia, serif; font-style: italic; font-weight: 500; color: #8b4513; margin: 8px 0; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.1); letter-spacing: 0.5px;"><em style="font-family: \'Brush Script MT\', cursive, \'Times New Roman\', serif; font-size: 1.3em; color: #654321; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">transitioning to</em></div>'
+    )
 
     return enhanced
 
@@ -495,7 +518,7 @@ def index():
         user.history.add_reading(question, hexagram_reading, reading)
 
     # Get recent history for display using the lazy-loaded history property
-    recent_history = user.history.get_formatted_recent(limit=3, render_markdown=True, enhance_links=True)
+    recent_history = user.history.get_formatted_recent(limit=5, render_markdown=True, enhance_links=True)
 
     # Enhance reading with hexagram links
     if reading:
