@@ -13,6 +13,7 @@ class HistoryEntry:
     """Single history entry for an I Ching reading"""
 
     def __init__(self, username: str, question: str, hexagram: str, reading_data: Union[str, Reading], reading_dt: str = None, reading_id: str = None):
+
         self.username = username
         self.question = question
         self.hexagram = hexagram
@@ -54,6 +55,11 @@ class HistoryEntry:
         """Set the reading as a Reading object"""
         self._reading_object = value
         self._reading_string = None  # Will be regenerated when needed
+
+    @property
+    def reading_html(self) -> str:
+        """Get the reading as HTML with hexagram links"""
+        return self.get_enhanced_reading_html()
 
     def get_reading_string(self) -> str:
         """Get the reading as a string, converting from Reading object if necessary"""
@@ -113,12 +119,6 @@ class HistoryEntry:
         # Replace patterns like "Hexagram 20", "hexagram 20", "20: Title"
         enhanced = re.sub(r'[Hh]exagram (\d+)', replace_hexagram_ref, reading_text)
         enhanced = re.sub(r'(\d+):\s*[A-Za-z\']+', replace_hexagram_ref, enhanced)
-
-        # Style the "transitioning to" text
-        enhanced = enhanced.replace(
-            "transitioning to",
-            '<div class="transition-text" style="font-size: 0.9em; font-family: \'Times New Roman\', Georgia, serif; font-style: italic; font-weight: 500; color: #8b4513; margin: 8px 0; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.1); letter-spacing: 0.5px;"><em style="font-family: \'Brush Script MT\', cursive, \'Times New Roman\', serif; font-size: 1.3em; color: #654321; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">transitioning to</em></div>'
-        )
 
         return enhanced
 
@@ -304,7 +304,7 @@ class History:
     def get_formatted_recent(self, limit: int = 3, render_markdown: bool = True, enhance_links: bool = False) -> List[Dict[str, Any]]:
         """Get recent history formatted for templates"""
         entries = self.get_recent(limit)
-        return [entry.to_dict(render_markdown, enhance_links) for entry in entries]
+        return entries
 
     def get_history_text_for_prompt(self, limit: int = 3) -> str:
         """Get formatted history text for AI prompts"""

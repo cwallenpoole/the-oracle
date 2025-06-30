@@ -2,6 +2,97 @@
 
 {% block title %}{{ hexagram.number }}: {{ hexagram.title }} - The Oracle{% endblock %}
 
+{% block extra_css %}
+<style>
+    .hexagram-detail {
+        background: linear-gradient(135deg, var(--oracle-black) 0%, var(--oracle-red-dark) 20%, var(--oracle-black) 80%, var(--oracle-red-dark) 100%);
+    }
+
+    /* Oracle-themed button overrides */
+    .btn-outline-primary {
+        border-color: var(--oracle-gold-dark) !important;
+        color: var(--oracle-gold-dark) !important;
+        background: transparent !important;
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--oracle-gold) !important;
+        border-color: var(--oracle-gold) !important;
+        color: var(--oracle-black) !important;
+    }
+
+    .btn-outline-secondary {
+        border-color: var(--oracle-red) !important;
+        color: var(--oracle-red) !important;
+        background: transparent !important;
+    }
+
+    .btn-outline-secondary:hover {
+        background: var(--oracle-red) !important;
+        border-color: var(--oracle-red) !important;
+        color: white !important;
+    }
+
+        /* Accordion styling */
+    .accordion-item {
+        border: none !important;
+        background: transparent !important;
+        margin-bottom: 0.75rem;
+    }
+
+    .accordion-button {
+        background: transparent !important;
+        border: 2px solid var(--oracle-red-dark) !important;
+        color: var(--oracle-gold) !important;
+        border-radius: 0.5rem !important;
+        transition: all 0.2s ease;
+        box-shadow: none !important;
+    }
+
+    .accordion-button:hover {
+        background: var(--oracle-gold) !important;
+        color: var(--oracle-black) !important;
+        border-color: var(--oracle-gold) !important;
+        border-radius: 0.5rem !important;
+    }
+
+    .accordion-button:focus {
+        box-shadow: 0 0 0 0.2rem rgba(212, 175, 55, 0.25) !important;
+        border-color: var(--oracle-gold) !important;
+        border-radius: 0.5rem !important;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background: var(--oracle-red) !important;
+        color: white !important;
+        border-color: var(--oracle-red) !important;
+        border-radius: 0.5rem !important;
+    }
+
+    .accordion-button:not(.collapsed) .text-muted {
+        color: var(--oracle-gold) !important;
+    }
+
+    .accordion-collapse {
+        border: 2px solid var(--oracle-gold);
+        border-top: none;
+        border-radius: 0 0 0.5rem 0.5rem;
+        background: rgba(212, 175, 55, 0.05);
+    }
+
+    .accordion-body {
+        border-radius: 0 0 0.4rem 0.4rem;
+    }
+
+    .accordion-button::after {
+        filter: brightness(0) saturate(100%) invert(85%) sepia(21%) saturate(1466%) hue-rotate(18deg) brightness(98%) contrast(90%);
+    }
+
+    .accordion-button:not(.collapsed)::after {
+        filter: brightness(0) saturate(100%) invert(100%);
+    }
+</style>
+{% endblock %}
 {% block breadcrumb %}
 <nav aria-label="breadcrumb" class="mt-3">
     <ol class="breadcrumb breadcrumb-oracle">
@@ -24,13 +115,19 @@
 
 {% block content %}
 <div class="p-4">
-    <!-- Header -->
-    <div class="text-center mb-5">
-        <div class="display-1 mb-3">{{ hexagram.symbol }}</div>
-        <h1 class="display-4 mb-2">
-            <span class="badge bg-primary me-3">{{ hexagram.number }}</span>
-            {{ hexagram.title }}
-        </h1>
+    <!-- Hexagram Display - Large and Centered First -->
+    <div class="card card-oracle mb-4">
+        <div class="card-body text-center py-5">
+            <div class="hexagram-main-display mb-4" style="font-size: 8rem; color: var(--oracle-gold); text-shadow: 3px 3px 6px rgba(0,0,0,1); line-height: 1;">
+                {{ hexagram.Symbol }}
+            </div>
+            <h1 class="display-4 mb-3">
+                <span style="color: var(--oracle-gold); text-shadow: 3px 3px 6px rgba(0,0,0,1); ">
+                    <small style="color: var(--oracle-black-light);">{{ hexagram.Number }}:</small>
+                    {{ hexagram.Title }}
+                </span>
+            </h1>
+        </div>
     </div>
 
     <!-- Trigram Structure -->
@@ -133,7 +230,7 @@
             {% endif %}
             {% if hexagram.Image.Text %}
             <div class="reading-content p-3">
-                {{ hexagram.Image.Text | replace('\n', '<br>') | safe }}
+                {{ hexagram.Image.Text | markdown | safe }}
             </div>
             {% endif %}
         </div>
@@ -175,7 +272,7 @@
                             {% endif %}
                             {% if line.Text %}
                             <div class="reading-content p-3">
-                                {{ line.Text | replace('\n', '<br>') | safe }}
+                                {{ line.Text | markdown | safe }}
                             </div>
                             {% endif %}
                         </div>

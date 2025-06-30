@@ -126,7 +126,10 @@ def get_hexagram_section(number):
     title = match.group('title').strip()
     symbol = match.group('symbol').strip()
 
-    [pre_judge, post_judge] = section.split('### THE IMAGE')
+    parts = section.split('### THE JUDGMENT')
+    if len(parts) != 2:
+        import pdb; pdb.set_trace()
+    [pre_judge, post_judge] = parts
     # About
     above = re.search(r"> above\s+(.+)", pre_judge)
     below = re.search(r"> below\s+(.+)", pre_judge)
@@ -134,9 +137,7 @@ def get_hexagram_section(number):
     description = description_match.group(1).strip() if description_match else ""
 
 
-    [judge_section, post_judge] = section.split('### THE IMAGE')
-    if judge_section.find('### THE JUDGMENT') != -1:
-        import pdb; pdb.set_trace()
+    [judge_section, post_image] = post_judge.split('### THE IMAGE')
 
     judge_quote = []
     judge_text = []

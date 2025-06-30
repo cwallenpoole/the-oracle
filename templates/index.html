@@ -2,6 +2,82 @@
 
 {% block title %}Home - The Oracle{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Question truncation styles */
+    .question-cell {
+        position: relative;
+    }
+
+    .question-preview .question-text {
+        color: var(--oracle-red) !important;
+    }
+
+    .question-toggle, a.text-decoration-none.question-text:hover {
+        color: var(--oracle-red-light) !important;
+        text-shadow: 0 1px 2px var(--oracle-gold) !important;
+    }
+
+    /* Link styling for homepage */
+    .card-oracle a {
+        color: var(--oracle-gold) !important;
+        text-decoration: none;
+    }
+
+    .card-oracle a:hover {
+        color: var(--oracle-red) !important;
+        text-decoration: none;
+    }
+
+    /* Table links */
+    .table a {
+        color: var(--oracle-gold) !important;
+        text-decoration: none;
+    }
+
+    .table a:hover {
+        color: var(--oracle-red) !important;
+        text-decoration: none;
+    }
+
+    /* General page links */
+    a {
+        color: var(--oracle-gold);
+        text-decoration: underline;
+    }
+
+    a:hover {
+        color: var(--oracle-red);
+        text-decoration: underline;
+    }
+
+    /* Hexagram table styling */
+    .hexagram-table-display {
+        min-height: 120px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hexagram-item-table .hexagram-link {
+        transition: all 0.2s ease;
+    }
+
+    .hexagram-item-table .hexagram-link:hover {
+        transform: scale(1.05);
+    }
+
+    .hexagram-item-table .hexagram-link:hover .hexagram-symbol-table {
+        color: var(--oracle-red) !important;
+    }
+
+    .hexagram-item-table .hexagram-link:hover .hexagram-name-table {
+        color: var(--oracle-gold-dark) !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="p-4">
     <div class="row">
@@ -44,7 +120,7 @@
                             <i class="bi bi-book display-6" style="color: #d4af37;" class="mb-3"></i>
                             <h6 class="card-title">Explore Hexagrams</h6>
                             <p class="card-text small">Study all 64 hexagrams and their meanings</p>
-                            <a href="{{ url_for('hexagrams_list') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #cd853f 0%, #a0522d 100%); color: white; border: none;">
+                            <a href="{{ url_for('hexagrams_list') }}" class="btn btn-oracle btn-sm">
                                 <i class="bi bi-arrow-right"></i> View All
                             </a>
                         </div>
@@ -56,7 +132,7 @@
                             <i class="bi bi-triangle display-6" style="color: #d4af37;" class="mb-3"></i>
                             <h6 class="card-title">Learn Trigrams</h6>
                             <p class="card-text small">Understand the eight fundamental trigrams</p>
-                            <a href="{{ url_for('trigrams_list') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #cd853f 0%, #a0522d 100%); color: white; border: none;">
+                            <a href="{{ url_for('trigrams_list') }}" class="btn btn-oracle btn-sm">
                                 <i class="bi bi-arrow-right"></i> Learn More
                             </a>
                         </div>
@@ -93,7 +169,7 @@
                         The more thoughtful your question, the more meaningful your reading will be.
                     </div>
                 </div>
-                <button type="submit" class="btn btn-lg" style="background: linear-gradient(135deg, #8b1538 0%, #5d0e29 100%); border: none; color: white; transition: transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                <button type="submit" class="btn btn-oracle btn-lg" style="transition: transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
                     <i class="bi bi-stars"></i> Cast the Hexagrams
                 </button>
             </form>
@@ -130,7 +206,7 @@
                             <th scope="col" style="width: 140px;">
                                 <i class="bi bi-question-circle"></i> Question
                             </th>
-                            <th scope="col" style="width: 120px;">
+                            <th scope="col" style="width: 180px;">
                                 <i class="bi bi-hexagon"></i> Hexagram
                             </th>
                             <th scope="col">
@@ -145,40 +221,50 @@
                         {% for entry in history %}
                         <tr>
                             <td style="width: 140px;">
-                                <div style="max-width: 140px; white-space: normal; line-height: 1.3;" title="{{ entry.question }}">
-                                    <a href="{{ url_for('reading_detail', reading_path=entry.reading_path) }}"
-                                       class="text-decoration-none">
-                                        {{ entry.question }}
-                                    </a>
+                                <div class="question-cell" style="max-width: 140px;">
+                                    <div class="question-preview">
+                                        <a href="{{ url_for('reading_detail', reading_path=entry.reading_path) }}"
+                                           class="text-decoration-none question-text">
+                                            {{ entry.question|truncate(100) }}
+                                        </a>
+                                    </div>
                                 </div>
                             </td>
-                            <td style="width: 120px;">
-                                {% set hexagram_parts = entry.hexagram.split(' transitioning to ') %}
-                                <div class="d-flex align-items-center">
-                                    <!-- Hexagram Symbol -->
-                                    {% set current_num = hexagram_parts[0].split(' ')[0] | int %}
-                                    <div class="hexagram-symbol me-2" style="font-size: 1.5rem; line-height: 1; color: #d4af37; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
-                                        {{ hexagram_symbols[current_num] or '䷿' }}
+                            <td style="width: 180px;">
+                                {% set current_num = entry.reading.Current.Number %}
+
+                                <div class="hexagram-table-display">
+                                    <!-- Primary Hexagram -->
+                                    <div class="hexagram-item-table text-center mb-2">
+                                        <a href="{{ url_for('hexagram_detail', number=current_num, name=create_hexagram_url_name(entry.reading.Current.Title)) }}" class="hexagram-link text-decoration-none">
+                                            <div class="hexagram-symbol-table" style="font-size: 2rem; color: var(--oracle-gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                                                {{ hexagram_symbols[current_num] or '䷿' }}
+                                            </div>
+                                            <div class="hexagram-name-table" style="font-size: 0.8rem; font-weight: 600; color: var(--oracle-red); line-height: 1.2;">
+                                                {{ entry.reading.Current.Title }}
+                                            </div>
+                                        </a>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <span class="badge text-wrap" style="background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); color: white; white-space: normal; line-height: 1.2; font-size: 0.85rem;">
-                                            {{ hexagram_parts[0] }}
-                                        </span>
-                                        {% if hexagram_parts|length > 1 %}
-                                        <div class="transition-text" style="font-size: 0.65em; font-family: 'Times New Roman', Georgia, serif; font-style: italic; font-weight: 500; color: #8b4513; margin-top: 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.1); letter-spacing: 0.5px;">
-                                            <em style="font-family: 'Brush Script MT', cursive, 'Times New Roman', serif; font-size: 1.1em; color: #654321; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">to</em>
-                                        </div>
-                                        <div class="d-flex align-items-center mt-1">
-                                            {% set future_num = hexagram_parts[1].split(' ')[0] | int %}
-                                            <div class="hexagram-symbol me-2" style="font-size: 1.2rem; line-height: 1; color: #cd853f; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
+
+                                    {% if entry.reading.Future %}
+                                    <!-- Transition -->
+                                    <div class="transition-connector-table text-center" style="font-size: 0.7rem; color: var(--oracle-red-dark); font-weight: bold; margin: 0.25rem 0;">
+                                        transitioning to
+                                    </div>
+
+                                    <!-- Future Hexagram -->
+                                    {% set future_num = entry.reading.Future.Number %}
+                                    <div class="hexagram-item-table text-center">
+                                        <a href="{{ url_for('hexagram_detail', number=future_num, name=create_hexagram_url_name(entry.reading.Future.Title)) }}" class="hexagram-link text-decoration-none">
+                                            <div class="hexagram-symbol-table" style="font-size: 1.8rem; color: var(--oracle-gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
                                                 {{ hexagram_symbols[future_num] or '䷿' }}
                                             </div>
-                                            <span class="badge text-wrap" style="background: linear-gradient(135deg, #cd853f 0%, #a0522d 100%); color: white; white-space: normal; line-height: 1.2; font-size: 0.75em;">
-                                                {{ hexagram_parts[1] }}
-                                            </span>
-                                        </div>
-                                        {% endif %}
+                                            <div class="hexagram-name-table" style="font-size: 0.75rem; font-weight: 600; color: var(--oracle-red); line-height: 1.2;">
+                                                {{ entry.reading.Future.Title }}
+                                            </div>
+                                        </a>
                                     </div>
+                                    {% endif %}
                                 </div>
                             </td>
                             <td>
@@ -209,4 +295,34 @@
         </div>
     </div>
 </div>
+
+<script>
+// Question toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const questionToggles = document.querySelectorAll('.question-toggle');
+
+    questionToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const questionCell = this.closest('.question-cell');
+            const preview = questionCell.querySelector('.question-preview');
+            const full = questionCell.querySelector('.question-full');
+            const isExpanded = full.style.display !== 'none';
+
+            if (isExpanded) {
+                preview.style.display = 'block';
+                full.style.display = 'none';
+                this.innerHTML = '<small>more</small>';
+            } else {
+                preview.style.display = 'none';
+                full.style.display = 'block';
+                this.innerHTML = '<small>less</small>';
+            }
+        });
+    });
+});
+</script>
+
 {% endblock %}

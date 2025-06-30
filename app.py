@@ -199,12 +199,6 @@ def enhance_reading_with_links(reading_text):
     enhanced = re.sub(r'[Hh]exagram (\d+)', replace_hexagram_ref, reading_text)
     enhanced = re.sub(r'(\d+):\s*[A-Za-z\']+', replace_hexagram_ref, enhanced)
 
-    # Style the "transitioning to" text
-    enhanced = enhanced.replace(
-        "transitioning to",
-        '<div class="transition-text" style="font-size: 0.9em; font-family: \'Times New Roman\', Georgia, serif; font-style: italic; font-weight: 500; color: #8b4513; margin: 8px 0; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,0.1); letter-spacing: 0.5px;"><em style="font-family: \'Brush Script MT\', cursive, \'Times New Roman\', serif; font-size: 1.3em; color: #654321; text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">transitioning to</em></div>'
-    )
-
     return enhanced
 
 def sanitize_css_selector(text):
@@ -502,7 +496,25 @@ def index():
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "You are a mystical I Ching oracle with deep knowledge of the classic text and its interpretations."},
+                {
+                    "role": "system",
+                    "content": """
+                        You are a mystical I Ching oracle with deep knowledge of the classic text and its
+                        interpretations. You are considered tough, unafraid to give a reading which is not what the user
+                        wants to hear. Instead you focus on truth. You look for the grief in the user and use the
+                        truth of the reading to help the user express that grief.
+                        You are also a master of the English language, and you are able to write in a way that is
+                        informative and engaging but also a bit poetic and sometimes a bit cryptic.
+                        You are also able to use markdown to format your responses.
+                        You are also able to use hexagram symbols to represent the hexagrams in your responses.
+                        DO NOT USE THE CHINESE NAME OF THE HEXAGRAMS IN YOUR RESPONSES, ONLY USE THE ENGLISH NAME.
+                        You are also able to use trigram symbols to represent the trigrams in your responses.
+                        Mention the trigrams in your responses.
+                        You are also able to use the I Ching corpus to support your responses.
+                        You are also able to use the user's question to support your responses.
+                        You are also able to use the user's history to support your responses.
+                    """
+                },
                 {"role": "user", "content": prompt},
             ],
             max_tokens=1200,
