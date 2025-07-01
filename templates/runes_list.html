@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Elder Futhark Runes - The Oracle{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Runic styling */
+    .rune-symbol {
+        font-size: 3rem;
+        color: var(--oracle-gold);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        font-weight: bold;
+    }
+
+    .rune-name {
+        color: var(--oracle-red);
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    .rune-phonetic {
+        color: var(--oracle-gold-dark);
+        font-style: italic;
+        font-size: 0.9rem;
+    }
+
+    .rune-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border: 1px solid rgba(212, 175, 55, 0.3);
+    }
+
+    .rune-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        border-color: var(--oracle-gold);
+    }
+
+    .element-badge {
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .element-fire { background: linear-gradient(135deg, #ff6b35 0%, #d84315 100%); color: white; }
+    .element-water { background: linear-gradient(135deg, #2196f3 0%, #1565c0 100%); color: white; }
+    .element-earth { background: linear-gradient(135deg, #8bc34a 0%, #558b2f 100%); color: white; }
+    .element-air { background: linear-gradient(135deg, #ffeb3b 0%, #f57f17 100%); color: #333; }
+
+    .deity-text {
+        color: var(--oracle-red-dark);
+        font-weight: 500;
+        font-size: 0.9rem;
+    }
+
+    .meaning-text {
+        color: var(--oracle-black);
+        line-height: 1.4;
+    }
+
+    .reversed-meaning {
+        color: var(--oracle-red-dark);
+        font-style: italic;
+        font-size: 0.9rem;
+        border-left: 3px solid var(--oracle-red);
+        padding-left: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    .intro-box {
+        background: rgba(var(--oracle-gold-rgb), 0.05);
+        border: 2px solid var(--oracle-gold);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .rune-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h1 class="display-4" style="color: var(--oracle-gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                    ᚠᚢᚦᚨᚱᚲ
+                </h1>
+                <h2 class="h3" style="color: var(--oracle-red);">Elder Futhark Runes</h2>
+                <p class="lead text-muted">The 24 sacred symbols of Norse divination and wisdom</p>
+            </div>
+
+            <!-- Introduction -->
+            <div class="intro-box">
+                <h3 style="color: var(--oracle-red); margin-bottom: 1rem;">
+                    <i class="bi bi-book-half"></i> About the Elder Futhark
+                </h3>
+                <p class="meaning-text mb-3">
+                    The Elder Futhark is the oldest form of the runic alphabets, used by Germanic tribes between
+                    the 2nd and 8th centuries CE. These 24 symbols carry deep spiritual significance and were
+                    believed to possess magical properties, serving not only as letters but as keys to divine wisdom.
+                </p>
+                <p class="meaning-text mb-3">
+                    Each rune represents concepts, forces, and energies that can provide guidance and insight into
+                    life's questions. They are associated with Norse deities, natural elements, and archetypal meanings
+                    that connect us to ancient Germanic spiritual traditions.
+                </p>
+                <p class="meaning-text mb-0">
+                    <strong>Reading Runes:</strong> Some runes can be reversed (merkstave), which often indicates
+                    blocked energy, internal challenges, or the shadow aspect of the rune's meaning. Others maintain
+                    their meaning regardless of orientation, representing fundamental forces or natural cycles.
+                </p>
+            </div>
+
+            <!-- Runes Grid -->
+            <div class="rune-grid">
+                {% for rune in runes %}
+                <div class="card rune-card card-oracle" id="{{ rune.name.lower() }}">
+                    <div class="card-body">
+                        <!-- Rune Header -->
+                        <div class="text-center mb-3">
+                            <div class="rune-symbol">{{ rune.symbol }}</div>
+                            <div class="rune-name">{{ rune.name }}</div>
+                            <div class="rune-phonetic">({{ rune.phonetic }})</div>
+                        </div>
+
+                        <!-- Element and Deity -->
+                        <div class="d-flex justify-content-center align-items-center gap-3 mb-3">
+                            <span class="element-badge element-{{ rune.element.lower() }}">
+                                {{ rune.element }}
+                            </span>
+                            <span class="deity-text">
+                                <i class="bi bi-person-arms-up"></i> {{ rune.deity }}
+                            </span>
+                        </div>
+
+                                                 <!-- Meaning -->
+                         <div class="meaning-text mb-3">
+                             <strong>Meaning:</strong> {{ rune.description }}
+                         </div>
+
+                        <!-- Reversed Meaning -->
+                        {% if rune.reversed_meaning and not rune.reversed_meaning.startswith('Cannot be reversed') %}
+                        <div class="reversed-meaning">
+                            <strong>Reversed:</strong> {{ rune.reversed_meaning }}
+                        </div>
+                        {% elif rune.reversed_meaning and rune.reversed_meaning.startswith('Cannot be reversed') %}
+                        <div class="text-muted" style="font-style: italic; font-size: 0.9rem;">
+                            <i class="bi bi-info-circle"></i> {{ rune.reversed_meaning }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Footer Navigation -->
+            <div class="text-center mt-5">
+                <a href="{{ url_for('index') }}" class="btn btn-oracle me-3">
+                    <i class="bi bi-arrow-left"></i> Back to Oracle
+                </a>
+                <a href="{{ url_for('index') }}#divinationForm" class="btn btn-outline-primary">
+                    <i class="bi bi-stars"></i> Cast Runes Now
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

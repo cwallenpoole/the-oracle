@@ -1,23 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Reading Detail - The Oracle{% endblock %}
-{% block extra_css %}
-<style>
-    /* Oracle-themed button overrides */
-    .btn-outline-primary {
-        border-color: var(--oracle-gold-dark) !important;
-        color: var(--oracle-gold-dark) !important;
-        background: transparent !important;
-    }
-
-    .btn-outline-primary:hover {
-        background: var(--oracle-gold) !important;
-        border-color: var(--oracle-gold) !important;
-        color: var(--oracle-black) !important;
-    }
-
-</style>
-{% endblock %}
+{% block title %}I Ching Reading Detail - The Oracle{% endblock %}
 {% block breadcrumb %}
 <nav aria-label="breadcrumb" class="mt-3">
     <ol class="breadcrumb breadcrumb-oracle">
@@ -27,7 +10,7 @@
             </a>
         </li>
         <li class="breadcrumb-item active text-white" aria-current="page">
-            <i class="bi bi-eye"></i> Reading Detail
+            <i class="bi bi-eye"></i> I Ching Reading
         </li>
     </ol>
 </nav>
@@ -87,7 +70,7 @@
         <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, var(--oracle-primary) 0%, var(--oracle-secondary) 100%);">
             <div class="d-flex justify-content-between align-items-center">
                 <h4 class="mb-0">
-                    <i class="bi bi-eye"></i> Your Reading
+                    <i class="bi bi-eye"></i> Your I Ching Reading
                 </h4>
                 <small class="text-white-50">
                     <i class="bi bi-calendar3"></i>
@@ -178,7 +161,18 @@
 
 {% block extra_css %}
 <style>
-/* Reading page specific enhancements */
+/* Oracle-themed button overrides */
+.btn-outline-primary {
+    border-color: var(--oracle-gold-dark) !important;
+    color: var(--oracle-gold-dark) !important;
+    background: transparent !important;
+}
+
+.btn-outline-primary:hover {
+    background: var(--oracle-gold) !important;
+    border-color: var(--oracle-gold) !important;
+    color: var(--oracle-black) !important;
+}
 
 /* Additional reading content enhancements */
 .reading-content {
@@ -201,8 +195,6 @@
     font-style: italic;
     background: linear-gradient(90deg, rgba(255,215,0,0.1), transparent);
 }
-
-/* Hexagram display specific styling */
 
 /* Question truncation styles */
 .question-preview .markdown-content {

@@ -4,7 +4,7 @@ from logic import iching
 from logic import divination  # Initialize the new divination system
 from logic.base import DivinationType
 from logic.iching_adapter import create_iching_reading_from_legacy, get_legacy_reading_from_iching
-from logic.ai_readers import generate_iching_reading
+from logic.ai_readers import generate_iching_reading, generate_runic_reading
 from dotenv import load_dotenv
 import os, sqlite3
 import pdb
@@ -113,8 +113,13 @@ def get_trigram_info():
             'lines': '≡',
             'attributes': ['Creative', 'Strong', 'Active', 'Light-giving', 'Warming', 'Summer'],
             'description': 'The Creative principle, representing pure yang energy, strength, and the power of heaven. '
-                + 'It talks of expansive energy, the sky, the top and the head. It is one of the three powers of '
-                + 'Taoist cosmology.'
+                + 'It embodies the primal creative force of the universe, the father archetype, and divine '
+                + 'inspiration. One of the three powers of Taoist cosmology. Associated with leadership, '
+                + 'authority, and the drive to achieve. In the body, it governs the head and lungs. Its season '
+                + 'is late autumn/early winter, direction is northwest, and it represents the time from 9-11 PM. '
+                + 'This trigram speaks of perseverance, determination, and the courage to initiate new ventures. '
+                + 'When prominent in a reading, it suggests taking charge, being proactive, and trusting in '
+                + 'your natural leadership abilities.'
         },
         {
             'id': 'earth',
@@ -123,9 +128,15 @@ def get_trigram_info():
             'symbol': '☷',
             'lines': '☷',
             'attributes': ['Receptive', 'Yielding', 'Nurturing', 'Devoted', 'Resting', 'Winter'],
-            'description': 'The Receptive principle, representing pure yin energy, yielding strength, '
-               + 'and the power of earth. It is one of the three powers of '
-               + 'Taoist cosmology.'
+            'description': 'The Receptive principle, representing pure yin energy, yielding strength, and the '
+               + 'power of earth. It embodies the nurturing mother archetype, unconditional support, and the '
+               + 'fertile ground from which all life springs. One of the three powers of Taoist cosmology. '
+               + 'Associated with patience, devotion, and the wisdom of knowing when to yield. In the body, '
+               + 'it governs the belly and reproductive organs. Its season is late summer, direction is '
+               + 'southwest, and it represents the time from 1-3 PM. This trigram teaches the power of '
+               + 'receptivity, the strength found in gentleness, and the importance of providing stable '
+               + 'foundations. When prominent in a reading, it suggests embracing supportive roles, '
+               + 'practicing patience, and trusting in the natural flow of events.'
         },
         {
             'id': 'thunder',
@@ -134,8 +145,14 @@ def get_trigram_info():
             'symbol': '☳',
             'lines': '☳',
             'attributes': ['Arousing', 'Movement', 'Initiative', 'Eldest Son', 'Storming', 'Winter'],
-            'description': 'The Arousing, representing movement, initiative, and the power of thunder and lightning. '
-                + 'It gives the sense of an arousing trembling, shaking and a violent crash.'
+            'description': 'The Arousing, representing movement, initiative, and the power of thunder and '
+                + 'lightning. It embodies sudden awakening, decisive action, and the explosive energy that '
+                + 'breaks through stagnation. As the eldest son, it carries the pioneering spirit and the '
+                + 'courage to forge new paths. In the body, it governs the feet and liver. Its season is '
+                + 'spring, direction is east, and it represents the time from 5-7 AM. This trigram speaks '
+                + 'of breakthrough moments, the power of righteous action, and the energy needed to '
+                + 'overcome obstacles. When prominent in a reading, it suggests bold moves, embracing '
+                + 'change, and acting on sudden inspirations with confidence.'
         },
         {
             'id': 'water',
@@ -144,9 +161,15 @@ def get_trigram_info():
             'symbol': '☵',
             'lines': '☵',
             'attributes': ['Abysmal', 'Dangerous', 'Flowing', 'Middle Son', 'Pooling', 'Autumn'],
-            'description': 'The Abysmal, representing danger, flowing water, and the power of the deep. It often means '
-                + '"pit" or "pitfall" and is related to the word "trap". It is one of the three powers of Taoist '
-                + 'cosmology.'
+            'description': 'The Abysmal, representing danger, flowing water, and the power of the deep. '
+                + 'It embodies the middle son\'s role as mediator, the wisdom gained through hardship, and '
+                + 'the persistence of water that eventually wears down stone. One of the three powers of '
+                + 'Taoist cosmology. Associated with intuition, adaptability, and the courage to navigate '
+                + 'difficult situations. In the body, it governs the kidneys and ears. Its season is winter, '
+                + 'direction is north, and it represents the time from 11 PM-1 AM. This trigram teaches '
+                + 'about resilience in adversity, the power of consistency, and finding opportunity within '
+                + 'challenge. When prominent in a reading, it suggests careful navigation of difficulties, '
+                + 'trusting your intuition, and maintaining steady progress despite obstacles.'
         },
         {
             'id': 'mountain',
@@ -155,9 +178,15 @@ def get_trigram_info():
             'symbol': '☶',
             'lines': '☶',
             'attributes': ['Keeping Still', 'Meditation', 'Youngest Son', 'Stillness', 'Jutting', 'Autumn'],
-            'description': 'Keeping Still, representing meditation, stillness, and the immovable power of mountains. '
-                + 'While it is most often associated with stillness, it can also mean "blunt", "obstruction", or '
-                + '"blockage".'
+            'description': 'Keeping Still, representing meditation, stillness, and the immovable power of '
+                + 'mountains. It embodies the youngest son\'s wisdom of knowing when to stop, the power of '
+                + 'contemplation, and the strength found in inner peace. Associated with boundaries, '
+                + 'self-reflection, and the ability to remain centered amidst chaos. In the body, it governs '
+                + 'the hands and stomach. Its season is late winter/early spring, direction is northeast, '
+                + 'and it represents the time from 3-5 AM. This trigram teaches the value of restraint, '
+                + 'the importance of timing, and the profound wisdom that comes from stillness. When '
+                + 'prominent in a reading, it suggests taking time for reflection, establishing healthy '
+                + 'boundaries, and finding strength through inner stability.'
         },
         {
             'id': 'wind',
@@ -166,7 +195,15 @@ def get_trigram_info():
             'symbol': '☴',
             'lines': '☴',
             'attributes': ['Gentle', 'Penetrating', 'Eldest Daughter', 'Wood', 'Dispersing', 'Summer'],
-            'description': 'The Gentle, representing penetration, flexibility, and the power of wind and wood.'
+            'description': 'The Gentle, representing penetration, flexibility, and the power of wind and wood. '
+                + 'It embodies the eldest daughter\'s role as gentle leader, the persistence that eventually '
+                + 'penetrates all obstacles, and the wisdom of adapting to circumstances. Associated with '
+                + 'influence, communication, and the ability to work with others harmoniously. In the body, '
+                + 'it governs the thighs and gallbladder. Its season is late spring/early summer, direction '
+                + 'is southeast, and it represents the time from 7-9 AM. This trigram teaches about subtle '
+                + 'influence, the power of consistency, and achieving goals through gentle persistence rather '
+                + 'than force. When prominent in a reading, it suggests working with others, using gentle '
+                + 'persuasion, and allowing your influence to grow naturally over time.'
         },
         {
             'id': 'fire',
@@ -175,7 +212,15 @@ def get_trigram_info():
             'symbol': '☲',
             'lines': '☲',
             'attributes': ['Clinging', 'Light', 'Middle Daughter', 'Brightness', 'Dancing', 'Spring'],
-            'description': 'The Clinging, representing light, beauty, and the illuminating power of fire.'
+            'description': 'The Clinging, representing light, beauty, and the illuminating power of fire. '
+                + 'It embodies the middle daughter\'s role as illuminator, the power of clarity and insight, '
+                + 'and the warm energy that brings people together. Associated with intelligence, creativity, '
+                + 'and the ability to see truth clearly. In the body, it governs the eyes and heart. Its '
+                + 'season is summer, direction is south, and it represents the time from 11 AM-1 PM. This '
+                + 'trigram teaches about clarity of vision, the importance of maintaining inner light, and '
+                + 'the power of truth to transform situations. When prominent in a reading, it suggests '
+                + 'seeking clarity, embracing your creative gifts, and allowing your inner light to guide '
+                + 'both yourself and others.'
         },
         {
             'id': 'lake',
@@ -184,7 +229,15 @@ def get_trigram_info():
             'symbol': '☱',
             'lines': '☱',
             'attributes': ['Joyous', 'Youngest Daughter', 'Pleasure', 'Marsh', 'Engulfing', 'Spring'],
-            'description': 'The Joyous, representing joy, pleasure, and the reflective power of lakes and marshes.'
+            'description': 'The Joyous, representing joy, pleasure, and the reflective power of lakes and '
+                + 'marshes. It embodies the youngest daughter\'s gift of bringing happiness, the power of '
+                + 'authentic expression, and the wisdom found in celebration. Associated with communication, '
+                + 'social harmony, and the ability to find joy even in simple moments. In the body, it '
+                + 'governs the mouth and lungs. Its season is autumn, direction is west, and it represents '
+                + 'the time from 5-7 PM. This trigram teaches about the importance of joy, the power of '
+                + 'words to heal or harm, and the value of maintaining an open, receptive heart. When '
+                + 'prominent in a reading, it suggests embracing joy, expressing yourself authentically, '
+                + 'and creating harmony through positive communication.'
         }
     ]
     return trigrams
@@ -432,6 +485,16 @@ def trigrams_list():
                          trigrams=trigrams,
                          return_to=return_to)
 
+@app.route("/runes")
+def runes_list():
+    """Display all Elder Futhark runes"""
+    from logic.runes import RunicSystem
+
+    runic_system = RunicSystem()
+    runes = runic_system.get_all_elements()
+
+    return render_template("runes_list.html", runes=runes)
+
 @app.route("/reading/<reading_path>")
 def reading_detail(reading_path):
     """Display detailed view of a specific reading"""
@@ -448,7 +511,14 @@ def reading_detail(reading_path):
         flash("You don't have permission to view this reading.", "error")
         return redirect(url_for("login"))
 
-    return render_template("reading_detail.html",
+    # Choose template based on divination type
+    if reading_entry.divination_type == "runes":
+        template_name = "runic_reading_detail.html"
+    else:
+        # Default to I Ching template for backward compatibility
+        template_name = "iching_reading_detail.html"
+
+    return render_template(template_name,
                          reading_entry=reading_entry,
                          enhanced_reading=reading_entry.get_enhanced_reading_html())
 
@@ -471,7 +541,6 @@ def index():
         question = request.form["question"]
         divination_type = request.form.get("divination_type", "iching")  # Default to I Ching
 
-        # For now, we only support I Ching, but this is set up for future expansion
         if divination_type == "iching":
             # Use legacy I Ching system for now
             legacy_reading = iching.cast_hexagrams()  # This returns a Reading object
@@ -490,6 +559,30 @@ def index():
                 return redirect(url_for('reading_detail', reading_path=history_entry.reading_path))
             else:
                 flash("Error saving reading. Please try again.", "error")
+
+        elif divination_type == "runes":
+            # Get spread type from form, default to single rune
+            spread_type = request.form.get("spread_type", "single")
+
+            # Import runic system
+            from logic.runes import RunicSystem
+
+            # Create runic reading
+            runic_system = RunicSystem()
+            runic_reading = runic_system.create_reading(spread_type)
+
+            # Generate the AI reading
+            reading_text = generate_runic_reading(question, runic_reading, user, app.logger)
+
+            # Save to history using the new system
+            history_entry = user.history.add_reading(question, runic_reading, reading_text, divination_type)
+
+            if history_entry:
+                # Redirect to the new reading detail page
+                return redirect(url_for('reading_detail', reading_path=history_entry.reading_path))
+            else:
+                flash("Error saving reading. Please try again.", "error")
+
         else:
             flash(f"Divination type '{divination_type}' is not yet supported.", "error")
 

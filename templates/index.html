@@ -145,6 +145,18 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-12 mb-3">
+                    <div class="card card-oracle h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-diamond display-6" style="color: #d4af37;" class="mb-3"></i>
+                            <h6 class="card-title">Discover Runes</h6>
+                            <p class="card-text small">Explore the 24 Elder Futhark runes</p>
+                            <a href="{{ url_for('runes_list') }}" class="btn btn-oracle btn-sm">
+                                <i class="bi bi-arrow-right"></i> Explore
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -154,11 +166,36 @@
     <div class="card card-oracle mb-4">
         <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, var(--oracle-primary) 0%, var(--oracle-secondary) 100%);">
             <h5 class="mb-0">
-                <i class="bi bi-magic"></i> Seek Wisdom from the I Ching
+                <i class="bi bi-magic"></i> Seek Wisdom from the Oracle
             </h5>
         </div>
         <div class="card-body">
-            <form method="post" action="{{ url_for('index') }}">
+            <form method="post" action="{{ url_for('index') }}" id="divinationForm">
+                <!-- Divination Type Selector -->
+                <div class="mb-3">
+                    <label for="divination_type" class="form-label">
+                        <i class="bi bi-layers"></i> Choose Your Divination Method
+                    </label>
+                    <select class="form-select" id="divination_type" name="divination_type" onchange="toggleSpreadOptions()">
+                        <option value="iching">I Ching (Book of Changes)</option>
+                        <option value="runes">Elder Futhark Runes</option>
+                    </select>
+                </div>
+
+                <!-- Spread Type Selector (for Runes) -->
+                <div class="mb-3" id="spread_options" style="display: none;">
+                    <label for="spread_type" class="form-label">
+                        <i class="bi bi-grid-3x3-gap"></i> Choose Runic Spread
+                    </label>
+                    <select class="form-select" id="spread_type" name="spread_type">
+                        <option value="single">Single Rune - Quick guidance</option>
+                        <option value="three_norns">Three Norns - Past, Present, Future</option>
+                        <option value="five_cross">Five Rune Cross - Comprehensive reading</option>
+                        <option value="seven_chakras">Seven Chakras - Energy centers</option>
+                    </select>
+                </div>
+
+                <!-- Question Input -->
                 <div class="mb-3">
                     <label for="question" class="form-label">
                         <i class="bi bi-question-circle"></i> What guidance do you seek?
@@ -176,8 +213,10 @@
                         The more thoughtful your question, the more meaningful your reading will be.
                     </div>
                 </div>
-                <button type="submit" class="btn btn-oracle btn-lg" style="transition: transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                    <i class="bi bi-stars"></i> Cast the Hexagrams
+
+                <!-- Submit Button with Dynamic Text -->
+                <button type="submit" class="btn btn-oracle btn-lg" id="submitBtn" style="transition: transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                    <i class="bi bi-stars"></i> <span id="submitText">Cast the Hexagrams</span>
                 </button>
             </form>
         </div>
@@ -214,7 +253,7 @@
                                 <i class="bi bi-question-circle"></i> Question
                             </th>
                             <th scope="col" style="width: 180px;">
-                                <i class="bi bi-hexagon"></i> Hexagram
+                                <i class="bi bi-stars"></i> Divination
                             </th>
                             <th scope="col">
                                 <i class="bi bi-book-half"></i> Reading
@@ -238,8 +277,50 @@
                                 </div>
                             </td>
                             <td style="width: 180px;">
-                                {% set current_num = entry.reading.Current.Number %}
+                                {% if entry.divination_type == "runes" %}
+                                <!-- Runic Reading Display -->
+                                <div class="runes-table-display">
+                                    <div class="text-center">
+                                        <a href="{{ url_for('reading_detail', reading_path=entry.reading_path) }}" class="text-decoration-none">
+                                            <!-- Parse actual runes from the reading data -->
+                                            {% set runic_data = entry.hexagram %}
+                                            {% if runic_data %}
+                                                {% set rune_symbols = [] %}
+                                                {% set rune_lines = runic_data.split('\n')[1:] %}
+                                                {% for line in rune_lines %}
+                                                    {% if line.strip() and ':' in line %}
+                                                        {% set parts = line.split(':') %}
+                                                        {% if parts|length >= 2 %}
+                                                            {% set rune_part = parts[1].strip() %}
+                                                            {% if rune_part %}
+                                                                {% set rune_symbol = rune_part.split(' ')[0] %}
+                                                                {% set _ = rune_symbols.append(rune_symbol) %}
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endfor %}
 
+                                                <div style="font-size: 1.5rem; color: var(--oracle-gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin-bottom: 0.25rem;">
+                                                    {% if rune_symbols %}
+                                                        {{ rune_symbols|join('') }}
+                                                    {% else %}
+                                                        ᚠᚢᚦ
+                                                    {% endif %}
+                                                </div>
+                                            {% else %}
+                                                <div style="font-size: 1.5rem; color: var(--oracle-gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin-bottom: 0.25rem;">
+                                                    ᚠᚢᚦ
+                                                </div>
+                                            {% endif %}
+                                            <div style="font-size: 0.8rem; font-weight: 600; color: var(--oracle-red); line-height: 1.2;">
+                                                Runic Reading
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                {% else %}
+                                <!-- I Ching Hexagram Display -->
+                                {% set current_num = entry.reading.Current.Number %}
                                 <div class="hexagram-table-display">
                                     <!-- Primary Hexagram -->
                                     <div class="hexagram-item-table text-center mb-2">
@@ -273,6 +354,7 @@
                                     </div>
                                     {% endif %}
                                 </div>
+                                {% endif %}
                             </td>
                             <td>
                                  <div style="white-space: normal; line-height: 1.4; max-height: 4.2em; overflow: hidden;" title="{{ entry.reading_html|striptags }}">
@@ -304,6 +386,21 @@
 </div>
 
 <script>
+// Divination form functionality
+function toggleSpreadOptions() {
+    const divinationType = document.getElementById('divination_type').value;
+    const spreadOptions = document.getElementById('spread_options');
+    const submitText = document.getElementById('submitText');
+
+    if (divinationType === 'runes') {
+        spreadOptions.style.display = 'block';
+        submitText.textContent = 'Cast the Runes';
+    } else {
+        spreadOptions.style.display = 'none';
+        submitText.textContent = 'Cast the Hexagrams';
+    }
+}
+
 // Question toggle functionality
 document.addEventListener('DOMContentLoaded', function() {
     const questionToggles = document.querySelectorAll('.question-toggle');

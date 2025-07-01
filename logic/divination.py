@@ -4,6 +4,7 @@ Main divination module - Initializes and provides access to all divination syste
 
 from logic.base import DivinationRegistry, DivinationType
 from logic.iching_adapter import IChingSystem
+from logic.runes import RunicSystem
 
 # Initialize and register all divination systems
 def initialize_systems():
@@ -11,6 +12,10 @@ def initialize_systems():
     # Register I Ching system
     iching_system = IChingSystem()
     DivinationRegistry.register(iching_system)
+
+    # Register Runic system
+    runic_system = RunicSystem()
+    DivinationRegistry.register(runic_system)
 
     print(f"Registered divination systems: {list(DivinationRegistry.get_all_systems().keys())}")
 
