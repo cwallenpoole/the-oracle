@@ -213,13 +213,15 @@ class History:
         self.username = username
         self.db_file = "data/users.db"
 
-    def add_reading(self, question: str, hexagram: Union[str, Reading], reading: Union[str, Reading]) -> bool:
+    def add_reading(self, question: str, hexagram: Union[str, Reading], reading: Union[str, Reading]) -> Optional[HistoryEntry]:
         """Add a new reading to history - accepts both string and Reading objects"""
         # Convert hexagram to string if it's a Reading object
         hexagram_str = str(hexagram) if not isinstance(hexagram, str) else hexagram
 
         entry = HistoryEntry(self.username, question, hexagram_str, reading)
-        return entry.save()
+        if entry.save():
+            return entry
+        return None
 
     def get_recent(self, limit: int = 3) -> List[HistoryEntry]:
         """Get recent history entries for this user"""

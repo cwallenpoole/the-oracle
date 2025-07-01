@@ -527,21 +527,20 @@ def index():
 
         # Save to history using the lazy-loaded history property
         # Now we can pass the Reading object directly
-        user.history.add_reading(question, hexagram_reading, reading)
+        history_entry = user.history.add_reading(question, hexagram_reading, reading)
+
+        if history_entry:
+            # Redirect to the new reading detail page
+            return redirect(url_for('reading_detail', reading_path=history_entry.reading_path))
+        else:
+            flash("Error saving reading. Please try again.", "error")
 
     # Get recent history for display using the lazy-loaded history property
     recent_history = user.history.get_formatted_recent(limit=5, render_markdown=True, enhance_links=True)
 
-    # Enhance reading with hexagram links
-    if reading:
-        reading_html = markdown.markdown(reading)
-        reading_html = enhance_reading_with_links(reading_html)
-    else:
-        reading_html = None
-
     return render_template("index.html",
                          history=recent_history,
-                         reading=reading_html,
+                         reading=None,
                          user_birthdate=user.birthdate,
                          user_about_me=user.about_me,
                          username=user.username)
