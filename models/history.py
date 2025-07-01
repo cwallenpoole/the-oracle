@@ -9,10 +9,13 @@ import hashlib
 # Import Reading class from logic.iching
 from logic.iching import Reading, IChingHexagram
 
-class HistoryEntry:
-    """Single history entry for an I Ching reading"""
+# Import new base classes
+from logic.base import DivinationType, DivinationReading
 
-    def __init__(self, username: str, question: str, hexagram: str, reading_data: Union[str, Reading], reading_dt: str = None, reading_id: str = None):
+class HistoryEntry:
+    """Single history entry for a divination reading"""
+
+    def __init__(self, username: str, question: str, hexagram: str, reading_data: Union[str, Reading, DivinationReading], reading_dt: str = None, reading_id: str = None, divination_type: str = 'iching'):
 
         self.username = username
         self.question = question
@@ -21,11 +24,12 @@ class HistoryEntry:
         self._reading_object = None
         self.reading_dt = reading_dt or datetime.now().isoformat()
         self.reading_id = reading_id or self._generate_reading_id()
+        self.divination_type = divination_type
         self.db_file = "data/users.db"
         self.reading_path = self.get_reading_path()
 
-        # Handle the reading_data parameter - could be string or Reading object
-        if isinstance(reading_data, Reading):
+        # Handle the reading_data parameter - could be string, Reading object, or DivinationReading
+        if isinstance(reading_data, (Reading, DivinationReading)):
             self._reading_object = reading_data
             self._reading_string = None  # Will be generated when needed
         else:
@@ -162,9 +166,9 @@ class HistoryEntry:
         try:
             conn = sqlite3.connect(self.db_file)
             c = conn.cursor()
-            c.execute("""INSERT INTO history (username, question, hexagram, reading, reading_dt, reading_id)
-                       VALUES (?, ?, ?, ?, ?, ?)""",
-                     (self.username, self.question, self.hexagram, self.get_reading_string(), self.reading_dt, self.reading_id))
+            c.execute("""INSERT INTO history (username, question, hexagram, reading, reading_dt, reading_id, divination_type)
+                       VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                     (self.username, self.question, self.hexagram, self.get_reading_string(), self.reading_dt, self.reading_id, self.divination_type))
             conn.commit()
             conn.close()
             return True
@@ -182,7 +186,8 @@ class HistoryEntry:
             'reading_dt': self.reading_dt,
             'reading_id': self.reading_id,
             'reading_path': self.get_reading_path(),
-            'reading_object': self.reading  # Include the Reading object
+            'reading_object': self.reading,  # Include the Reading object
+            'divination_type': self.divination_type
         }
 
         if render_markdown:
@@ -213,12 +218,12 @@ class History:
         self.username = username
         self.db_file = "data/users.db"
 
-    def add_reading(self, question: str, hexagram: Union[str, Reading], reading: Union[str, Reading]) -> Optional[HistoryEntry]:
+    def add_reading(self, question: str, hexagram: Union[str, Reading, DivinationReading], reading: Union[str, Reading, DivinationReading], divination_type: str = 'iching') -> Optional[HistoryEntry]:
         """Add a new reading to history - accepts both string and Reading objects"""
-        # Convert hexagram to string if it's a Reading object
+        # Convert hexagram to string if it's a Reading or DivinationReading object
         hexagram_str = str(hexagram) if not isinstance(hexagram, str) else hexagram
 
-        entry = HistoryEntry(self.username, question, hexagram_str, reading)
+        entry = HistoryEntry(self.username, question, hexagram_str, reading, divination_type=divination_type)
         if entry.save():
             return entry
         return None
@@ -228,7 +233,7 @@ class History:
         try:
             conn = sqlite3.connect(self.db_file)
             c = conn.cursor()
-            c.execute("""SELECT username, question, hexagram, reading, reading_dt, reading_id
+            c.execute("""SELECT username, question, hexagram, reading, reading_dt, reading_id, divination_type
                        FROM history
                        WHERE username = ?
                        ORDER BY rowid DESC
@@ -238,9 +243,10 @@ class History:
 
             entries = []
             for row in rows:
-                # Handle both old format (5 columns) and new format (6 columns)
+                # Handle backward compatibility for databases without divination_type
+                divination_type = row[6] if len(row) > 6 else 'iching'
                 reading_id = row[5] if len(row) > 5 else None
-                entry = HistoryEntry(row[0], row[1], row[2], row[3], row[4], reading_id)
+                entry = HistoryEntry(row[0], row[1], row[2], row[3], row[4], reading_id, divination_type)
                 entries.append(entry)
             return entries
         except Exception as e:
@@ -252,7 +258,7 @@ class History:
         try:
             conn = sqlite3.connect(self.db_file)
             c = conn.cursor()
-            c.execute("""SELECT username, question, hexagram, reading, reading_dt, reading_id
+            c.execute("""SELECT username, question, hexagram, reading, reading_dt, reading_id, divination_type
                        FROM history
                        WHERE username = ?
                        ORDER BY rowid DESC""", (self.username,))
@@ -261,9 +267,10 @@ class History:
 
             entries = []
             for row in rows:
-                # Handle both old format (5 columns) and new format (6 columns)
+                # Handle backward compatibility for databases without divination_type
+                divination_type = row[6] if len(row) > 6 else 'iching'
                 reading_id = row[5] if len(row) > 5 else None
-                entry = HistoryEntry(row[0], row[1], row[2], row[3], row[4], reading_id)
+                entry = HistoryEntry(row[0], row[1], row[2], row[3], row[4], reading_id, divination_type)
                 entries.append(entry)
             return entries
         except Exception as e:
@@ -289,15 +296,16 @@ class History:
 
             conn = sqlite3.connect(self.db_file)
             c = conn.cursor()
-            c.execute("""SELECT username, question, hexagram, reading, reading_dt, reading_id
+            c.execute("""SELECT username, question, hexagram, reading, reading_dt, reading_id, divination_type
                        FROM history
                        WHERE username = ? AND reading_id = ?""", (username, reading_id))
             row = c.fetchone()
             conn.close()
 
             if row:
+                divination_type = row[6] if len(row) > 6 else 'iching'
                 reading_id = row[5] if len(row) > 5 else None
-                return HistoryEntry(row[0], row[1], row[2], row[3], row[4], reading_id)
+                return HistoryEntry(row[0], row[1], row[2], row[3], row[4], reading_id, divination_type)
             return None
         except Exception as e:
             print(f"Error getting reading by path: {e}")
@@ -380,15 +388,16 @@ class History:
 
             conn = sqlite3.connect("data/users.db")
             c = conn.cursor()
-            c.execute("""SELECT username, question, hexagram, reading, reading_dt, reading_id
+            c.execute("""SELECT username, question, hexagram, reading, reading_dt, reading_id, divination_type
                        FROM history
                        WHERE username = ? AND reading_id = ?""", (username, reading_id))
             row = c.fetchone()
             conn.close()
 
             if row:
+                divination_type = row[6] if len(row) > 6 else 'iching'
                 reading_id_val = row[5] if len(row) > 5 else None
-                return HistoryEntry(row[0], row[1], row[2], row[3], row[4], reading_id_val)
+                return HistoryEntry(row[0], row[1], row[2], row[3], row[4], reading_id_val, divination_type)
             return None
         except Exception as e:
             print(f"Error getting reading by path: {e}")

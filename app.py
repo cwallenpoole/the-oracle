@@ -1,10 +1,12 @@
 ### app.py
 from flask import Flask, request, render_template, redirect, url_for, session, flash
 from logic import iching
-from openai import OpenAI
+from logic import divination  # Initialize the new divination system
+from logic.base import DivinationType
+from logic.iching_adapter import create_iching_reading_from_legacy, get_legacy_reading_from_iching
+from logic.ai_readers import generate_iching_reading
 from dotenv import load_dotenv
 import os, sqlite3
-from llm.memory import search
 import pdb
 import markdown
 import re
@@ -17,9 +19,7 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET")
 
-# Set your OpenAI API key here or use an environment variable
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=OPENAI_API_KEY)
+
 
 # Context processor to make hexagram symbols and utility functions available to all templates
 @app.context_processor
@@ -108,73 +108,82 @@ def get_trigram_info():
         {
             'id': 'heaven',
             'name': 'Heaven',
-            'chinese': 'Ch\'ien',
+            'chinese': '干 | qián',
             'symbol': '☰',
             'lines': '≡',
-            'attributes': ['Creative', 'Strong', 'Active', 'Light-giving'],
-            'description': 'The Creative principle, representing pure yang energy, strength, and the power of heaven.'
+            'attributes': ['Creative', 'Strong', 'Active', 'Light-giving', 'Warming', 'Summer'],
+            'description': 'The Creative principle, representing pure yang energy, strength, and the power of heaven. '
+                + 'It talks of expansive energy, the sky, the top and the head. It is one of the three powers of '
+                + 'Taoist cosmology.'
         },
         {
             'id': 'earth',
             'name': 'Earth',
-            'chinese': 'K\'un',
+            'chinese': '坤 | kūn',
             'symbol': '☷',
             'lines': '☷',
-            'attributes': ['Receptive', 'Yielding', 'Nurturing', 'Devoted'],
-            'description': 'The Receptive principle, representing pure yin energy, yielding strength, and the power of earth.'
+            'attributes': ['Receptive', 'Yielding', 'Nurturing', 'Devoted', 'Resting', 'Winter'],
+            'description': 'The Receptive principle, representing pure yin energy, yielding strength, '
+               + 'and the power of earth. It is one of the three powers of '
+               + 'Taoist cosmology.'
         },
         {
             'id': 'thunder',
             'name': 'Thunder',
-            'chinese': 'Chen',
+            'chinese': '震 | zhèn',
             'symbol': '☳',
             'lines': '☳',
-            'attributes': ['Arousing', 'Movement', 'Initiative', 'Eldest Son'],
-            'description': 'The Arousing, representing movement, initiative, and the power of thunder and lightning.'
+            'attributes': ['Arousing', 'Movement', 'Initiative', 'Eldest Son', 'Storming', 'Winter'],
+            'description': 'The Arousing, representing movement, initiative, and the power of thunder and lightning. '
+                + 'It gives the sense of an arousing trembling, shaking and a violent crash.'
         },
         {
             'id': 'water',
             'name': 'Water',
-            'chinese': 'K\'an',
+            'chinese': '坎 | kǎn',
             'symbol': '☵',
             'lines': '☵',
-            'attributes': ['Abysmal', 'Dangerous', 'Flowing', 'Middle Son'],
-            'description': 'The Abysmal, representing danger, flowing water, and the power of the deep.'
+            'attributes': ['Abysmal', 'Dangerous', 'Flowing', 'Middle Son', 'Pooling', 'Autumn'],
+            'description': 'The Abysmal, representing danger, flowing water, and the power of the deep. It often means '
+                + '"pit" or "pitfall" and is related to the word "trap". It is one of the three powers of Taoist '
+                + 'cosmology.'
         },
         {
             'id': 'mountain',
             'name': 'Mountain',
-            'chinese': 'Ken',
+            'chinese': '艮 | gèn',
             'symbol': '☶',
             'lines': '☶',
-            'attributes': ['Keeping Still', 'Meditation', 'Youngest Son', 'Stillness'],
-            'description': 'Keeping Still, representing meditation, stillness, and the immovable power of mountains.'
+            'attributes': ['Keeping Still', 'Meditation', 'Youngest Son', 'Stillness', 'Jutting', 'Autumn'],
+            'description': 'Keeping Still, representing meditation, stillness, and the immovable power of mountains. '
+                + 'While it is most often associated with stillness, it can also mean "blunt", "obstruction", or '
+                + '"blockage".'
         },
         {
             'id': 'wind',
             'name': 'Wind',
-            'chinese': 'Sun',
+            'chinese': '巽 | xùn',
             'symbol': '☴',
             'lines': '☴',
-            'attributes': ['Gentle', 'Penetrating', 'Eldest Daughter', 'Wood'],
+            'attributes': ['Gentle', 'Penetrating', 'Eldest Daughter', 'Wood', 'Dispersing', 'Summer'],
             'description': 'The Gentle, representing penetration, flexibility, and the power of wind and wood.'
         },
         {
             'id': 'fire',
             'name': 'Fire',
-            'chinese': 'Li',
+            'chinese': '离 | lí',
             'symbol': '☲',
             'lines': '☲',
-            'attributes': ['Clinging', 'Light', 'Middle Daughter', 'Brightness'],
+            'attributes': ['Clinging', 'Light', 'Middle Daughter', 'Brightness', 'Dancing', 'Spring'],
             'description': 'The Clinging, representing light, beauty, and the illuminating power of fire.'
         },
         {
             'id': 'lake',
             'name': 'Lake',
-            'chinese': 'Tui',
+            'chinese': '兑 | duì',
             'symbol': '☱',
             'lines': '☱',
-            'attributes': ['Joyous', 'Youngest Daughter', 'Pleasure', 'Marsh'],
+            'attributes': ['Joyous', 'Youngest Daughter', 'Pleasure', 'Marsh', 'Engulfing', 'Spring'],
             'description': 'The Joyous, representing joy, pleasure, and the reflective power of lakes and marshes.'
         }
     ]
@@ -269,7 +278,8 @@ def init_db():
                     hexagram TEXT,
                     reading TEXT,
                     reading_dt TEXT,
-                    reading_id TEXT
+                    reading_id TEXT,
+                    divination_type TEXT DEFAULT 'iching'
                  )''')
 
     # Add new columns to existing users table if they don't exist
@@ -285,6 +295,11 @@ def init_db():
 
     try:
         c.execute("ALTER TABLE history ADD COLUMN reading_id TEXT")
+    except sqlite3.OperationalError:
+        pass  # Column already exists
+
+    try:
+        c.execute("ALTER TABLE history ADD COLUMN divination_type TEXT DEFAULT 'iching'")
     except sqlite3.OperationalError:
         pass  # Column already exists
 
@@ -437,6 +452,8 @@ def reading_detail(reading_path):
                          reading_entry=reading_entry,
                          enhanced_reading=reading_entry.get_enhanced_reading_html())
 
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     if "username" not in session:
@@ -452,88 +469,29 @@ def index():
 
     if request.method == "POST":
         question = request.form["question"]
-        hexagram_reading = iching.cast_hexagrams()  # This returns a Reading object
+        divination_type = request.form.get("divination_type", "iching")  # Default to I Ching
 
-        # Get vector database content
-        vector_results = search(str(hexagram_reading))
-        vector_context = "\n\n".join([str(result['metadata']) for result in vector_results])
+        # For now, we only support I Ching, but this is set up for future expansion
+        if divination_type == "iching":
+            # Use legacy I Ching system for now
+            legacy_reading = iching.cast_hexagrams()  # This returns a Reading object
 
-        print(vector_context)
-        s = ''
-        future = 'Your current casting does not have a transition.'
-        if hexagram_reading.has_transition():
-            s = 's'
-            secondary_text = iching.get_hgram_text(hexagram_reading.Future)
-            future = f'''
-            The hexagram had transitional form{s}. The hexagram for the future is {secondary_text}
-            '''
+            # Create new-style reading for future compatibility
+            new_reading = create_iching_reading_from_legacy(legacy_reading)
 
-        hex_text = iching.get_hgram_text(hexagram_reading.Current)
+            # Generate the reading using the extracted function
+            reading_text = generate_iching_reading(question, legacy_reading, user, app.logger)
 
-        # Get history text for AI prompt using the lazy-loaded history property
-        history_text = user.history.get_history_text_for_prompt(limit=3)
+            # Save to history using the new system
+            history_entry = user.history.add_reading(question, new_reading, reading_text, divination_type)
 
-        prompt = f"""
-        You are a wise I Ching diviner with access to comprehensive knowledge.
-
-        The user has asked: "{question}"
-        The newly cast hexagram is {hexagram_reading}.
-
-        Traditional hexagram text:
-        {hex_text}
-
-        Relevant knowledge from the I Ching corpus:
-        {vector_context}
-
-        {future}
-
-        {history_text}
-
-        Based on all this information, provide a deep, insightful reading that connects the traditional wisdom with the user's specific question. When mentioning hexagrams, use the format "Hexagram [number]" or "[number]: [Title]" so they can be properly linked.
-        """
-        app.logger.info(prompt)
-
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": """
-                        You are a mystical I Ching oracle with deep knowledge of the classic text and its
-                        interpretations. You are considered tough, unafraid to give a reading which is not what the user
-                        wants to hear. Instead you focus on truth. You look for the grief in the user and use the
-                        truth of the reading to help the user express that grief.
-                        You are also a master of the English language, and you are able to write in a way that is
-                        informative and engaging but also a bit poetic and sometimes a bit cryptic.
-                        You are also able to use markdown to format your responses.
-                        You are also able to use hexagram symbols to represent the hexagrams in your responses.
-                        DO NOT USE THE CHINESE NAME OF THE HEXAGRAMS IN YOUR RESPONSES, ONLY USE THE ENGLISH NAME.
-                        You are also able to use trigram symbols to represent the trigrams in your responses.
-                        Mention the trigrams in your responses.
-                        You are also able to use the I Ching corpus to support your responses.
-                        You are also able to use the user's question to support your responses.
-                        You are also able to use the user's history to support your responses.
-                    """
-                },
-                {"role": "user", "content": prompt},
-            ],
-            max_tokens=1200,
-            temperature=0.8,        # Slightly creative for mystical feel
-            frequency_penalty=0.2,  # Reduce repetition
-            presence_penalty=0.1,   # Encourage diverse topics
-        )
-
-        reading = response.choices[0].message.content
-
-        # Save to history using the lazy-loaded history property
-        # Now we can pass the Reading object directly
-        history_entry = user.history.add_reading(question, hexagram_reading, reading)
-
-        if history_entry:
-            # Redirect to the new reading detail page
-            return redirect(url_for('reading_detail', reading_path=history_entry.reading_path))
+            if history_entry:
+                # Redirect to the new reading detail page
+                return redirect(url_for('reading_detail', reading_path=history_entry.reading_path))
+            else:
+                flash("Error saving reading. Please try again.", "error")
         else:
-            flash("Error saving reading. Please try again.", "error")
+            flash(f"Divination type '{divination_type}' is not yet supported.", "error")
 
     # Get recent history for display using the lazy-loaded history property
     recent_history = user.history.get_formatted_recent(limit=5, render_markdown=True, enhance_links=True)

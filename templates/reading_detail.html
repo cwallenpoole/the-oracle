@@ -1,7 +1,23 @@
 {% extends "base.html" %}
 
 {% block title %}Reading Detail - The Oracle{% endblock %}
+{% block extra_css %}
+<style>
+    /* Oracle-themed button overrides */
+    .btn-outline-primary {
+        border-color: var(--oracle-gold-dark) !important;
+        color: var(--oracle-gold-dark) !important;
+        background: transparent !important;
+    }
 
+    .btn-outline-primary:hover {
+        background: var(--oracle-gold) !important;
+        border-color: var(--oracle-gold) !important;
+        color: var(--oracle-black) !important;
+    }
+
+</style>
+{% endblock %}
 {% block breadcrumb %}
 <nav aria-label="breadcrumb" class="mt-3">
     <ol class="breadcrumb breadcrumb-oracle">

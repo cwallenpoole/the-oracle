@@ -1,7 +1,58 @@
 {% extends "base.html" %}
 
 {% block title %}Trigrams - The Oracle{% endblock %}
+{% block extra_css %}
+<style>
 
+    /* Oracle-themed button overrides */
+    .btn-outline-primary {
+        border-color: var(--oracle-gold-dark) !important;
+        color: var(--oracle-gold-dark) !important;
+        background: transparent !important;
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--oracle-gold) !important;
+        border-color: var(--oracle-gold) !important;
+        color: var(--oracle-black) !important;
+    }
+
+    /* Custom blockquote styling */
+    .blockquote-oracle {
+        background: rgba(var(--oracle-gold-rgb), 0.05);
+        border-left: 4px solid var(--oracle-gold);
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin: 1rem 0.5rem 1rem 1.5rem;
+        font-size: 0.9rem;
+        font-style: italic;
+        color: var(--oracle-text-muted, #6c757d);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+
+    .card-header .text-muted {
+        color: var(--oracle-gold-rgb) !important;
+    }
+    .blockquote-oracle p {
+        margin-bottom: 0.75rem;
+    }
+
+    .blockquote-oracle p:last-child {
+        margin-bottom: 0;
+    }
+
+    .blockquote-oracle ul {
+        margin-left: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .blockquote-oracle li {
+        margin-bottom: 0.25rem;
+    }
+
+</style>
+{% endblock %}
 {% block breadcrumb %}
 <nav aria-label="breadcrumb" class="mt-3">
     <ol class="breadcrumb breadcrumb-oracle">
@@ -40,6 +91,26 @@
             <h5 class="card-title">
                 <i class="bi bi-info-circle text-primary"></i> Understanding Trigrams
             </h5>
+            <blockquote class="blockquote-oracle">
+                <p>
+                    The bagua (八卦, "eight trigrams") is a system of eight symbolic figures composed of three lines, either
+                    broken (yin) or unbroken (yang), representing fundamental forces of reality in Chinese philosophy.
+                    These trigrams form the basis for the I Ching and are used in divination, cosmology, and various
+                    traditional Chinese practices like feng shui, martial arts, medicine, and astrology.
+                </p>
+                <p>
+                    There are two common arrangements:
+                </p>
+                <ul>
+                    <li>Primordial (Fuxi or Earlier Heaven): a cosmic, ideal order</li>
+                    <li>Manifested (King Wen or Later Heaven): reflects the order of the physical world</li>
+                </ul>
+                <p>
+                    In the I Ching, two trigrams combine to form 64 hexagrams, which are used for interpretation and
+                    guidance, symbolically describing situations and actions in life.
+                </p>
+            </blockquote>
+
             <p class="card-text">
                 Each hexagram is composed of two trigrams - an upper and a lower. These eight trigrams represent
                 the fundamental forces and elements of the universe according to I Ching philosophy. Each trigram
@@ -77,12 +148,6 @@
                         </h6>
                         <p class="card-text small">{{ trigram.description }}</p>
                     </div>
-                </div>
-                <div class="card-footer bg-transparent text-center">
-                    <small class="text-muted">
-                        <i class="bi bi-link-45deg"></i>
-                        This trigram appears in multiple hexagrams
-                    </small>
                 </div>
             </div>
         </div>
