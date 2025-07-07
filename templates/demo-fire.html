@@ -1,0 +1,1271 @@
+{% extends "base.html" %}
+
+{% block title %}Demo Fire - The Oracle{% endblock %}
+
+{% block body_class %}demo-fire{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb" class="mt-2">
+    <ol class="breadcrumb breadcrumb-oracle">
+        <li class="breadcrumb-item">
+            <a href="{{ url_for('readings.index') }}" class="text-white">
+                <i class="bi bi-house"></i> Home
+            </a>
+        </li>
+        <li class="breadcrumb-item active text-white" aria-current="page">
+            <i class="bi bi-fire"></i> Demo Fire
+        </li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <!-- Hero Section -->
+    <div class="card card-oracle mb-4 demo-fire-hero">
+        <div class="card-header bg-gradient text-white card-header-gradient">
+            <div class="text-center">
+                <h1 class="oracle-title-large mb-3">
+                    <i class="bi bi-fire oracle-red-icon"></i> Demo Fire
+                </h1>
+                <p class="oracle-subtitle mb-0">
+                    Igniting Ancient Wisdom with Modern Technology
+                </p>
+            </div>
+        </div>
+        <div class="card-body text-center p-5">
+            <div class="demo-fire-flames mb-4">
+                🔥 🌟 🔥 🌟 🔥
+            </div>
+            <h2 class="oracle-red-text mb-3">Welcome to the Sacred Flames</h2>
+            <p class="lead mb-4">
+                Experience the transformative power of The Oracle through interactive demonstrations
+                of I Ching hexagrams, runic wisdom, and mystical insights.
+            </p>
+            <div class="demo-fire-stats row text-center">
+                <div class="col-md-4">
+                    <div class="stat-item">
+                        <h3 class="oracle-gold-text">64</h3>
+                        <p class="text-muted">Hexagrams</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-item">
+                        <h3 class="oracle-gold-text">24</h3>
+                        <p class="text-muted">Elder Runes</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-item">
+                        <h3 class="oracle-gold-text">∞</h3>
+                        <p class="text-muted">Possibilities</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Fire Canvas -->
+    <div class="card card-oracle mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h3 class="mb-0">
+                        <i class="bi bi-flame oracle-gold-icon"></i> Sacred Flames Interactive Demo
+                    </h3>
+                    <p class="mb-0 mt-2 text-muted">
+                        <small><i class="bi bi-hand-index"></i> Click anywhere on the flames to add magical incense bursts</small>
+                    </p>
+                </div>
+                <div class="demo-controls">
+                    <button id="captureFireBtn" class="btn btn-oracle btn-sm">
+                        <i class="bi bi-camera"></i> Capture Fire Image
+                    </button>
+                    <div id="captureStatus" class="mt-2 text-center" style="display: none;">
+                        <small class="text-muted"></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="fire-canvas-container" id="fire-container">
+                <canvas id="fire-canvas"></canvas>
+                <div class="fire-instructions">
+                    <div class="instruction-item">
+                        <span class="flame-dot flame-red"></span>
+                        <span>Sacred Fire</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="flame-dot flame-blue"></span>
+                        <span>Mystic Incense</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="flame-dot flame-green"></span>
+                        <span>Healing Herbs</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="flame-dot flame-purple"></span>
+                        <span>Spirit Smoke</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Showcase -->
+    <div class="row mb-4">
+        <!-- I Ching Demo -->
+        <div class="col-lg-6 mb-4">
+            <div class="card card-oracle h-100 demo-feature-card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-book oracle-gold-icon"></i> I Ching Mastery
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="demo-hexagram-display text-center mb-3">
+                        <div class="hexagram-symbol-demo">
+                            {{ hexagram_symbols[1] or '䷀' }}
+                        </div>
+                        <p class="hexagram-name-demo">The Creative</p>
+                    </div>
+                    <p class="mb-3">
+                        Dive deep into the ancient wisdom of the I Ching with our complete library
+                        of 64 hexagrams, each offering profound insights into life's mysteries.
+                    </p>
+                    <ul class="demo-features-list">
+                        <li><i class="bi bi-check-circle oracle-gold-icon"></i> Complete hexagram database</li>
+                        <li><i class="bi bi-check-circle oracle-gold-icon"></i> Transition patterns</li>
+                        <li><i class="bi bi-check-circle oracle-gold-icon"></i> Interactive casting</li>
+                        <li><i class="bi bi-check-circle oracle-gold-icon"></i> AI-powered readings</li>
+                    </ul>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('nav.hexagrams_list') }}" class="btn btn-oracle">
+                            <i class="bi bi-arrow-right"></i> Explore Hexagrams
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Runes Demo -->
+        <div class="col-lg-6 mb-4">
+            <div class="card card-oracle h-100 demo-feature-card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-diamond oracle-gold-icon"></i> Runic Wisdom
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="demo-rune-display text-center mb-3">
+                        <div class="rune-symbols-demo">
+                            ᚠ ᚢ ᚦ ᚨ ᚱ
+                        </div>
+                        <p class="rune-name-demo">Elder Futhark</p>
+                    </div>
+                    <p class="mb-3">
+                        Unlock the secrets of the Norse tradition with our comprehensive
+                        runic system featuring multiple spread patterns and interpretations.
+                    </p>
+                    <ul class="demo-features-list">
+                        <li><i class="bi bi-check-circle oracle-gold-icon"></i> 24 Elder Futhark runes</li>
+                        <li><i class="bi bi-check-circle oracle-gold-icon"></i> Multiple spread patterns</li>
+                        <li><i class="bi bi-check-circle oracle-gold-icon"></i> Reversed meanings</li>
+                        <li><i class="bi bi-check-circle oracle-gold-icon"></i> Chakra alignments</li>
+                    </ul>
+                    <div class="text-center mt-3">
+                        <a href="{{ url_for('nav.runes_list') }}" class="btn btn-oracle">
+                            <i class="bi bi-arrow-right"></i> Discover Runes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Demo Section -->
+    <div class="card card-oracle mb-4">
+        <div class="card-header">
+            <h3 class="mb-0">
+                <i class="bi bi-lightning oracle-gold-icon"></i> Interactive Fire Demo
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-8 mb-4">
+                    <h5 class="oracle-red-text mb-3">🔥 Sample Reading Experience</h5>
+                    <div class="demo-reading-preview p-4">
+                        <blockquote class="blockquote">
+                            <p class="mb-3">
+                                <strong>Question:</strong> "How can I ignite my creative potential?"
+                            </p>
+                            <div class="demo-answer">
+                                <h6 class="oracle-gold-text">Oracle's Wisdom:</h6>
+                                <p class="mb-2">
+                                    The flames of creativity burn brightest when fed by the wind of inspiration
+                                    and the steady earth of discipline. Like the phoenix rising from ashes,
+                                    your creative spirit awaits transformation.
+                                </p>
+                                <p class="text-muted small">
+                                    <i class="bi bi-stars"></i> This is a sample reading to demonstrate the Oracle's wisdom
+                                </p>
+                            </div>
+                        </blockquote>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="demo-quick-start">
+                        <h5 class="oracle-red-text mb-3">🚀 Quick Start</h5>
+                        <div class="demo-steps">
+                            <div class="demo-step mb-3">
+                                <span class="step-number">1</span>
+                                <span class="step-text">Choose your divination method</span>
+                            </div>
+                            <div class="demo-step mb-3">
+                                <span class="step-number">2</span>
+                                <span class="step-text">Ask your question</span>
+                            </div>
+                            <div class="demo-step mb-3">
+                                <span class="step-number">3</span>
+                                <span class="step-text">Receive AI-powered wisdom</span>
+                            </div>
+                            <div class="demo-step">
+                                <span class="step-number">4</span>
+                                <span class="step-text">Explore deeper insights</span>
+                            </div>
+                        </div>
+                        <div class="text-center mt-4">
+                            <a href="{{ url_for('readings.index') }}" class="btn btn-oracle btn-lg">
+                                <i class="bi bi-magic"></i> Start Your Journey
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fire Elements Grid -->
+    <div class="card card-oracle mb-4">
+        <div class="card-header">
+            <h3 class="mb-0">
+                <i class="bi bi-grid oracle-gold-icon"></i> Elements of Fire
+            </h3>
+        </div>
+        <div class="card-body">
+            <div class="row fire-elements-grid">
+                <div class="col-md-3 mb-3">
+                    <div class="fire-element text-center p-3">
+                        <div class="element-icon">🔥</div>
+                        <h6 class="oracle-red-text">Passion</h6>
+                        <p class="small text-muted">The driving force of transformation</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="fire-element text-center p-3">
+                        <div class="element-icon">⚡</div>
+                        <h6 class="oracle-red-text">Energy</h6>
+                        <p class="small text-muted">Dynamic power of creation</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="fire-element text-center p-3">
+                        <div class="element-icon">🌟</div>
+                        <h6 class="oracle-red-text">Illumination</h6>
+                        <p class="small text-muted">Light that reveals hidden truths</p>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="fire-element text-center p-3">
+                        <div class="element-icon">🦅</div>
+                        <h6 class="oracle-red-text">Ascension</h6>
+                        <p class="small text-muted">Rising above limitations</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="text-center">
+        <a href="{{ url_for('readings.index') }}" class="btn btn-oracle me-3">
+            <i class="bi bi-arrow-left"></i> Back to Oracle
+        </a>
+        <a href="{{ url_for('nav.trigrams_list') }}" class="btn btn-oracle">
+            <i class="bi bi-triangle"></i> Learn Trigrams
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Demo Fire specific styling */
+.demo-fire-hero {
+    background: linear-gradient(135deg, rgba(139,0,0,0.1) 0%, rgba(255,215,0,0.1) 100%);
+}
+
+.demo-fire-flames {
+    font-size: 2rem;
+    animation: flicker 2s infinite alternate;
+}
+
+@keyframes flicker {
+    0% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+/* Fire Canvas Container */
+.fire-canvas-container {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    background: linear-gradient(180deg, #0a0a0f 0%, #1a0f0a 70%, #2a1a0f 100%);
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+}
+
+#fire-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: crosshair;
+    pointer-events: auto;
+    touch-action: none;
+}
+
+.fire-instructions {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px 15px;
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+}
+
+.instruction-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+    font-size: 0.85rem;
+    color: #fff;
+}
+
+.instruction-item:last-child {
+    margin-bottom: 0;
+}
+
+.flame-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.flame-red { background: #ff4444; }
+.flame-blue { background: #4488ff; }
+.flame-green { background: #44ff88; }
+.flame-purple { background: #8844ff; }
+
+.demo-fire-stats .stat-item h3 {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.demo-feature-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.demo-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+}
+
+.hexagram-symbol-demo {
+    font-size: 4rem;
+    color: var(--oracle-gold);
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+    margin-bottom: 0.5rem;
+}
+
+.hexagram-name-demo {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--oracle-red);
+    margin-bottom: 0;
+}
+
+.rune-symbols-demo {
+    font-size: 2.5rem;
+    color: var(--oracle-gold);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5rem;
+}
+
+.rune-name-demo {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--oracle-red);
+    margin-bottom: 0;
+}
+
+.demo-features-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.demo-features-list li {
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.demo-reading-preview {
+    background: linear-gradient(135deg, rgba(255,215,0,0.05) 0%, rgba(139,0,0,0.05) 100%);
+    border: 2px solid var(--oracle-gold-dark);
+    border-radius: 10px;
+}
+
+.demo-answer {
+    background: rgba(255,215,0,0.1);
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--oracle-gold);
+}
+
+.demo-steps .demo-step {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.step-number {
+    background: var(--oracle-red);
+    color: var(--oracle-gold);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.step-text {
+    font-weight: 500;
+    color: var(--oracle-black);
+}
+
+.fire-elements-grid .fire-element {
+    background: linear-gradient(135deg, rgba(255,215,0,0.05) 0%, rgba(139,0,0,0.05) 100%);
+    border: 1px solid var(--oracle-gold-dark);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.fire-elements-grid .fire-element:hover {
+    transform: translateY(-3px);
+    background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(139,0,0,0.1) 100%);
+}
+
+.element-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .demo-fire-flames {
+        font-size: 1.5rem;
+    }
+
+    .hexagram-symbol-demo {
+        font-size: 3rem;
+    }
+
+    .rune-symbols-demo {
+        font-size: 2rem;
+        letter-spacing: 0.3rem;
+    }
+
+    .fire-canvas-container {
+        height: 400px;
+    }
+
+    .fire-instructions {
+        top: 10px;
+        left: 10px;
+        padding: 8px 12px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Enhanced Fire System based on Canvas Flame V2
+class EnhancedFire {
+    constructor() {
+        this.canvas = document.getElementById('fire-canvas');
+        this.ctx = this.canvas.getContext('2d');
+        this.flames = [];
+        this.sparks = [];
+        this.sparks2 = [];
+        this.running = false;
+
+                          // Three flame sources positioned at bottom - very close together with depth
+         this.flameSources = [
+             { x: 0.48, y: 0.9, active: true, type: 'primary' },      // Left flame
+             { x: 0.5, y: 0.905, active: true, type: 'primary' },     // Center flame (slightly back)
+             { x: 0.52, y: 0.9, active: true, type: 'primary' }       // Right flame
+         ];
+
+        // Color themes for different flame types
+        this.flameColors = {
+            primary: { h: [2, 40], s: 100, l: [80, 100] },      // Orange/red
+            incense_blue: { h: [210, 230], s: 75, l: [45, 70] }, // More natural blue
+            incense_green: { h: [110, 130], s: 60, l: [40, 65] }, // More natural green
+            incense_purple: { h: [280, 300], s: 70, l: [50, 75] } // More natural purple
+        };
+
+        this.init();
+    }
+
+         init() {
+         this.resizeCanvas();
+
+         // Add event listeners with better binding
+         this.canvas.addEventListener('click', this.handleClick.bind(this), { passive: false });
+         this.canvas.addEventListener('touchstart', this.handleClick.bind(this), { passive: false });
+         this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+         window.addEventListener('resize', this.resizeCanvas.bind(this));
+
+         // Ensure canvas is interactive
+         this.canvas.style.pointerEvents = 'auto';
+         this.canvas.style.touchAction = 'none';
+
+         console.log('Fire system initialized - canvas size:', this.canvas.width, 'x', this.canvas.height);
+         this.start();
+     }
+
+    resizeCanvas() {
+        const container = this.canvas.parentElement;
+        this.canvas.width = container.clientWidth;
+        this.canvas.height = container.clientHeight;
+
+        // Update flame source positions based on canvas size
+        this.flameSources.forEach(source => {
+            source.px = source.x * this.canvas.width;
+            source.py = source.y * this.canvas.height;
+        });
+    }
+
+         handleClick(e) {
+         e.preventDefault();
+         const rect = this.canvas.getBoundingClientRect();
+         const scaleX = this.canvas.width / rect.width;
+         const scaleY = this.canvas.height / rect.height;
+
+         const x = (e.clientX - rect.left) * scaleX;
+         const y = (e.clientY - rect.top) * scaleY;
+
+         console.log('Fire click at:', x, y); // Debug log
+
+         // Add a temporary incense flame source at click position
+         const incenseColors = ['incense_blue', 'incense_green', 'incense_purple'];
+         const randomColor = incenseColors[Math.floor(Math.random() * incenseColors.length)];
+
+         console.log('Adding incense burst:', randomColor); // Debug log
+
+         // Create burst of incense flames - bigger and longer lasting
+         for (let i = 0; i < 20; i++) {
+             setTimeout(() => {
+                 this.addIncenseFlame(x, y, randomColor);
+             }, i * 20);
+         }
+
+         // Visual feedback - add a temporary bright spark
+         this.addClickFeedback(x, y);
+
+         // Auto-capture image after 0.8 seconds to capture the incense at peak
+         setTimeout(() => {
+             console.log('Auto-capturing fire image after incense burst...');
+             window.triggerFireCapture();
+         }, 800);
+     }
+
+    handleMouseMove(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        this.mouseX = e.clientX - rect.left;
+        this.mouseY = e.clientY - rect.top;
+    }
+
+              addIncenseFlame(x, y, colorType) {
+         const colors = this.flameColors[colorType];
+
+                  // Create multiple large incense flames for dramatic effect
+         for (let i = 0; i < 3; i++) {
+             const flame = new Flame(
+                 {x: x + this.rand(-15, 15), y: y + this.rand(-10, 10)},
+                 colorType,
+                 colors
+             );
+             // Flame size and duration now handled by constructor
+             this.flames.push(flame);
+         }
+
+                  // Add dramatic sparks
+         for (let i = 0; i < 5; i++) {
+             const spark = new Spark({x: x + this.rand(-20, 20), y: y + this.rand(-10, 10)}, colorType, colors);
+             this.sparks.push(spark);
+         }
+
+         // Add extra sparks for more dramatic effect
+         for (let i = 0; i < 3; i++) {
+             const spark2 = new Spark({x: x + this.rand(-25, 25), y: y + this.rand(-15, 15)}, colorType, colors);
+             this.sparks2.push(spark2);
+         }
+     }
+
+     addClickFeedback(x, y) {
+         // Create a bright white flash at click position
+         for (let i = 0; i < 5; i++) {
+             const feedbackFlame = new Flame(
+                 {x: x + this.rand(-5, 5), y: y + this.rand(-5, 5)},
+                 'feedback',
+                 { h: [50, 60], s: 100, l: [90, 100] } // Bright yellow-white
+             );
+             feedbackFlame.life = 1; // Short life for feedback
+             this.flames.push(feedbackFlame);
+         }
+     }
+
+    start() {
+        this.running = true;
+        this.run();
+    }
+
+    stop() {
+        this.running = false;
+    }
+
+    run() {
+        this.update();
+        this.draw();
+
+        if (this.running) {
+            requestAnimationFrame(this.run.bind(this));
+        }
+    }
+
+    update() {
+        // Add flames from primary sources
+                 this.flameSources.forEach(source => {
+             if (source.active && Math.random() < 0.8) {
+                 const flame = new Flame(
+                     { x: source.px + this.rand(-35, 35), y: source.py + this.rand(-5, 5) }, // Wider flame generation
+                     source.type,
+                     this.flameColors[source.type]
+                 );
+                 this.flames.push(flame);
+
+                 if (Math.random() < 0.6) {
+                     const spark = new Spark(
+                         { x: source.px + this.rand(-45, 45), y: source.py }, // Wider spark generation
+                         source.type,
+                         this.flameColors[source.type]
+                     );
+                     this.sparks.push(spark);
+                 }
+
+                 if (Math.random() < 0.4) {
+                     const spark2 = new Spark(
+                         { x: source.px + this.rand(-50, 50), y: source.py }, // Even wider spark generation
+                         source.type,
+                         this.flameColors[source.type]
+                     );
+                     this.sparks2.push(spark2);
+                 }
+             }
+         });
+
+        // Update flames
+        for (let i = this.flames.length - 1; i >= 0; i--) {
+            if (this.flames[i].alive) {
+                this.flames[i].update();
+            } else {
+                this.flames.splice(i, 1);
+            }
+        }
+
+        // Update sparks
+        for (let i = this.sparks.length - 1; i >= 0; i--) {
+            if (this.sparks[i].alive) {
+                this.sparks[i].update();
+            } else {
+                this.sparks.splice(i, 1);
+            }
+        }
+
+        for (let i = this.sparks2.length - 1; i >= 0; i--) {
+            if (this.sparks2[i].alive) {
+                this.sparks2[i].update();
+            } else {
+                this.sparks2.splice(i, 1);
+            }
+        }
+    }
+
+    draw() {
+        this.clearCanvas();
+        this.drawHalo();
+
+        // Draw flames
+        this.ctx.globalCompositeOperation = "overlay";
+        this.flames.forEach(flame => flame.draw(this.ctx));
+
+        // Draw sparks with different blend modes
+        this.ctx.globalCompositeOperation = "soft-light";
+        for (let i = 0; i < this.sparks.length; i++) {
+            if (i % 2 === 0) {
+                this.sparks[i].draw(this.ctx);
+            }
+        }
+
+        this.ctx.globalCompositeOperation = "color-dodge";
+        this.sparks2.forEach(spark => spark.draw(this.ctx));
+    }
+
+    clearCanvas() {
+        this.ctx.globalCompositeOperation = "source-over";
+        this.ctx.fillStyle = "rgba(15, 5, 2, 1)";
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    drawHalo() {
+        this.flameSources.forEach(source => {
+            if (source.active) {
+                const r = this.rand(130, 200); // Bigger halo: 100-150 -> 130-200
+                this.ctx.globalCompositeOperation = "lighter";
+                const grd = this.ctx.createRadialGradient(
+                    source.px, source.py, r,
+                    source.px, source.py, 0
+                );
+                grd.addColorStop(0, "transparent");
+                grd.addColorStop(1, "rgb(50, 2, 0)");
+                this.ctx.beginPath();
+                this.ctx.arc(source.px, source.py - 30, r, 0, 2 * Math.PI);
+                this.ctx.fillStyle = grd;
+                this.ctx.fill();
+            }
+        });
+    }
+
+    rand(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+}
+
+// Flame particle class
+class Flame {
+    constructor(pos, type, colors) {
+        this.x = pos.x;
+        this.y = pos.y;
+        this.lx = this.x;
+        this.ly = this.y;
+
+        // Different velocities based on type
+        if (type.startsWith('incense_')) {
+            // Random upward direction for incense
+            this.vy = this.rand(2, 4); // Stronger upward velocity
+            this.vx = this.rand(-3, 3); // More random horizontal movement
+        } else {
+            this.vy = this.rand(1, 3);
+            this.vx = this.rand(-1, 1);
+        }
+
+        // Different sizes and lifetimes based on type
+        if (type === 'primary') {
+            this.r = this.rand(35, 50); // Bigger primary flames: 25-35 -> 35-50
+            this.life = this.rand(3, 6);
+        } else if (type.startsWith('incense_')) {
+            this.r = this.rand(35, 50); // Wider incense flames: 28-42 -> 35-50
+            this.life = this.rand(18, 24); // Longer lasting: 0.6-0.8 seconds
+        } else {
+            this.r = this.rand(15, 25);
+            this.life = this.rand(2, 4);
+        }
+
+        this.alive = true;
+        this.type = type;
+
+        this.c = {
+            h: Math.floor(this.rand(colors.h[0], colors.h[1])),
+            s: colors.s,
+            l: this.rand(colors.l[0], colors.l[1]),
+            a: 0,
+            ta: type.startsWith('incense_') ? this.rand(0.5, 0.7) : this.rand(0.7, 0.9) // Lower opacity for incense
+        };
+    }
+
+    update() {
+        this.lx = this.x;
+        this.ly = this.y;
+
+        this.y -= this.vy;
+        this.x += this.vx;
+
+        // Different physics for different flame types
+        if (this.type.startsWith('incense_')) {
+            // Incense flames: maintain random direction, slight wind effect
+            this.vy += 0.04; // Slower gravity for floating effect
+            this.vx *= 0.995; // Very slight air resistance
+
+            // Add slight random wind turbulence
+            this.vx += this.rand(-0.1, 0.1);
+            this.vy += this.rand(-0.05, 0.1);
+        } else if (this.type !== 'primary') {
+            // Other flames: gentle drift towards center
+            this.vy += 0.08;
+            const centerX = window.innerWidth / 2;
+            if (this.x < centerX) {
+                this.vx += 0.1;
+            } else {
+                this.vx -= 0.1;
+            }
+        } else {
+            // Primary flames: normal behavior
+            this.vy += 0.08;
+        }
+
+                if (this.r > 0) {
+            if (this.type === 'primary') {
+                this.r -= 0.3;
+            } else if (this.type.startsWith('incense_')) {
+                this.r -= 0.3; // Faster radius decay for quicker animation
+            } else {
+                this.r -= 0.4;
+            }
+        }
+
+        if (this.r <= 0) {
+            this.r = 0;
+        }
+
+        // Different decay rates for different flame types
+        if (this.type === 'primary') {
+            this.life -= 0.12;
+        } else if (this.type.startsWith('incense_')) {
+            this.life -= 0.06; // Even slower decay for much longer visibility
+        } else {
+            this.life -= 0.15;
+        }
+
+        if (this.life <= 0) {
+            this.c.a -= 0.05;
+            if (this.c.a <= 0) {
+                this.alive = false;
+            }
+        } else if (this.life > 0 && this.c.a < this.c.ta) {
+            this.c.a += 0.08;
+        }
+    }
+
+    draw(ctx) {
+        const grd1 = ctx.createRadialGradient(
+            this.x, this.y, this.r * 3,
+            this.x, this.y, 0
+        );
+        grd1.addColorStop(0.5, `hsla(${this.c.h}, ${this.c.s}%, ${this.c.l}%, ${this.c.a/20})`);
+        grd1.addColorStop(0, "transparent");
+
+        const grd2 = ctx.createRadialGradient(
+            this.x, this.y, this.r,
+            this.x, this.y, 0
+        );
+        grd2.addColorStop(0.5, `hsla(${this.c.h}, ${this.c.s}%, ${this.c.l}%, ${this.c.a})`);
+        grd2.addColorStop(0, "transparent");
+
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r * 3, 0, 2 * Math.PI);
+        ctx.fillStyle = grd1;
+        ctx.fill();
+
+        ctx.globalCompositeOperation = "overlay";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
+        ctx.fillStyle = grd2;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(this.lx, this.ly);
+        ctx.lineTo(this.x, this.y);
+        ctx.strokeStyle = `hsla(${this.c.h}, ${this.c.s}%, ${this.c.l}%, 1)`;
+        ctx.lineWidth = this.rand(1, 2);
+        ctx.stroke();
+        ctx.closePath();
+    }
+
+    rand(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+}
+
+// Spark particle class
+class Spark {
+    constructor(pos, type, colors) {
+        this.x = pos.x + this.rand(-40, 40);
+        this.y = pos.y + this.rand(0, 5);
+        this.lx = this.x;
+        this.ly = this.y;
+
+        // Different velocities based on type
+        if (type.startsWith('incense_')) {
+            // Random upward direction for incense sparks
+            this.vy = this.rand(2, 5); // Stronger upward velocity
+            this.vx = this.rand(-5, 5); // More random horizontal movement
+        } else {
+            this.vy = this.rand(1, 3);
+            this.vx = this.rand(-4, 4);
+        }
+
+        // Different sizes and lifetimes based on type
+        if (type === 'primary') {
+            this.r = this.rand(0.7, 2.0); // Bigger primary sparks: 0.5-1.5 -> 0.7-2.0
+            this.life = this.rand(4, 8);
+        } else if (type.startsWith('incense_')) {
+            this.r = this.rand(0.7, 2.1); // 30% smaller: 1-3 -> 0.7-2.1
+            this.life = this.rand(12, 18); // Much longer lasting: 0.4-0.6 seconds
+        } else {
+            this.r = this.rand(0, 1);
+            this.life = this.rand(2, 5);
+        }
+
+        this.alive = true;
+        this.type = type;
+
+        this.c = {
+            h: Math.floor(this.rand(colors.h[0], colors.h[1])),
+            s: colors.s,
+            l: this.rand(colors.l[0] - 20, colors.l[1]),
+            a: type.startsWith('incense_') ? this.rand(0.4, 0.6) : this.rand(0.6, 0.9) // Lower opacity for incense sparks
+        };
+    }
+
+    update() {
+        this.lx = this.x;
+        this.ly = this.y;
+
+        this.y -= this.vy;
+        this.x += this.vx;
+
+        // Different physics for different spark types
+        if (this.type.startsWith('incense_')) {
+            // Incense sparks: maintain random direction with wind effect
+            this.vy += 0.05; // Slower gravity for floating effect
+            this.vx *= 0.99; // Slight air resistance
+
+            // Add random wind turbulence
+            this.vx += this.rand(-0.15, 0.15);
+            this.vy += this.rand(-0.1, 0.1);
+        } else {
+            // Other sparks: normal behavior
+            this.vy += 0.08;
+            if (this.type !== 'primary') {
+                this.vx *= 0.98;
+            }
+        }
+
+        // Different decay rates for different spark types
+        if (this.type === 'primary') {
+            this.life -= 0.1;
+        } else if (this.type.startsWith('incense_')) {
+            this.life -= 0.05; // Even slower decay for much longer visibility
+        } else {
+            this.life -= 0.12;
+        }
+
+        if (this.life <= 0) {
+            this.c.a -= 0.05;
+            if (this.c.a <= 0) {
+                this.alive = false;
+            }
+        }
+    }
+
+    draw(ctx) {
+        ctx.beginPath();
+        ctx.moveTo(this.lx, this.ly);
+        ctx.lineTo(this.x, this.y);
+        ctx.strokeStyle = `hsla(${this.c.h}, ${this.c.s}%, ${this.c.l}%, ${this.c.a / 2})`;
+        ctx.lineWidth = this.r * 2;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        ctx.closePath();
+
+        ctx.beginPath();
+        ctx.moveTo(this.lx, this.ly);
+        ctx.lineTo(this.x, this.y);
+        ctx.strokeStyle = `hsla(${this.c.h}, ${this.c.s}%, ${this.c.l}%, ${this.c.a})`;
+        ctx.lineWidth = this.r;
+        ctx.stroke();
+        ctx.closePath();
+    }
+
+    rand(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+}
+
+// Initialize everything when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize fire animation
+    let fireSystem = null;
+
+    const initFire = () => {
+        const canvas = document.getElementById('fire-canvas');
+        if (canvas) {
+            console.log('Initializing fire system...');
+            fireSystem = new EnhancedFire();
+
+            // Add a test click handler to verify events work
+            canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+            console.log('Fire system ready! Click anywhere on the flames to add incense.');
+        } else {
+            console.log('Fire canvas not found, retrying...');
+            setTimeout(initFire, 100);
+        }
+    };
+
+    // Wait a bit for the DOM to be fully ready
+    setTimeout(initFire, 100);
+
+    // Fire image capture functionality
+    const captureBtn = document.getElementById('captureFireBtn');
+    const captureStatus = document.getElementById('captureStatus');
+
+    // Reusable capture function
+    function captureFireImage(isAutoCapture = false) {
+        const canvas = document.getElementById('fire-canvas');
+        if (!canvas) {
+            if (!isAutoCapture) {
+                showCaptureStatus('Error: Fire canvas not found', 'danger');
+            }
+            return;
+        }
+
+        try {
+            // Show capturing status only for manual captures
+            if (!isAutoCapture) {
+                showCaptureStatus('Capturing fire image...', 'info');
+                captureBtn.disabled = true;
+            }
+
+            // Capture the canvas as a data URL
+            const imageData = canvas.toDataURL('image/png');
+
+            // Prepare the data to send
+            const data = {
+                image: imageData,
+                metadata: {
+                    timestamp: new Date().toISOString(),
+                    width: canvas.width,
+                    height: canvas.height,
+                    type: isAutoCapture ? 'fire_animation_auto' : 'fire_animation_manual'
+                }
+            };
+
+            // Send to backend
+            fetch('/api/save-fire-image', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    let message;
+                    if (result.flame_reading_created) {
+                        message = isAutoCapture
+                            ? `Auto-captured with flame reading: ${result.filename}`
+                            : 'Image captured! Flame reading created.';
+
+                        // For manual captures, show a link to the reading
+                        if (!isAutoCapture) {
+                            showCaptureStatusWithLink(
+                                'Fire image captured and mystical reading created!',
+                                `/reading/${result.reading_path}`,
+                                'View Flame Reading',
+                                'success'
+                            );
+                        } else {
+                            showCaptureStatus(message, 'success');
+                        }
+
+                        console.log('Fire image captured with flame reading:', result);
+                    } else {
+                        message = isAutoCapture
+                            ? `Auto-captured: ${result.filename}`
+                            : `Image saved: ${result.filename}`;
+                        showCaptureStatus(message, 'success');
+                        console.log('Fire image captured successfully:', result);
+                    }
+                } else {
+                    if (!isAutoCapture) {
+                        showCaptureStatus(`Error: ${result.error}`, 'danger');
+                    }
+                    console.error('Capture failed:', result.error);
+                }
+            })
+            .catch(error => {
+                if (!isAutoCapture) {
+                    showCaptureStatus('Network error occurred', 'danger');
+                }
+                console.error('Capture error:', error);
+            })
+            .finally(() => {
+                if (captureBtn) {
+                    captureBtn.disabled = false;
+                }
+            });
+
+        } catch (error) {
+            if (!isAutoCapture) {
+                showCaptureStatus('Failed to capture image', 'danger');
+            }
+            console.error('Canvas capture error:', error);
+            if (captureBtn) {
+                captureBtn.disabled = false;
+            }
+        }
+    }
+
+    // Make capture function globally accessible
+    window.triggerFireCapture = () => captureFireImage(true);
+
+    // Manual capture button
+    if (captureBtn) {
+        captureBtn.addEventListener('click', function() {
+            captureFireImage(false);
+        });
+    }
+
+    function showCaptureStatus(message, type) {
+        const statusDiv = captureStatus.querySelector('small') || captureStatus;
+        statusDiv.textContent = message;
+
+        // Remove existing classes
+        captureStatus.classList.remove('text-success', 'text-danger', 'text-info', 'text-warning');
+
+        // Add appropriate class based on type
+        switch(type) {
+            case 'success':
+                captureStatus.classList.add('text-success');
+                break;
+            case 'danger':
+                captureStatus.classList.add('text-danger');
+                break;
+            case 'info':
+                captureStatus.classList.add('text-info');
+                break;
+            case 'warning':
+                captureStatus.classList.add('text-warning');
+                break;
+        }
+
+        captureStatus.style.display = 'block';
+
+        // Auto-hide success/info messages after 3 seconds
+        if (type === 'success' || type === 'info') {
+            setTimeout(() => {
+                captureStatus.style.display = 'none';
+            }, 3000);
+        }
+    }
+
+    function showCaptureStatusWithLink(message, url, linkText, type) {
+        const statusDiv = captureStatus.querySelector('small') || captureStatus;
+        statusDiv.innerHTML = `${message} <a href="${url}" class="text-decoration-none fw-bold">${linkText}</a>`;
+
+        // Remove existing classes
+        captureStatus.classList.remove('text-success', 'text-danger', 'text-info', 'text-warning');
+
+        // Add appropriate class based on type
+        switch(type) {
+            case 'success':
+                captureStatus.classList.add('text-success');
+                break;
+            case 'danger':
+                captureStatus.classList.add('text-danger');
+                break;
+            case 'info':
+                captureStatus.classList.add('text-info');
+                break;
+            case 'warning':
+                captureStatus.classList.add('text-warning');
+                break;
+        }
+
+        captureStatus.style.display = 'block';
+
+        // Auto-hide after 8 seconds for links (longer than normal)
+        if (type === 'success' || type === 'info') {
+            setTimeout(() => {
+                captureStatus.style.display = 'none';
+            }, 8000);
+        }
+    }
+
+    // Animate the fire elements on scroll
+    const fireElements = document.querySelectorAll('.fire-element');
+
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, observerOptions);
+
+    fireElements.forEach(element => {
+        element.style.opacity = '0';
+        element.style.transform = 'translateY(20px)';
+        element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(element);
+    });
+
+    // Add click effect to demo cards
+    const demoCards = document.querySelectorAll('.demo-feature-card');
+    demoCards.forEach(card => {
+        card.addEventListener('click', function() {
+            this.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (fireSystem) {
+            fireSystem.stop();
+        }
+    });
+});
+</script>
+{% endblock %}

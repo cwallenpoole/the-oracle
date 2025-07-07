@@ -54,15 +54,15 @@
 </style>
 {% endblock %}
 {% block breadcrumb %}
-<nav aria-label="breadcrumb" class="mt-3">
+<nav aria-label="breadcrumb" class="mt-2">
     <ol class="breadcrumb breadcrumb-oracle">
         <li class="breadcrumb-item">
-            <a href="{{ url_for('index') }}" class="text-white">
+            <a href="{{ url_for('readings.index') }}" class="text-white">
                 <i class="bi bi-house"></i> Home
             </a>
         </li>
         <li class="breadcrumb-item">
-            <a href="{{ url_for('hexagrams_list') }}" class="text-white">
+            <a href="{{ url_for('nav.hexagrams_list') }}" class="text-white">
                 <i class="bi bi-book"></i> Hexagrams
             </a>
         </li>
@@ -244,7 +244,7 @@
         <a href="{{ return_to }}" class="btn btn-oracle me-3">
             <i class="bi bi-arrow-left"></i> Back
         </a>
-        <a href="{{ url_for('hexagrams_list') }}" class="btn btn-outline-primary">
+        <a href="{{ url_for('nav.hexagrams_list') }}" class="btn btn-outline-primary">
             <i class="bi bi-book"></i> View All Hexagrams
         </a>
     </div>

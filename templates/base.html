@@ -9,6 +9,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
+    <!-- Oracle CSS -->
+    <link href="{{ url_for('static', filename='css/oracle.css') }}" rel="stylesheet">
+
     <!-- Custom CSS -->
     <style>
         :root {
@@ -31,6 +34,7 @@
             color: var(--oracle-gold);
             min-height: 100vh;
             font-family: 'Georgia', serif;
+            scroll-behavior: smooth;
         }
 
         .main-container {
@@ -60,6 +64,12 @@
             background: linear-gradient(135deg, var(--oracle-red) 0%, var(--oracle-red-dark) 100%) !important;
             border-bottom: 3px solid var(--oracle-gold);
             padding: 0.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
         }
 
         .nav-link {
@@ -94,6 +104,7 @@
         .card-oracle {
             background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
             border: 3px solid var(--oracle-gold-dark);
+            border-radius: 12px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.5);
             color: var(--oracle-black);
             transition: transform 0.2s ease;
@@ -106,6 +117,7 @@
         .card-header {
             background: linear-gradient(135deg, var(--oracle-red) 0%, var(--oracle-red-dark) 100%) !important;
             border-bottom: 3px solid var(--oracle-gold) !important;
+            border-radius: 9px 9px 0 0 !important;
             color: var(--oracle-gold) !important;
         }
 
@@ -143,6 +155,9 @@
             background: rgba(139,0,0,0.2);
             border: 1px solid var(--oracle-gold-dark);
             border-radius: 10px;
+            --bs-breadcrumb-padding-y: 0.75rem;
+            --bs-breadcrumb-padding-x: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .breadcrumb-oracle .breadcrumb-item + .breadcrumb-item::before {
@@ -188,6 +203,7 @@
         .dropdown-menu {
             background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
             border: 2px solid var(--oracle-gold-dark);
+            border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
@@ -203,6 +219,7 @@
         /* Form styling */
         .form-control {
             border: 2px solid var(--oracle-gold-dark);
+            border-radius: 6px;
             color: var(--oracle-black);
         }
 
@@ -219,11 +236,11 @@
 
     {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
+                            <a class="navbar-brand" href="{{ url_for('readings.index') }}">
                 <i class="bi bi-yin-yang"></i> The Oracle
             </a>
 
@@ -235,23 +252,23 @@
                 <ul class="navbar-nav me-auto">
                     {% if session.username %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">
+                        <a class="nav-link" href="{{ url_for('readings.index') }}">
                             <i class="bi bi-house"></i> Home
                         </a>
                     </li>
                     {% endif %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('hexagrams_list') }}">
+                        <a class="nav-link" href="{{ url_for('nav.hexagrams_list') }}">
                             <i class="bi bi-book"></i> Hexagrams
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('trigrams_list') }}">
+                        <a class="nav-link" href="{{ url_for('nav.trigrams_list') }}">
                             <i class="bi bi-triangle"></i> Trigrams
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('runes_list') }}">
+                        <a class="nav-link" href="{{ url_for('nav.runes_list') }}">
                             <i class="bi bi-diamond"></i> Runes
                         </a>
                     </li>
@@ -264,23 +281,23 @@
                             <i class="bi bi-person-circle"></i> {{ session.username }}
                         </a>
                         <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('profile') }}">
+                            <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">
                                 <i class="bi bi-person-gear"></i> Edit Profile
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
                                 <i class="bi bi-box-arrow-right"></i> Logout
                             </a></li>
                         </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('login') }}">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">
                             <i class="bi bi-box-arrow-in-right"></i> Login
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('register') }}">
+                        <a class="nav-link" href="{{ url_for('auth.register') }}">
                             <i class="bi bi-person-plus"></i> Register
                         </a>
                     </li>

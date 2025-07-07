@@ -89,16 +89,16 @@
         <div class="col-12">
             <!-- Header -->
             <div class="text-center mb-4">
-                <h1 class="display-4" style="color: var(--oracle-gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                <h1 class="display-4 oracle-title-large">
                     ᚠᚢᚦᚨᚱᚲ
                 </h1>
-                <h2 class="h3" style="color: var(--oracle-red);">Elder Futhark Runes</h2>
+                <h2 class="h3 oracle-red-text">Elder Futhark Runes</h2>
                 <p class="lead text-muted">The 24 sacred symbols of Norse divination and wisdom</p>
             </div>
 
             <!-- Introduction -->
             <div class="intro-box">
-                <h3 style="color: var(--oracle-red); margin-bottom: 1rem;">
+                <h3 class="oracle-subtitle">
                     <i class="bi bi-book-half"></i> About the Elder Futhark
                 </h3>
                 <p class="meaning-text mb-3">
@@ -151,7 +151,7 @@
                             <strong>Reversed:</strong> {{ rune.reversed_meaning }}
                         </div>
                         {% elif rune.reversed_meaning and rune.reversed_meaning.startswith('Cannot be reversed') %}
-                        <div class="text-muted" style="font-style: italic; font-size: 0.9rem;">
+                        <div class="text-muted rune-description">
                             <i class="bi bi-info-circle"></i> {{ rune.reversed_meaning }}
                         </div>
                         {% endif %}
@@ -162,10 +162,10 @@
 
             <!-- Footer Navigation -->
             <div class="text-center mt-5">
-                <a href="{{ url_for('index') }}" class="btn btn-oracle me-3">
+                <a href="{{ url_for('readings.index') }}" class="btn btn-oracle me-3">
                     <i class="bi bi-arrow-left"></i> Back to Oracle
                 </a>
-                <a href="{{ url_for('index') }}#divinationForm" class="btn btn-outline-primary">
+                <a href="{{ url_for('readings.index') }}#divinationForm" class="btn btn-outline-primary">
                     <i class="bi bi-stars"></i> Cast Runes Now
                 </a>
             </div>

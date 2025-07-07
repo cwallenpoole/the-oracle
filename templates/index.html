@@ -95,9 +95,9 @@
                 <div class="card-body">
                     <div class="text-center mb-3">
                         <h4 class="card-title mb-2">
-                            <i class="bi bi-person-circle" style="color: #d4af37;"></i> Welcome, {{ username }}
+                            <i class="bi bi-person-circle oracle-gold-icon"></i> Welcome, {{ username }}
                         </h4>
-                        <div class="profile-badge" style="background: linear-gradient(135deg, #8b1538 0%, #5d0e29 100%); color: white; border-radius: 20px; padding: 0.5rem 1rem; display: inline-block;">
+                        <div class="profile-badge">
                             <i class="bi bi-star"></i> Oracle Seeker
                         </div>
                     </div>
@@ -105,7 +105,7 @@
                     <div class="profile-info">
                         {% if user_birthdate %}
                         <p class="mb-2">
-                            <i class="bi bi-calendar-heart" style="color: #d4af37;"></i>
+                            <i class="bi bi-calendar-heart oracle-gold-icon"></i>
                             <strong>Born:</strong> {{ user_birthdate }}
                         </p>
                         {% endif %}
@@ -124,10 +124,10 @@
                 <div class="col-12 mb-3">
                     <div class="card card-oracle h-100">
                         <div class="card-body text-center">
-                            <i class="bi bi-book display-6" style="color: #d4af37;" class="mb-3"></i>
+                            <i class="bi bi-book display-6 oracle-gold-icon mb-3"></i>
                             <h6 class="card-title">Explore Hexagrams</h6>
                             <p class="card-text small">Study all 64 hexagrams and their meanings</p>
-                            <a href="{{ url_for('hexagrams_list') }}" class="btn btn-oracle btn-sm">
+                            <a href="{{ url_for('nav.hexagrams_list') }}" class="btn btn-oracle btn-sm">
                                 <i class="bi bi-arrow-right"></i> View All
                             </a>
                         </div>
@@ -136,10 +136,10 @@
                 <div class="col-12 mb-3">
                     <div class="card card-oracle h-100">
                         <div class="card-body text-center">
-                            <i class="bi bi-triangle display-6" style="color: #d4af37;" class="mb-3"></i>
+                            <i class="bi bi-triangle display-6 oracle-gold-icon mb-3"></i>
                             <h6 class="card-title">Learn Trigrams</h6>
                             <p class="card-text small">Understand the eight fundamental trigrams</p>
-                            <a href="{{ url_for('trigrams_list') }}" class="btn btn-oracle btn-sm">
+                            <a href="{{ url_for('nav.trigrams_list') }}" class="btn btn-oracle btn-sm">
                                 <i class="bi bi-arrow-right"></i> Learn More
                             </a>
                         </div>
@@ -148,10 +148,10 @@
                 <div class="col-12 mb-3">
                     <div class="card card-oracle h-100">
                         <div class="card-body text-center">
-                            <i class="bi bi-diamond display-6" style="color: #d4af37;" class="mb-3"></i>
+                            <i class="bi bi-diamond display-6 oracle-gold-icon mb-3"></i>
                             <h6 class="card-title">Discover Runes</h6>
                             <p class="card-text small">Explore the 24 Elder Futhark runes</p>
-                            <a href="{{ url_for('runes_list') }}" class="btn btn-oracle btn-sm">
+                            <a href="{{ url_for('nav.runes_list') }}" class="btn btn-oracle btn-sm">
                                 <i class="bi bi-arrow-right"></i> Explore
                             </a>
                         </div>
@@ -164,13 +164,13 @@
         <div class="col-lg-8">
             <!-- Reading Form -->
     <div class="card card-oracle mb-4">
-        <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, var(--oracle-primary) 0%, var(--oracle-secondary) 100%);">
+        <div class="card-header bg-gradient text-white card-header-gradient">
             <h5 class="mb-0">
                 <i class="bi bi-magic"></i> Seek Wisdom from the Oracle
             </h5>
         </div>
         <div class="card-body">
-            <form method="post" action="{{ url_for('index') }}" id="divinationForm">
+            <form method="post" action="{{ url_for('readings.index') }}" id="divinationForm">
                 <!-- Divination Type Selector -->
                 <div class="mb-3">
                     <label for="divination_type" class="form-label">
@@ -183,7 +183,7 @@
                 </div>
 
                 <!-- Spread Type Selector (for Runes) -->
-                <div class="mb-3" id="spread_options" style="display: none;">
+                <div class="mb-3 spread-options-hidden" id="spread_options">
                     <label for="spread_type" class="form-label">
                         <i class="bi bi-grid-3x3-gap"></i> Choose Runic Spread
                     </label>
@@ -215,7 +215,7 @@
                 </div>
 
                 <!-- Submit Button with Dynamic Text -->
-                <button type="submit" class="btn btn-oracle btn-lg" id="submitBtn" style="transition: transform 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                <button type="submit" class="btn btn-oracle btn-lg submit-button-animated" id="submitBtn">
                     <i class="bi bi-stars"></i> <span id="submitText">Cast the Hexagrams</span>
                 </button>
             </form>
@@ -249,16 +249,16 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-dark">
                         <tr>
-                            <th scope="col" style="width: 140px;">
+                            <th scope="col" class="table-question-col">
                                 <i class="bi bi-question-circle"></i> Question
                             </th>
-                            <th scope="col" style="width: 180px;">
+                            <th scope="col" class="table-divination-col">
                                 <i class="bi bi-stars"></i> Divination
                             </th>
                             <th scope="col">
                                 <i class="bi bi-book-half"></i> Reading
                             </th>
-                            <th scope="col" style="width: 80px;">
+                            <th scope="col" class="table-date-col">
                                 <i class="bi bi-calendar3"></i> Date
                             </th>
                         </tr>
@@ -266,22 +266,22 @@
                     <tbody>
                         {% for entry in history %}
                         <tr>
-                            <td style="width: 140px;">
-                                <div class="question-cell" style="max-width: 140px;">
+                            <td class="table-question-col">
+                                <div class="question-cell">
                                     <div class="question-preview">
-                                        <a href="{{ url_for('reading_detail', reading_path=entry.reading_path) }}"
+                                        <a href="{{ url_for('readings.reading_detail', reading_path=entry.reading_path) }}"
                                            class="text-decoration-none question-text">
                                             {{ entry.question|truncate(100) }}
                                         </a>
                                     </div>
                                 </div>
                             </td>
-                            <td style="width: 180px;">
+                            <td class="table-divination-col">
                                 {% if entry.divination_type == "runes" %}
                                 <!-- Runic Reading Display -->
                                 <div class="runes-table-display">
                                     <div class="text-center">
-                                        <a href="{{ url_for('reading_detail', reading_path=entry.reading_path) }}" class="text-decoration-none">
+                                        <a href="{{ url_for('readings.reading_detail', reading_path=entry.reading_path) }}" class="text-decoration-none">
                                             <!-- Parse actual runes from the reading data -->
                                             {% set runic_data = entry.hexagram %}
                                             {% if runic_data %}
@@ -300,7 +300,7 @@
                                                     {% endif %}
                                                 {% endfor %}
 
-                                                <div style="font-size: 1.5rem; color: var(--oracle-gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin-bottom: 0.25rem;">
+                                                <div class="rune-symbol-large">
                                                     {% if rune_symbols %}
                                                         {{ rune_symbols|join('') }}
                                                     {% else %}
@@ -308,11 +308,11 @@
                                                     {% endif %}
                                                 </div>
                                             {% else %}
-                                                <div style="font-size: 1.5rem; color: var(--oracle-gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.3); margin-bottom: 0.25rem;">
+                                                <div class="rune-symbol-large">
                                                     ᚠᚢᚦ
                                                 </div>
                                             {% endif %}
-                                            <div style="font-size: 0.8rem; font-weight: 600; color: var(--oracle-red); line-height: 1.2;">
+                                            <div class="rune-text-label">
                                                 Runic Reading
                                             </div>
                                         </a>
@@ -324,11 +324,11 @@
                                 <div class="hexagram-table-display">
                                     <!-- Primary Hexagram -->
                                     <div class="hexagram-item-table text-center mb-2">
-                                        <a href="{{ url_for('hexagram_detail', number=current_num, name=create_hexagram_url_name(entry.reading.Current.Title)) }}" class="hexagram-link text-decoration-none">
-                                            <div class="hexagram-symbol-table" style="font-size: 2rem; color: var(--oracle-gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                                        <a href="{{ url_for('nav.hexagram_detail', number=current_num, name=create_hexagram_url_name(entry.reading.Current.Title)) }}" class="hexagram-link text-decoration-none">
+                                            <div class="hexagram-symbol-table">
                                                 {{ hexagram_symbols[current_num] or '䷿' }}
                                             </div>
-                                            <div class="hexagram-name-table" style="font-size: 0.8rem; font-weight: 600; color: var(--oracle-red); line-height: 1.2;">
+                                            <div class="hexagram-name-table">
                                                 {{ entry.reading.Current.Title }}
                                             </div>
                                         </a>
@@ -336,18 +336,18 @@
 
                                     {% if entry.reading.Future %}
                                     <!-- Transition -->
-                                    <div class="transition-connector-table text-center" style="font-size: 0.7rem; color: var(--oracle-red-dark); font-weight: bold; margin: 0.25rem 0;">
+                                    <div class="transition-connector-table text-center">
                                         transitioning to
                                     </div>
 
                                     <!-- Future Hexagram -->
                                     {% set future_num = entry.reading.Future.Number %}
                                     <div class="hexagram-item-table text-center">
-                                        <a href="{{ url_for('hexagram_detail', number=future_num, name=create_hexagram_url_name(entry.reading.Future.Title)) }}" class="hexagram-link text-decoration-none">
-                                            <div class="hexagram-symbol-table" style="font-size: 1.8rem; color: var(--oracle-gold); text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">
+                                        <a href="{{ url_for('nav.hexagram_detail', number=future_num, name=create_hexagram_url_name(entry.reading.Future.Title)) }}" class="hexagram-link text-decoration-none">
+                                            <div class="hexagram-symbol-table-small">
                                                 {{ hexagram_symbols[future_num] or '䷿' }}
                                             </div>
-                                            <div class="hexagram-name-table" style="font-size: 0.75rem; font-weight: 600; color: var(--oracle-red); line-height: 1.2;">
+                                            <div class="hexagram-name-table-small">
                                                 {{ entry.reading.Future.Title }}
                                             </div>
                                         </a>
@@ -357,11 +357,11 @@
                                 {% endif %}
                             </td>
                             <td>
-                                 <div style="white-space: normal; line-height: 1.4; max-height: 4.2em; overflow: hidden;" title="{{ entry.reading_html|striptags }}">
+                                 <div class="reading-preview-cell" title="{{ entry.reading_html|striptags }}">
                                      {{ entry.reading_html|striptags|truncate(300) }}
                                  </div>
                              </td>
-                            <td style="width: 80px;">
+                            <td class="table-date-col">
                                 <small class="text-muted">
                                     {{ entry.reading_dt[5:10] if entry.reading_dt else 'Unknown' }}
                                 </small>
@@ -393,10 +393,10 @@ function toggleSpreadOptions() {
     const submitText = document.getElementById('submitText');
 
     if (divinationType === 'runes') {
-        spreadOptions.style.display = 'block';
+        spreadOptions.classList.remove('spread-options-hidden');
         submitText.textContent = 'Cast the Runes';
     } else {
-        spreadOptions.style.display = 'none';
+        spreadOptions.classList.add('spread-options-hidden');
         submitText.textContent = 'Cast the Hexagrams';
     }
 }

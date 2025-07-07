@@ -53,11 +53,13 @@ class TestUser(unittest.TestCase):
                         about_me TEXT
                      )''')
         c.execute('''CREATE TABLE IF NOT EXISTS history (
+                        reading_id TEXT PRIMARY KEY,
                         username TEXT,
                         question TEXT,
                         hexagram TEXT,
                         reading TEXT,
-                        reading_dt TEXT
+                        reading_dt TEXT,
+                        divination_type TEXT DEFAULT 'iching'
                      )''')
         conn.commit()
         conn.close()

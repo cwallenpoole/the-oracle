@@ -3,10 +3,10 @@
 {% block title %}Edit Profile - The Oracle{% endblock %}
 
 {% block breadcrumb %}
-<nav aria-label="breadcrumb" class="mt-3">
+<nav aria-label="breadcrumb" class="mt-2">
     <ol class="breadcrumb breadcrumb-oracle">
         <li class="breadcrumb-item">
-            <a href="{{ url_for('index') }}" class="text-white">
+            <a href="{{ url_for('readings.index') }}" class="text-white">
                 <i class="bi bi-house"></i> Home
             </a>
         </li>
@@ -22,13 +22,13 @@
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
             <div class="card card-oracle">
-                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, var(--oracle-primary) 0%, var(--oracle-secondary) 100%);">
+                <div class="card-header bg-gradient text-white card-header-gradient">
                     <h4 class="mb-0">
                         <i class="bi bi-person-gear"></i> Edit Your Profile
                     </h4>
                 </div>
                 <div class="card-body">
-                    <form method="post" action="{{ url_for('profile') }}">
+                    <form method="post" action="{{ url_for('auth.profile') }}">
                         <!-- Username Display -->
                         <div class="mb-4">
                             <label class="form-label fw-bold">
@@ -42,21 +42,97 @@
                             </div>
                         </div>
 
-                        <!-- Birthdate -->
+                        <!-- Birth Information Section -->
                         <div class="mb-4">
-                            <label for="birthdate" class="form-label">
-                                <i class="bi bi-calendar-heart text-primary"></i> Birthdate
-                            </label>
-                            <input
-                                type="date"
-                                class="form-control"
-                                id="birthdate"
-                                name="birthdate"
-                                value="{{ user_birthdate or '' }}"
-                            >
-                            <div class="form-text">
+                            <h5 class="mb-3">
+                                <i class="bi bi-star text-primary"></i> Birth Information
+                            </h5>
+                            <p class="text-muted small mb-3">
+                                <i class="bi bi-info-circle"></i>
+                                Complete birth information enables accurate astrological calculations for your readings
+                            </p>
+
+                            <!-- Birthdate -->
+                            <div class="mb-3">
+                                <label for="birthdate" class="form-label">
+                                    <i class="bi bi-calendar-heart text-primary"></i> Birth Date
+                                </label>
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    id="birthdate"
+                                    name="birthdate"
+                                    value="{{ user_birthdate or '' }}"
+                                >
+                            </div>
+
+                            <!-- Birth Time -->
+                            <div class="mb-3">
+                                <label for="birth_time" class="form-label">
+                                    <i class="bi bi-clock text-primary"></i> Birth Time
+                                </label>
+                                <input
+                                    type="time"
+                                    class="form-control"
+                                    id="birth_time"
+                                    name="birth_time"
+                                    value="{{ user_birth_time or '' }}"
+                                >
+                                <div class="form-text">
+                                    <i class="bi bi-lightbulb"></i>
+                                    Exact birth time is crucial for precise astrological calculations
+                                </div>
+                            </div>
+
+                                                        <!-- Birth Location Search -->
+                            <div class="mb-3">
+                                <label for="location_search" class="form-label">
+                                    <i class="bi bi-geo-alt text-primary"></i> Birth Location
+                                </label>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    id="location_search"
+                                    placeholder="Type your birth city, e.g., 'New York, NY' or 'London, UK'"
+                                >
+                                <div id="geocode_status" class="form-text mt-2 geocode-status-hidden">
+                                    <i class="bi bi-search"></i>
+                                    <span id="geocode_message">Searching...</span>
+                                </div>
+                            </div>
+
+                            <!-- Birth Coordinates -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="birth_latitude" class="form-label">
+                                        <i class="bi bi-compass text-primary"></i> Latitude
+                                    </label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="birth_latitude"
+                                        name="birth_latitude"
+                                        value="{{ user_birth_latitude or '' }}"
+                                        placeholder="e.g., 40.7128"
+                                    >
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="birth_longitude" class="form-label">
+                                        <i class="bi bi-compass text-primary"></i> Longitude
+                                    </label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        id="birth_longitude"
+                                        name="birth_longitude"
+                                        value="{{ user_birth_longitude or '' }}"
+                                        placeholder="e.g., -74.0060"
+                                    >
+                                </div>
+                            </div>
+                            <div class="form-text mt-2">
                                 <i class="bi bi-lightbulb"></i>
-                                Your birthdate helps personalize your I Ching experience
+                                <small>Type a location above to auto-populate coordinates, or enter them manually</small>
                             </div>
                         </div>
 
@@ -129,7 +205,7 @@
 
                         <!-- Action Buttons -->
                         <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                            <a href="{{ url_for('readings.index') }}" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-oracle">
@@ -149,7 +225,15 @@
                     <ul class="list-unstyled mb-0">
                         <li class="mb-2">
                             <i class="bi bi-check-circle text-success"></i>
-                            Your birthdate can add personal context to your readings
+                            Complete birth information enables accurate astrological calculations
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Birth time is essential for precise planetary positions and house calculations
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Birth location helps determine your unique cosmic perspective
                         </li>
                         <li class="mb-2">
                             <i class="bi bi-check-circle text-success"></i>
@@ -165,4 +249,117 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Geocoding functionality
+let geocodeTimeout;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const locationSearch = document.getElementById('location_search');
+    const latitudeInput = document.getElementById('birth_latitude');
+    const longitudeInput = document.getElementById('birth_longitude');
+    const geocodeStatus = document.getElementById('geocode_status');
+    const geocodeMessage = document.getElementById('geocode_message');
+
+    // Populate search field if coordinates exist
+    if (latitudeInput.value && longitudeInput.value) {
+        // Reverse geocode to show location name
+        reverseGeocode(latitudeInput.value, longitudeInput.value);
+    }
+
+    // Debounced geocoding on location search input
+    locationSearch.addEventListener('input', function() {
+        const address = this.value.trim();
+
+        // Clear previous timeout
+        if (geocodeTimeout) {
+            clearTimeout(geocodeTimeout);
+        }
+
+        // Hide status if input is empty
+        if (!address) {
+            geocodeStatus.style.display = 'none';
+            return;
+        }
+
+        // Show loading status
+        geocodeStatus.style.display = 'block';
+        geocodeMessage.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Searching...';
+        geocodeStatus.className = 'form-text mt-2 text-primary';
+
+        // Debounce for 1.5 seconds
+        geocodeTimeout = setTimeout(() => {
+            geocodeAddress(address);
+        }, 1500);
+    });
+
+    // Allow manual coordinate entry to clear search
+    [latitudeInput, longitudeInput].forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.value && !locationSearch.dataset.geocoded) {
+                locationSearch.value = '';
+                geocodeStatus.style.display = 'none';
+            }
+        });
+    });
+});
+
+function geocodeAddress(address) {
+    const geocodeStatus = document.getElementById('geocode_status');
+    const geocodeMessage = document.getElementById('geocode_message');
+    const latitudeInput = document.getElementById('birth_latitude');
+    const longitudeInput = document.getElementById('birth_longitude');
+    const locationSearch = document.getElementById('location_search');
+
+    // Call our backend proxy
+    fetch(`/api/geocode?address=${encodeURIComponent(address)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                geocodeMessage.innerHTML = `<i class="bi bi-exclamation-triangle"></i> ${data.error}`;
+                geocodeStatus.className = 'form-text mt-2 text-warning';
+            } else {
+                // Success - update coordinates
+                latitudeInput.value = data.latitude.toFixed(6);
+                longitudeInput.value = data.longitude.toFixed(6);
+
+                // Show success message with location name
+                const shortName = data.display_name.split(',').slice(0, 3).join(', ');
+                geocodeMessage.innerHTML = `<i class="bi bi-check-circle"></i> Found: ${shortName}`;
+                geocodeStatus.className = 'form-text mt-2 text-success';
+
+                // Mark as geocoded to prevent clearing
+                locationSearch.dataset.geocoded = 'true';
+            }
+        })
+        .catch(error => {
+            console.error('Geocoding error:', error);
+            geocodeMessage.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Unable to geocode location';
+            geocodeStatus.className = 'form-text mt-2 text-danger';
+        });
+}
+
+function reverseGeocode(lat, lng) {
+    const locationSearch = document.getElementById('location_search');
+
+    // Simple reverse geocoding to populate the search field
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, {
+        headers: {'User-Agent': 'Oracle-App/1.0'}
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.display_name) {
+            const shortName = data.display_name.split(',').slice(0, 3).join(', ');
+            locationSearch.value = shortName;
+            locationSearch.dataset.geocoded = 'true';
+        }
+    })
+    .catch(error => {
+        console.error('Reverse geocoding error:', error);
+        // Silently fail - coordinates are still valid
+    });
+}
+</script>
 {% endblock %}

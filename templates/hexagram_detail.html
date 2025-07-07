@@ -94,15 +94,15 @@
 </style>
 {% endblock %}
 {% block breadcrumb %}
-<nav aria-label="breadcrumb" class="mt-3">
+<nav aria-label="breadcrumb" class="mt-2">
     <ol class="breadcrumb breadcrumb-oracle">
         <li class="breadcrumb-item">
-            <a href="{{ url_for('index') }}" class="text-white">
+                            <a href="{{ url_for('readings.index') }}" class="text-white">
                 <i class="bi bi-house"></i> Home
             </a>
         </li>
         <li class="breadcrumb-item">
-            <a href="{{ url_for('hexagrams_list') }}" class="text-white">
+                            <a href="{{ url_for('nav.hexagrams_list') }}" class="text-white">
                 <i class="bi bi-book"></i> Hexagrams
             </a>
         </li>
@@ -118,12 +118,12 @@
     <!-- Hexagram Display - Large and Centered First -->
     <div class="card card-oracle mb-4">
         <div class="card-body text-center py-5">
-            <div class="hexagram-main-display mb-4" style="font-size: 8rem; color: var(--oracle-gold); text-shadow: 3px 3px 6px rgba(0,0,0,1); line-height: 1;">
+            <div class="hexagram-main-display mb-4">
                 {{ hexagram.Symbol }}
             </div>
             <h1 class="display-4 mb-3">
-                <span style="color: var(--oracle-gold); text-shadow: 3px 3px 6px rgba(0,0,0,1); ">
-                    <small style="color: var(--oracle-black-light);">{{ hexagram.Number }}:</small>
+                <span class="hexagram-title-display">
+                    <small class="hexagram-number-display">{{ hexagram.Number }}:</small>
                     {{ hexagram.Title }}
                 </span>
             </h1>
@@ -142,7 +142,7 @@
                 <div class="col-md-6">
                     <h5 class="text-primary">Upper Trigram</h5>
                     <p class="fs-6 mb-2">{{ hexagram.About.Above }}</p>
-                    <a href="{{ url_for('trigrams_list', return_to=request.url) }}#{{ hexagram.About.Above | sanitize_css_selector }}"
+                                            <a href="{{ url_for('nav.trigrams_list', return_to=request.url) }}#{{ hexagram.About.Above | sanitize_css_selector }}"
                        class="btn btn-outline-primary btn-sm">
                         <i class="bi bi-info-circle"></i> Learn More
                     </a>
@@ -150,7 +150,7 @@
                 <div class="col-md-6">
                     <h5 class="text-primary">Lower Trigram</h5>
                     <p class="fs-6 mb-2">{{ hexagram.About.Below }}</p>
-                    <a href="{{ url_for('trigrams_list', return_to=request.url) }}#{{ hexagram.About.Below | sanitize_css_selector }}"
+                                            <a href="{{ url_for('nav.trigrams_list', return_to=request.url) }}#{{ hexagram.About.Below | sanitize_css_selector }}"
                        class="btn btn-outline-primary btn-sm">
                         <i class="bi bi-info-circle"></i> Learn More
                     </a>
@@ -288,20 +288,20 @@
     <div class="row mt-5">
         <div class="col-md-4">
             {% if hexagram.Number > 1 %}
-            <a href="{{ url_for('hexagram_detail', number=hexagram.Number-1, name='previous') }}"
+                            <a href="{{ url_for('nav.hexagram_detail', number=hexagram.Number-1, name='previous') }}"
                class="btn btn-outline-secondary w-100">
                 <i class="bi bi-arrow-left"></i> Previous Hexagram
             </a>
             {% endif %}
         </div>
         <div class="col-md-4 text-center">
-            <a href="{{ url_for('hexagrams_list') }}" class="btn btn-oracle w-100">
+                            <a href="{{ url_for('nav.hexagrams_list') }}" class="btn btn-oracle w-100">
                 <i class="bi bi-grid-3x3-gap"></i> All Hexagrams
             </a>
         </div>
         <div class="col-md-4">
             {% if hexagram.Number < 64 %}
-            <a href="{{ url_for('hexagram_detail', number=hexagram.Number+1, name='next') }}"
+                            <a href="{{ url_for('nav.hexagram_detail', number=hexagram.Number+1, name='next') }}"
                class="btn btn-outline-secondary w-100">
                 Next Hexagram <i class="bi bi-arrow-right"></i>
             </a>
@@ -318,7 +318,7 @@
             <p class="card-text text-muted">
                 Return to the Oracle to ask a question and receive a personalized reading
             </p>
-            <a href="{{ url_for('index') }}" class="btn btn-oracle">
+            <a href="{{ url_for('readings.index') }}" class="btn btn-oracle">
                 <i class="bi bi-stars"></i> Get a Reading
             </a>
         </div>

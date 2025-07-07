@@ -9,6 +9,9 @@ class IChingLine(BaseDoc):
     Quote: str
     Text: str
 
+    def __str__(self):
+        return f'>> {self.Quote}\n{self.Text}'
+
 class IChingAbout(BaseDoc):
     Above: str
     Below: str

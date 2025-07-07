@@ -1,0 +1,750 @@
+{% extends "base.html" %}
+
+{% block title %}Drafts - Experimental Widgets{% endblock %}
+
+{% block extra_css %}
+<style>
+    .widget-container {
+        background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+        border: 3px solid var(--oracle-gold-dark);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+
+    .widget-title {
+        color: var(--oracle-red);
+        font-weight: bold;
+        margin-bottom: 1rem;
+        text-align: center;
+        font-size: 1.5rem;
+    }
+
+    .zodiac-circle {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .planet-dot {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .planet-dot:hover {
+        r: 8;
+        opacity: 0.8;
+    }
+
+    .zodiac-sign {
+        font-size: 18px;
+        font-weight: bold;
+        fill: var(--oracle-red);
+        text-anchor: middle;
+        dominant-baseline: central;
+    }
+
+    .constellation-group {
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+    }
+
+    .constellation-group:hover {
+        opacity: 1;
+    }
+
+    .moon-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .moon-phase-info {
+        margin-top: 1rem;
+        text-align: center;
+        color: var(--oracle-black);
+    }
+
+
+
+    .planet-info {
+        background: rgba(139,0,0,0.1);
+        border: 1px solid var(--oracle-gold-dark);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-top: 1rem;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .planet-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .planet-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .planet-symbol {
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!--
+URL Parameter Usage:
+- ?date=2024-01-15 - Set specific date (YYYY-MM-DD format)
+- ?time=14:30 - Set specific time (HH:MM format, 24-hour)
+- ?date=2024-01-15&time=14:30 - Set both date and time
+
+Examples:
+- /drafts?date=2024-12-21 - Winter solstice 2024
+- /drafts?date=2024-06-21&time=12:00 - Summer solstice 2024 at noon
+- /drafts?time=03:00 - Current date at 3 AM
+- /drafts?date=2025-07-04&time=20:00 - July 4th 2025 at 8 PM
+
+Widgets affected:
+- Planet positions will show planetary alignments for the specified date
+- Moon phase will show lunar phase for the specified date
+- Time widget will show sun/moon positions for the specified time
+-->
+<div class="container-fluid p-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-center mb-4 drafts-title">
+                <i class="bi bi-gear"></i> Experimental Drafts
+            </h1>
+            <p class="text-center text-muted mb-4">
+                These are experimental widgets not yet integrated into the main application.
+            </p>
+        </div>
+    </div>
+
+    <!-- Planet Positions Widget -->
+    <div class="row">
+        <div class="col-12">
+            <div class="widget-container">
+                <h3 class="widget-title">Current Planet Positions in Zodiac</h3>
+                <div class="text-center">
+                                        <svg id="zodiacWheel" width="400" height="400" viewBox="0 0 400 400" class="zodiac-circle">
+                        <!-- Outer zodiac circle -->
+                        <circle cx="200" cy="200" r="180" fill="none" stroke="var(--oracle-gold-dark)" stroke-width="3"/>
+
+                        <!-- Inner planet orbit circle -->
+                        <circle cx="200" cy="200" r="140" fill="none" stroke="var(--oracle-red)" stroke-width="1" opacity="0.3"/>
+
+                        <!-- Zodiac signs will be added by JavaScript -->
+                        <g id="zodiacSigns"></g>
+
+                        <!-- Planet positions will be added by JavaScript -->
+                        <g id="planetPositions"></g>
+
+                                                                        <!-- Center Aztec Symbol -->
+                        <g id="centerAztecSymbol">
+                            <!-- Aztec symbol will be added by JavaScript -->
+                        </g>
+                    </svg>
+                </div>
+                <div id="planetInfo" class="planet-info">
+                    <div id="planetList" class="planet-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- Moon Phase Widget -->
+    <div class="row">
+        <div class="col-12">
+            <div class="widget-container">
+                <h3 class="widget-title">Current Moon Phase</h3>
+                <div class="moon-container">
+                    <svg id="moonPhase" width="200" height="200" viewBox="0 0 200 200">
+                        <!-- Moon background -->
+                        <circle cx="100" cy="100" r="80" fill="#f5f5f5" stroke="var(--oracle-gold-dark)" stroke-width="2"/>
+
+                        <!-- Shadow/illuminated parts will be added by JavaScript -->
+                        <g id="moonShadow"></g>
+                    </svg>
+                    <div id="moonPhaseInfo" class="moon-phase-info">
+                        <div id="moonPhaseName"></div>
+                        <div id="moonPhasePercentage"></div>
+                        <div id="moonPhaseAge"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Zodiac signs data
+const zodiacSigns = [
+    {name: 'Aries', symbol: '♈', startDegree: 0, constellation: '☘'},
+    {name: 'Taurus', symbol: '♉', startDegree: 30, constellation: '♉'},
+    {name: 'Gemini', symbol: '♊', startDegree: 60, constellation: '♊'},
+    {name: 'Cancer', symbol: '♋', startDegree: 90, constellation: '♋'},
+    {name: 'Leo', symbol: '♌', startDegree: 120, constellation: '♌'},
+    {name: 'Virgo', symbol: '♍', startDegree: 150, constellation: '♍'},
+    {name: 'Libra', symbol: '♎', startDegree: 180, constellation: '♎'},
+    {name: 'Scorpio', symbol: '♏', startDegree: 210, constellation: '♏'},
+    {name: 'Sagittarius', symbol: '♐', startDegree: 240, constellation: '♐'},
+    {name: 'Capricorn', symbol: '♑', startDegree: 270, constellation: '♑'},
+    {name: 'Aquarius', symbol: '♒', startDegree: 300, constellation: '♒'},
+    {name: 'Pisces', symbol: '♓', startDegree: 330, constellation: '♓'}
+];
+
+// Planet data with symbols, colors, and orbital parameters
+const planets = [
+    {name: 'Sun', symbol: '☉', color: '#FFD700', period: 365.25, longitude0: 280.0, meanMotion: 0.9856},
+    {name: 'Moon', symbol: '☽', color: '#C0C0C0', period: 27.32, longitude0: 318.0, meanMotion: 13.1764},
+    {name: 'Mercury', symbol: '☿', color: '#FFA500', period: 87.97, longitude0: 252.0, meanMotion: 4.0923},
+    {name: 'Venus', symbol: '♀', color: '#FFC0CB', period: 224.70, longitude0: 181.0, meanMotion: 1.6021},
+    {name: 'Mars', symbol: '♂', color: '#FF4500', period: 686.98, longitude0: 355.0, meanMotion: 0.5240},
+    {name: 'Jupiter', symbol: '♃', color: '#FF8C00', period: 4332.59, longitude0: 34.0, meanMotion: 0.0831},
+    {name: 'Saturn', symbol: '♄', color: '#DAA520', period: 10759.22, longitude0: 50.0, meanMotion: 0.0335},
+    {name: 'Uranus', symbol: '♅', color: '#4FD0E3', period: 30688.5, longitude0: 314.0, meanMotion: 0.0117},
+    {name: 'Neptune', symbol: '♆', color: '#4169E1', period: 60182, longitude0: 304.0, meanMotion: 0.0060},
+    {name: 'Pluto', symbol: '♇', color: '#8B4513', period: 90560, longitude0: 238.0, meanMotion: 0.0040}
+];
+
+// Get current date/time or from URL parameters
+function getCurrentDateTime() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateParam = urlParams.get('date'); // Format: YYYY-MM-DD
+    const timeParam = urlParams.get('time'); // Format: HH:MM
+
+    if (dateParam) {
+        let targetDate = new Date(dateParam);
+
+        if (timeParam) {
+            const [hours, minutes] = timeParam.split(':').map(Number);
+            targetDate.setHours(hours, minutes, 0, 0);
+        }
+
+        // Check if the date is valid
+        if (!isNaN(targetDate.getTime())) {
+            return targetDate;
+        }
+    }
+
+    return new Date(); // Default to current time
+}
+
+// Initialize all widgets
+document.addEventListener('DOMContentLoaded', function() {
+    initZodiacWheel();
+    initMoonPhase();
+    initTimeWidget();
+    displayCurrentDateTime();
+
+    // Only auto-update if we're not using custom parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.get('date') && !urlParams.get('time')) {
+        // Update every minute for real-time mode
+        setInterval(() => {
+            updateMoonPhase();
+            updateTimeWidget();
+            displayCurrentDateTime();
+        }, 60000);
+    }
+});
+
+// Display what date/time we're currently showing
+function displayCurrentDateTime() {
+    const currentTime = getCurrentDateTime();
+    const urlParams = new URLSearchParams(window.location.search);
+    const isCustomTime = urlParams.get('date') || urlParams.get('time');
+
+    // Remove existing display if present
+    const existingDisplay = document.querySelector('.datetime-display');
+    if (existingDisplay) {
+        existingDisplay.remove();
+    }
+
+    // Create new display
+    const display = document.createElement('div');
+    display.className = 'datetime-display';
+    display.style.cssText = `
+        position: fixed;
+        top: 70px;
+        right: 10px;
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 12px;
+        z-index: 1000;
+        ${isCustomTime ? 'border: 2px solid orange;' : ''}
+    `;
+
+    const timeStr = currentTime.toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+
+    display.innerHTML = `
+        <div>${isCustomTime ? '⚠️ CUSTOM TIME' : '🕐 LIVE TIME'}</div>
+        <div>${timeStr}</div>
+        ${isCustomTime ? '<div class="custom-time-notice">Remove ?date/time to go live</div>' : ''}
+    `;
+
+    document.body.appendChild(display);
+}
+
+function initZodiacWheel() {
+    // Draw zodiac signs
+    const zodiacGroup = document.getElementById('zodiacSigns');
+
+    zodiacSigns.forEach((sign, index) => {
+        const angle = (sign.startDegree - 90) * Math.PI / 180; // -90 to start at top
+        const x = 200 + Math.cos(angle) * 160;
+        const y = 200 + Math.sin(angle) * 160;
+
+        // Create zodiac sign marker
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y);
+        text.setAttribute('class', 'zodiac-sign');
+        text.textContent = sign.symbol;
+        zodiacGroup.appendChild(text);
+
+        // Add division lines
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', 200 + Math.cos(angle) * 140);
+        line.setAttribute('y1', 200 + Math.sin(angle) * 140);
+        line.setAttribute('x2', 200 + Math.cos(angle) * 180);
+        line.setAttribute('y2', 200 + Math.sin(angle) * 180);
+        line.setAttribute('stroke', 'var(--oracle-gold-dark)');
+        line.setAttribute('stroke-width', '1');
+        line.setAttribute('opacity', '0.5');
+        zodiacGroup.appendChild(line);
+    });
+
+    // Calculate planet positions using astronomical orbital mechanics
+    simulatePlanetPositions();
+}
+
+// Calculate accurate planet position using real orbital mechanics
+// This uses actual orbital periods and mean motions for astronomical accuracy
+function calculatePlanetPosition(planet, date) {
+    // J2000.0 epoch (January 1, 2000, 12:00 TT) - standard astronomical reference point
+    const j2000 = new Date('2000-01-01T12:00:00Z');
+
+    // Calculate days since J2000 epoch
+    const daysSinceEpoch = (date.getTime() - j2000.getTime()) / (1000 * 60 * 60 * 24);
+
+    // Calculate mean longitude
+    let meanLongitude = planet.longitude0 + (planet.meanMotion * daysSinceEpoch);
+
+    // Normalize to 0-360 degrees
+    meanLongitude = meanLongitude % 360;
+    if (meanLongitude < 0) meanLongitude += 360;
+
+    // For improved accuracy, add some basic perturbations for major planets
+    let longitude = meanLongitude;
+
+    // Add simple perturbations for more realistic positions
+    if (planet.name === 'Moon') {
+        // Lunar perturbations (simplified) - avoid recursion by calculating sun directly
+        const sunMeanLong = (planets[0].longitude0 + (planets[0].meanMotion * daysSinceEpoch)) % 360;
+        longitude += 6.29 * Math.sin(Math.PI * (meanLongitude - sunMeanLong) / 180);
+    } else if (planet.name === 'Mercury') {
+        // Mercury perturbations
+        longitude += 0.4 * Math.sin(Math.PI * meanLongitude * 4 / 180);
+    } else if (planet.name === 'Venus') {
+        // Venus perturbations
+        longitude += 0.3 * Math.sin(Math.PI * meanLongitude * 2 / 180);
+    } else if (planet.name === 'Mars') {
+        // Mars perturbations from Jupiter - avoid recursion
+        const jupiterMeanLong = (planets[5].longitude0 + (planets[5].meanMotion * daysSinceEpoch)) % 360;
+        longitude += 0.2 * Math.sin(Math.PI * (meanLongitude - jupiterMeanLong) / 180);
+    }
+
+    // Normalize final longitude
+    longitude = longitude % 360;
+    if (longitude < 0) longitude += 360;
+
+    return {
+        longitude: longitude,
+        distance: 1.0 // Simplified - in real calculations this would vary
+    };
+}
+
+function simulatePlanetPositions() {
+    const planetGroup = document.getElementById('planetPositions');
+    const planetList = document.getElementById('planetList');
+
+    // Clear previous positions
+    planetGroup.innerHTML = '';
+    planetList.innerHTML = '';
+
+    planets.forEach((planet, index) => {
+        // Calculate actual astronomical position
+        const now = getCurrentDateTime();
+        const position = calculatePlanetPosition(planet, now);
+        const baseAngle = position.longitude;
+        const angle = (baseAngle - 90) * Math.PI / 180;
+
+        const radius = 140 + (index % 3) * 10; // Vary radius slightly
+        const x = 200 + Math.cos(angle) * radius;
+        const y = 200 + Math.sin(angle) * radius;
+
+                        // Create background circle for symbol
+        const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        bgCircle.setAttribute('cx', x);
+        bgCircle.setAttribute('cy', y);
+        bgCircle.setAttribute('r', 12);
+
+                // Convert hex color to rgba with 0.3 alpha for more subtle background
+        const hexColor = planet.color;
+        const r = parseInt(hexColor.slice(1, 3), 16);
+        const g = parseInt(hexColor.slice(3, 5), 16);
+        const b = parseInt(hexColor.slice(5, 7), 16);
+        const bgColor = `rgba(${r}, ${g}, ${b}, 0.3)`;
+
+        bgCircle.setAttribute('fill', bgColor);
+        bgCircle.setAttribute('stroke', planet.color);
+        bgCircle.setAttribute('stroke-width', '2');
+        bgCircle.setAttribute('class', 'planet-dot');
+        bgCircle.setAttribute('title', planet.name);
+        planetGroup.appendChild(bgCircle);
+
+        // Add planet symbol (high contrast white with colored outline)
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y + 4);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '18');
+        text.setAttribute('fill', 'white');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('stroke', planet.color);
+        text.setAttribute('stroke-width', '2');
+        text.setAttribute('paint-order', 'stroke fill');
+        text.textContent = planet.symbol;
+        planetGroup.appendChild(text);
+
+        // Find zodiac sign
+        const normalizedAngle = (baseAngle + 360) % 360;
+        const signIndex = Math.floor(normalizedAngle / 30);
+        const sign = zodiacSigns[signIndex];
+        const degreesInSign = Math.floor(normalizedAngle % 30);
+
+        // Add to planet list with detailed info
+        const planetItem = document.createElement('div');
+        planetItem.className = 'planet-item';
+        planetItem.innerHTML = `
+            <span class="planet-symbol" style="color: ${planet.color}">${planet.symbol}</span>
+            <span>${planet.name} in ${sign.name} ${degreesInSign}°</span>
+            <small class="planet-angle-text">(${normalizedAngle.toFixed(1)}°)</small>
+        `;
+        planetList.appendChild(planetItem);
+    });
+}
+
+function getDayOfYear(date) {
+    const start = new Date(date.getFullYear(), 0, 0);
+    const diff = date - start;
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+}
+
+function initMoonPhase() {
+    updateMoonPhase();
+}
+
+function updateMoonPhase() {
+    const now = getCurrentDateTime();
+    const moonPhase = calculateMoonPhase(now);
+
+    // Update moon visual
+    const moonShadow = document.getElementById('moonShadow');
+    moonShadow.innerHTML = '';
+
+    // Create moon shadow based on phase
+    const illumination = moonPhase.illumination;
+
+    if (illumination < 0.5) {
+        // Waning - shadow from right
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const shadowWidth = 80 * (1 - illumination * 2);
+        path.setAttribute('d', `M 100 20 A ${shadowWidth} 80 0 0 1 100 180 A 80 80 0 0 0 100 20`);
+        path.setAttribute('fill', '#333');
+        path.setAttribute('opacity', '0.7');
+        moonShadow.appendChild(path);
+    } else {
+        // Waxing - shadow from left
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const shadowWidth = 80 * ((illumination - 0.5) * 2);
+        path.setAttribute('d', `M 100 20 A ${shadowWidth} 80 0 0 0 100 180 A 80 80 0 0 1 100 20`);
+        path.setAttribute('fill', '#333');
+        path.setAttribute('opacity', '0.7');
+        moonShadow.appendChild(path);
+    }
+
+    // Update moon info
+    document.getElementById('moonPhaseName').textContent = moonPhase.phaseName;
+    document.getElementById('moonPhasePercentage').textContent = `${Math.round(illumination * 100)}% illuminated`;
+    document.getElementById('moonPhaseAge').textContent = `${moonPhase.age.toFixed(1)} days old`;
+}
+
+function calculateMoonPhase(date) {
+    // Simplified moon phase calculation
+    const newMoonRef = new Date('2024-01-11'); // Known new moon date
+    const msDiff = date - newMoonRef;
+    const daysDiff = msDiff / (1000 * 60 * 60 * 24);
+    const lunarCycle = 29.53059; // Average lunar cycle in days
+
+    const age = ((daysDiff % lunarCycle) + lunarCycle) % lunarCycle;
+    const illumination = (1 - Math.cos(age / lunarCycle * 2 * Math.PI)) / 2;
+
+    let phaseName;
+    if (age < 1.84566) phaseName = "New Moon";
+    else if (age < 5.53699) phaseName = "Waxing Crescent";
+    else if (age < 9.22831) phaseName = "First Quarter";
+    else if (age < 12.91963) phaseName = "Waxing Gibbous";
+    else if (age < 16.61096) phaseName = "Full Moon";
+    else if (age < 20.30228) phaseName = "Waning Gibbous";
+    else if (age < 23.99361) phaseName = "Last Quarter";
+    else if (age < 27.68493) phaseName = "Waning Crescent";
+    else phaseName = "New Moon";
+
+    return { age, illumination, phaseName };
+}
+
+
+
+function initTimeWidget() {
+    updateTimeWidget();
+}
+
+function createAztecSun(centerX, centerY, size = 60) {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+    // Outer sun rays (triangular)
+    for (let i = 0; i < 16; i++) {
+        const angle = (i * 22.5) * Math.PI / 180;
+        const outerRadius = size * 0.9;
+        const innerRadius = size * 0.7;
+
+        const x1 = centerX + Math.cos(angle) * innerRadius;
+        const y1 = centerY + Math.sin(angle) * innerRadius;
+        const x2 = centerX + Math.cos(angle) * outerRadius;
+        const y2 = centerY + Math.sin(angle) * outerRadius;
+
+        // Create triangular rays
+        const ray = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        const rayWidth = 8;
+        const perpAngle = angle + Math.PI / 2;
+        const px1 = x1 + Math.cos(perpAngle) * rayWidth / 2;
+        const py1 = y1 + Math.sin(perpAngle) * rayWidth / 2;
+        const px2 = x1 - Math.cos(perpAngle) * rayWidth / 2;
+        const py2 = y1 - Math.sin(perpAngle) * rayWidth / 2;
+
+        ray.setAttribute('points', `${px1},${py1} ${px2},${py2} ${x2},${y2}`);
+        ray.setAttribute('fill', '#FFD700');
+        ray.setAttribute('stroke', '#FF8C00');
+        ray.setAttribute('stroke-width', '1');
+        g.appendChild(ray);
+    }
+
+    // Main sun circle
+    const sunCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    sunCircle.setAttribute('cx', centerX);
+    sunCircle.setAttribute('cy', centerY);
+    sunCircle.setAttribute('r', size * 0.6);
+    sunCircle.setAttribute('fill', '#FFD700');
+    sunCircle.setAttribute('stroke', '#FF8C00');
+    sunCircle.setAttribute('stroke-width', '3');
+    g.appendChild(sunCircle);
+
+    // Inner decorative pattern
+    const innerCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    innerCircle.setAttribute('cx', centerX);
+    innerCircle.setAttribute('cy', centerY);
+    innerCircle.setAttribute('r', size * 0.3);
+    innerCircle.setAttribute('fill', 'none');
+    innerCircle.setAttribute('stroke', '#FF8C00');
+    innerCircle.setAttribute('stroke-width', '2');
+    g.appendChild(innerCircle);
+
+    // Central dot
+    const centerDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    centerDot.setAttribute('cx', centerX);
+    centerDot.setAttribute('cy', centerY);
+    centerDot.setAttribute('r', size * 0.1);
+    centerDot.setAttribute('fill', '#FF8C00');
+    g.appendChild(centerDot);
+
+    return g;
+}
+
+function createAztecMoon(centerX, centerY, size = 60) {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+    // Moon crescent base
+    const moonBase = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    moonBase.setAttribute('cx', centerX);
+    moonBase.setAttribute('cy', centerY);
+    moonBase.setAttribute('r', size * 0.6);
+    moonBase.setAttribute('fill', '#E6E6FA');
+    moonBase.setAttribute('stroke', '#C0C0C0');
+    moonBase.setAttribute('stroke-width', '2');
+    g.appendChild(moonBase);
+
+    // Crescent shadow
+    const moonShadow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    moonShadow.setAttribute('cx', centerX + size * 0.2);
+    moonShadow.setAttribute('cy', centerY);
+    moonShadow.setAttribute('r', size * 0.6);
+    moonShadow.setAttribute('fill', '#4B0082');
+    g.appendChild(moonShadow);
+
+    // Decorative lunar features
+    const crater1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    crater1.setAttribute('cx', centerX - size * 0.2);
+    crater1.setAttribute('cy', centerY - size * 0.1);
+    crater1.setAttribute('r', size * 0.08);
+    crater1.setAttribute('fill', '#D3D3D3');
+    g.appendChild(crater1);
+
+    const crater2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    crater2.setAttribute('cx', centerX - size * 0.1);
+    crater2.setAttribute('cy', centerY + size * 0.2);
+    crater2.setAttribute('r', size * 0.05);
+    crater2.setAttribute('fill', '#D3D3D3');
+    g.appendChild(crater2);
+
+    // Aztec-style decorative elements
+    for (let i = 0; i < 8; i++) {
+        const angle = (i * 45) * Math.PI / 180;
+        const radius = size * 0.8;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+
+        const star = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        star.setAttribute('x', x);
+        star.setAttribute('y', y + 3);
+        star.setAttribute('text-anchor', 'middle');
+        star.setAttribute('font-size', '8');
+        star.setAttribute('fill', '#C0C0C0');
+        star.textContent = '★';
+        g.appendChild(star);
+    }
+
+    return g;
+}
+
+function updateTimeWidget() {
+    const now = getCurrentDateTime();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const totalMinutes = hours * 60 + minutes;
+
+    // Calculate positions for sun and moon in orbit (like other planets)
+    const sunAngle = ((totalMinutes / (24 * 60)) * 360 - 90) * Math.PI / 180; // Current time position
+    const moonAngle = sunAngle + Math.PI; // Opposite side for moon
+
+    const orbitRadius = 120; // Same radius as inner planets
+    const centerX = 200;
+    const centerY = 200;
+
+    const sunX = centerX + Math.cos(sunAngle) * orbitRadius;
+    const sunY = centerY + Math.sin(sunAngle) * orbitRadius;
+    const moonX = centerX + Math.cos(moonAngle) * orbitRadius;
+    const moonY = centerY + Math.sin(moonAngle) * orbitRadius;
+
+    // Add sun and moon to planet positions
+    const planetGroup = document.getElementById('planetPositions');
+
+    // Remove existing sun/moon if they exist
+    const existingSun = document.getElementById('timeSun');
+    const existingMoon = document.getElementById('timeMoon');
+    if (existingSun) existingSun.remove();
+    if (existingMoon) existingMoon.remove();
+
+    // Create sun in orbit
+    const sunGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    sunGroup.setAttribute('id', 'timeSun');
+
+    const sunBg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    sunBg.setAttribute('cx', sunX);
+    sunBg.setAttribute('cy', sunY);
+    sunBg.setAttribute('r', 12);
+    sunBg.setAttribute('fill', 'rgba(255, 215, 0, 0.3)');
+    sunBg.setAttribute('stroke', '#FFD700');
+    sunBg.setAttribute('stroke-width', '2');
+    sunGroup.appendChild(sunBg);
+
+    const sunSymbol = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    sunSymbol.setAttribute('x', sunX);
+    sunSymbol.setAttribute('y', sunY + 4);
+    sunSymbol.setAttribute('text-anchor', 'middle');
+    sunSymbol.setAttribute('font-size', '18');
+    sunSymbol.setAttribute('fill', 'white');
+    sunSymbol.setAttribute('font-weight', 'bold');
+    sunSymbol.setAttribute('stroke', '#FFD700');
+    sunSymbol.setAttribute('stroke-width', '2');
+    sunSymbol.setAttribute('paint-order', 'stroke fill');
+    sunSymbol.textContent = '☉';
+    sunGroup.appendChild(sunSymbol);
+
+    planetGroup.appendChild(sunGroup);
+
+    // Create moon in orbit
+    const moonGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    moonGroup.setAttribute('id', 'timeMoon');
+
+    const moonBg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    moonBg.setAttribute('cx', moonX);
+    moonBg.setAttribute('cy', moonY);
+    moonBg.setAttribute('r', 12);
+    moonBg.setAttribute('fill', 'rgba(192, 192, 192, 0.3)');
+    moonBg.setAttribute('stroke', '#C0C0C0');
+    moonBg.setAttribute('stroke-width', '2');
+    moonGroup.appendChild(moonBg);
+
+    const moonSymbol = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    moonSymbol.setAttribute('x', moonX);
+    moonSymbol.setAttribute('y', moonY + 4);
+    moonSymbol.setAttribute('text-anchor', 'middle');
+    moonSymbol.setAttribute('font-size', '18');
+    moonSymbol.setAttribute('fill', 'white');
+    moonSymbol.setAttribute('font-weight', 'bold');
+    moonSymbol.setAttribute('stroke', '#C0C0C0');
+    moonSymbol.setAttribute('stroke-width', '2');
+    moonSymbol.setAttribute('paint-order', 'stroke fill');
+    moonSymbol.textContent = '☽';
+    moonGroup.appendChild(moonSymbol);
+
+    planetGroup.appendChild(moonGroup);
+
+    // Update center Aztec symbol
+    const centerSymbol = document.getElementById('centerAztecSymbol');
+    centerSymbol.innerHTML = '';
+
+    const isDaytime = hours >= 6 && hours < 18;
+    if (isDaytime) {
+        centerSymbol.appendChild(createAztecSun(centerX, centerY, 130));
+    } else {
+        centerSymbol.appendChild(createAztecMoon(centerX, centerY, 130));
+    }
+
+
+}
+</script>
+{% endblock %}

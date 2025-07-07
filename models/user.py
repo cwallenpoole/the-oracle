@@ -5,11 +5,15 @@ from typing import Optional, Dict, Any
 class User:
     """User model for handling user data and authentication"""
 
-    def __init__(self, username: str, password_hash: str = "", birthdate: str = "", about_me: str = ""):
+    def __init__(self, username: str, password_hash: str = "", birthdate: str = "", about_me: str = "",
+                 birth_time: str = "", birth_latitude: str = "", birth_longitude: str = ""):
         self.username = username
         self.password_hash = password_hash
         self.birthdate = birthdate
         self.about_me = about_me
+        self.birth_time = birth_time
+        self.birth_latitude = birth_latitude
+        self.birth_longitude = birth_longitude
         self.db_file = "data/users.db"
         self._history = None  # Lazy-loaded history
 
@@ -22,13 +26,14 @@ class User:
         return self._history
 
     @classmethod
-    def create(cls, username: str, password: str, birthdate: str = "", about_me: str = "") -> Optional['User']:
+    def create(cls, username: str, password: str, birthdate: str = "", about_me: str = "",
+               birth_time: str = "", birth_latitude: str = "", birth_longitude: str = "") -> Optional['User']:
         """Create a new user and save to database"""
         if cls.exists(username):
             return None
 
         password_hash = generate_password_hash(password)
-        user = cls(username, password_hash, birthdate, about_me)
+        user = cls(username, password_hash, birthdate, about_me, birth_time, birth_latitude, birth_longitude)
 
         if user.save():
             return user
@@ -47,12 +52,15 @@ class User:
         """Get user by username from database"""
         conn = sqlite3.connect("data/users.db")
         c = conn.cursor()
-        c.execute("SELECT username, password_hash, birthdate, about_me FROM users WHERE username = ?", (username,))
+        c.execute("""SELECT username, password_hash, birthdate, about_me,
+                           birth_time, birth_latitude, birth_longitude
+                    FROM users WHERE username = ?""", (username,))
         row = c.fetchone()
         conn.close()
 
         if row:
-            return cls(row[0], row[1], row[2] or "", row[3] or "")
+            return cls(row[0], row[1], row[2] or "", row[3] or "",
+                      row[4] or "", row[5] or "", row[6] or "")
         return None
 
     @classmethod
@@ -74,14 +82,19 @@ class User:
             if self.exists(self.username):
                 # Update existing user
                 c.execute("""UPDATE users
-                           SET password_hash = ?, birthdate = ?, about_me = ?
+                           SET password_hash = ?, birthdate = ?, about_me = ?,
+                               birth_time = ?, birth_latitude = ?, birth_longitude = ?
                            WHERE username = ?""",
-                         (self.password_hash, self.birthdate, self.about_me, self.username))
+                         (self.password_hash, self.birthdate, self.about_me,
+                          self.birth_time, self.birth_latitude, self.birth_longitude,
+                          self.username))
             else:
                 # Insert new user
-                c.execute("""INSERT INTO users (username, password_hash, birthdate, about_me)
-                           VALUES (?, ?, ?, ?)""",
-                         (self.username, self.password_hash, self.birthdate, self.about_me))
+                c.execute("""INSERT INTO users (username, password_hash, birthdate, about_me,
+                                              birth_time, birth_latitude, birth_longitude)
+                           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                         (self.username, self.password_hash, self.birthdate, self.about_me,
+                          self.birth_time, self.birth_latitude, self.birth_longitude))
 
             conn.commit()
             conn.close()
@@ -90,17 +103,28 @@ class User:
             print(f"Error saving user: {e}")
             return False
 
-    def update_profile(self, birthdate: str = None, about_me: str = None) -> bool:
+    def update_profile(self, birthdate: str = None, about_me: str = None,
+                      birth_time: str = None, birth_latitude: str = None, birth_longitude: str = None) -> bool:
         """Update user profile information"""
         if birthdate is not None:
             self.birthdate = birthdate
         if about_me is not None:
             self.about_me = about_me
+        if birth_time is not None:
+            self.birth_time = birth_time
+        if birth_latitude is not None:
+            self.birth_latitude = birth_latitude
+        if birth_longitude is not None:
+            self.birth_longitude = birth_longitude
 
         return self.save()
 
-    def change_password(self, new_password: str) -> bool:
+    def change_password(self, current_password: str, new_password: str) -> bool:
         """Change user password"""
+        # Verify current password
+        if not check_password_hash(self.password_hash, current_password):
+            return False
+
         self.password_hash = generate_password_hash(new_password)
         return self.save()
 
@@ -109,7 +133,10 @@ class User:
         return {
             'username': self.username,
             'birthdate': self.birthdate,
-            'about_me': self.about_me
+            'about_me': self.about_me,
+            'birth_time': self.birth_time,
+            'birth_latitude': self.birth_latitude,
+            'birth_longitude': self.birth_longitude
         }
 
     def __str__(self) -> str:

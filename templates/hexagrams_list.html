@@ -156,7 +156,7 @@
                         </p>
 
                         <div class="mt-auto">
-                            <a href="{{ url_for('hexagram_detail', number=hexagram.number, name=hexagram.url_name) }}"
+                            <a href="{{ url_for('nav.hexagram_detail', number=hexagram.number, name=hexagram.url_name) }}"
                                class="btn btn-oracle w-100">
                                 <i class="bi bi-book-half"></i> View Details
                             </a>
@@ -169,7 +169,7 @@
 
         <!-- No Results Message -->
         <div id="noResults" class="text-center py-5 d-none">
-            <i class="bi bi-search text-muted" style="font-size: 3rem;"></i>
+            <i class="bi bi-search text-muted oracle-icon-large"></i>
             <h4 class="text-muted mt-3">No hexagrams found</h4>
             <p class="text-muted">Try adjusting your search terms</p>
             <button class="btn btn-oracle" onclick="clearSearch()">
@@ -179,7 +179,7 @@
 
         <!-- Back to Oracle -->
         <div class="text-center mt-5 mb-4">
-            <a href="{{ url_for('index') }}" class="btn btn-outline-primary btn-lg">
+            <a href="{{ url_for('readings.index') }}" class="btn btn-outline-primary btn-lg">
                 <i class="bi bi-stars"></i> Return to Oracle
             </a>
         </div>

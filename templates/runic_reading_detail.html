@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}Runic Reading Detail - The Oracle{% endblock %}
+
+{% block body_class %}rune-reading{% endblock %}
 {% block breadcrumb %}
-<nav aria-label="breadcrumb" class="mt-3">
+<nav aria-label="breadcrumb" class="mt-2">
     <ol class="breadcrumb breadcrumb-oracle">
         <li class="breadcrumb-item">
-            <a href="{{ url_for('index') }}" class="text-white">
+            <a href="{{ url_for('readings.index') }}" class="text-white">
                 <i class="bi bi-house"></i> Home
             </a>
         </li>
@@ -64,7 +66,7 @@
                 <div class="rune-spread-single">
                     {% for rune in runes_info %}
                     <div class="rune-item-spread">
-                        <a href="{{ url_for('runes_list') }}#{{ rune.name.lower() }}" class="rune-link">
+                        <a href="{{ url_for('nav.runes_list') }}#{{ rune.name.lower() }}" class="rune-link">
                             <div class="rune-symbol-spread{% if rune.is_reversed %} rune-reversed{% endif %}">
                                 {{ rune.symbol }}
                             </div>
@@ -81,7 +83,7 @@
                 <div class="rune-spread-three-norns">
                     {% for rune in runes_info %}
                     <div class="rune-item-spread">
-                        <a href="{{ url_for('runes_list') }}#{{ rune.name.lower() }}" class="rune-link">
+                        <a href="{{ url_for('nav.runes_list') }}#{{ rune.name.lower() }}" class="rune-link">
                             <div class="rune-symbol-spread{% if rune.is_reversed %} rune-reversed{% endif %}">
                                 {{ rune.symbol }}
                             </div>
@@ -103,7 +105,7 @@
                     <div class="cross-row">
                         <div class="cross-position cross-top">
                             {% if runes_info|length >= 4 %}
-                            <a href="{{ url_for('runes_list') }}#{{ runes_info[3].name.lower() }}" class="rune-link">
+                            <a href="{{ url_for('nav.runes_list') }}#{{ runes_info[3].name.lower() }}" class="rune-link">
                                 <div class="rune-symbol-spread{% if runes_info[3].is_reversed %} rune-reversed{% endif %}">
                                     {{ runes_info[3].symbol }}
                                 </div>
@@ -117,7 +119,7 @@
                     <div class="cross-row">
                         <div class="cross-position cross-left">
                             {% if runes_info|length >= 2 %}
-                            <a href="{{ url_for('runes_list') }}#{{ runes_info[1].name.lower() }}" class="rune-link">
+                            <a href="{{ url_for('nav.runes_list') }}#{{ runes_info[1].name.lower() }}" class="rune-link">
                                 <div class="rune-symbol-spread{% if runes_info[1].is_reversed %} rune-reversed{% endif %}">
                                     {{ runes_info[1].symbol }}
                                 </div>
@@ -129,7 +131,7 @@
                         </div>
                         <div class="cross-position cross-center">
                             {% if runes_info|length >= 1 %}
-                            <a href="{{ url_for('runes_list') }}#{{ runes_info[0].name.lower() }}" class="rune-link">
+                            <a href="{{ url_for('nav.runes_list') }}#{{ runes_info[0].name.lower() }}" class="rune-link">
                                 <div class="rune-symbol-spread{% if runes_info[0].is_reversed %} rune-reversed{% endif %}">
                                     {{ runes_info[0].symbol }}
                                 </div>
@@ -141,7 +143,7 @@
                         </div>
                         <div class="cross-position cross-right">
                             {% if runes_info|length >= 3 %}
-                            <a href="{{ url_for('runes_list') }}#{{ runes_info[2].name.lower() }}" class="rune-link">
+                            <a href="{{ url_for('nav.runes_list') }}#{{ runes_info[2].name.lower() }}" class="rune-link">
                                 <div class="rune-symbol-spread{% if runes_info[2].is_reversed %} rune-reversed{% endif %}">
                                     {{ runes_info[2].symbol }}
                                 </div>
@@ -155,7 +157,7 @@
                     <div class="cross-row">
                         <div class="cross-position cross-bottom">
                             {% if runes_info|length >= 5 %}
-                            <a href="{{ url_for('runes_list') }}#{{ runes_info[4].name.lower() }}" class="rune-link">
+                            <a href="{{ url_for('nav.runes_list') }}#{{ runes_info[4].name.lower() }}" class="rune-link">
                                 <div class="rune-symbol-spread{% if runes_info[4].is_reversed %} rune-reversed{% endif %}">
                                     {{ runes_info[4].symbol }}
                                 </div>
@@ -173,7 +175,7 @@
                 <div class="rune-spread-seven-chakras">
                     {% for rune in runes_info %}
                     <div class="chakra-position">
-                        <a href="{{ url_for('runes_list') }}#{{ rune.name.lower() }}" class="rune-link">
+                        <a href="{{ url_for('nav.runes_list') }}#{{ rune.name.lower() }}" class="rune-link">
                             <div class="rune-symbol-spread{% if rune.is_reversed %} rune-reversed{% endif %}">
                                 {{ rune.symbol }}
                             </div>
@@ -190,7 +192,7 @@
                 <div class="runes-horizontal">
                     {% for rune in runes_info %}
                     <div class="rune-item">
-                        <a href="{{ url_for('runes_list') }}#{{ rune.name.lower() }}" class="rune-link">
+                        <a href="{{ url_for('nav.runes_list') }}#{{ rune.name.lower() }}" class="rune-link">
                             <div class="rune-symbol-large{% if rune.is_reversed %} rune-reversed{% endif %}">
                                 {{ rune.symbol }}
                             </div>
@@ -207,7 +209,7 @@
                 {% endif %}
 
                 <!-- Display rune meanings -->
-                <div class="runes-meanings mt-4">
+                <div class="runes-meanings runes-meanings-{{ runes_info|length }} mt-4">
                     {% for rune in runes_info %}
                     <div class="rune-meaning-card mb-3">
                         <div class="d-flex align-items-center mb-2">
@@ -226,9 +228,9 @@
 
     <!-- Reading Header -->
     <div class="card card-oracle mb-4">
-        <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, var(--oracle-primary) 0%, var(--oracle-secondary) 100%);">
+        <div class="card-header bg-gradient text-white card-header-gradient">
             <div class="d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">
+                <h4 class="mb-0 reading-title-ellipsis">
                     <i class="bi bi-eye"></i> Your Runic Reading
                 </h4>
                 <small class="text-white-50">
@@ -238,25 +240,18 @@
             </div>
         </div>
         <div class="card-body">
-            <!-- Question with Truncation -->
+            <!-- Question with Collapse -->
             <div class="mb-4">
                 <h5 class="text-primary">
                     <i class="bi bi-question-circle"></i> Your Question
-                </h5>
-                <div class="question-container">
-                    <div id="question-preview" class="question-preview">
-                        <blockquote class="blockquote">
-                            <div class="fs-5 mb-0 markdown-content">{{ reading_entry.question | markdown | safe }}</div>
-                        </blockquote>
-                    </div>
-                    <div id="question-full" class="question-full" style="display: none;">
-                        <blockquote class="blockquote">
-                            <div class="fs-5 mb-0 markdown-content">{{ reading_entry.question | markdown | safe }}</div>
-                        </blockquote>
-                    </div>
-                    <button id="question-toggle" class="btn btn-link p-0 text-primary" style="display: none;">
-                        <small>Show more</small>
+                    <button class="btn btn-sm btn-outline-primary ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#question-content" aria-expanded="false">
+                        <i class="bi bi-chevron-down"></i> Show Question
                     </button>
+                </h5>
+                <div class="collapse" id="question-content">
+                    <blockquote class="blockquote">
+                        <div class="fs-5 mb-0 markdown-content">{{ reading_entry.question | clean_question | markdown | safe }}</div>
+                    </blockquote>
                 </div>
             </div>
         </div>
@@ -267,10 +262,16 @@
         <div class="card-header">
             <h5 class="mb-0">
                 <i class="bi bi-book-half"></i> Complete Reading
+                {% set followups = llm_requests | selectattr("request_type", "equalto", "followup") | list %}
+                <button class="btn btn-sm btn-outline-secondary ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#complete-reading" aria-expanded="{% if not followups %}true{% else %}false{% endif %}">
+                    <i class="bi bi-chevron-{% if not followups %}up{% else %}down{% endif %}"></i> {% if not followups %}Hide{% else %}Show{% endif %} Reading
+                </button>
             </h5>
         </div>
-        <div class="card-body reading-content">
-            {{ enhanced_reading | safe }}
+        <div class="collapse{% if not followups %} show{% endif %}" id="complete-reading">
+            <div class="card-body reading-content">
+                {{ enhanced_reading | safe }}
+            </div>
         </div>
     </div>
 
@@ -306,14 +307,65 @@
         </div>
     </div>
 
-    <!-- Navigation -->
-    <div class="text-center">
-        <a href="{{ url_for('index') }}" class="btn btn-oracle me-3">
-            <i class="bi bi-arrow-left"></i> Back to Oracle
-        </a>
-        <a href="{{ url_for('runes_list') }}" class="btn btn-oracle">
-            <i class="bi bi-diamond"></i> Explore Runes
-        </a>
+    <!-- Follow-up Section -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-lg-10">
+            <div class="card card-oracle">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-chat-dots"></i> Follow-up Questions
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Display existing follow-ups -->
+                    {% if followups %}
+                        <div class="mb-4">
+                            <h5>Previous Follow-ups:</h5>
+                            {% for followup in followups %}
+                                <div class="followup-entry mb-4 p-3">
+                                    <div class="followup-question mb-3">
+                                        <h3 class="text-oracle-gold mb-2">
+                                            <i class="bi bi-chat-text"></i> Follow-up: {{ followup.request_data | extract_followup_question }}
+                                        </h3>
+                                    </div>
+                                                                         <div class="followup-response">
+                                         {{ followup.response_data | markdown | safe }}
+                                     </div>
+                                    <small class="text-muted">{{ followup.request_dt }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Follow-up form -->
+                    <form method="POST" action="{{ url_for('readings.submit_followup', reading_id=reading_entry.reading_id) }}">
+                        <div class="mb-3">
+                            <label for="followup_question" class="form-label">Ask a follow-up question about this reading:</label>
+                            <textarea class="form-control" id="followup_question" name="followup_question" rows="3"
+                                    placeholder="What would you like to know more about regarding this reading?" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-oracle">
+                            <i class="bi bi-send"></i> Submit Follow-up
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation and Delete -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4">
+        <div class="d-flex gap-3 flex-wrap">
+            <a href="{{ url_for('readings.index') }}" class="btn btn-oracle">
+                <i class="bi bi-arrow-left"></i> Back to Oracle
+            </a>
+            <a href="{{ url_for('nav.runes_list') }}" class="btn btn-oracle">
+                <i class="bi bi-diamond"></i> Explore Runes
+            </a>
+        </div>
+        <button onclick="deleteReading('{{ reading_entry.reading_id }}')" class="btn btn-outline-danger">
+            <i class="bi bi-trash"></i> Delete Reading
+        </button>
     </div>
 </div>
 {% endblock %}
@@ -366,8 +418,7 @@
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
-    line-height: 1.5;
-    max-height: 4.5em;
+    line-height: 1.6;
 }
 
 .question-container {
@@ -484,6 +535,81 @@
 .runes-meanings {
     border-top: 2px solid var(--oracle-gold-dark);
     padding-top: 1rem;
+    display: grid;
+    gap: 1rem;
+}
+
+/* Single rune: center */
+.runes-meanings-1 {
+    grid-template-columns: 1fr;
+    justify-items: center;
+}
+
+/* Two runes: single row */
+.runes-meanings-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+/* Three runes: single row */
+.runes-meanings-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Four runes: single row */
+.runes-meanings-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* Six runes: 3 on top, 3 on bottom */
+.runes-meanings-6 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* Five runes: 3 on top, 2 on bottom */
+.runes-meanings-5 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.runes-meanings-5 .rune-meaning-card:nth-child(4) {
+    grid-column: 1 / 2;
+    grid-row: 2;
+    justify-self: end;
+}
+
+.runes-meanings-5 .rune-meaning-card:nth-child(5) {
+    grid-column: 3 / 4;
+    grid-row: 2;
+    justify-self: start;
+}
+
+/* Seven runes: 4 on top, 3 on bottom */
+.runes-meanings-7 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.runes-meanings-7 .rune-meaning-card:nth-child(5) {
+    grid-column: 1 / 2;
+    grid-row: 2;
+}
+
+.runes-meanings-7 .rune-meaning-card:nth-child(6) {
+    grid-column: 2 / 4;
+    grid-row: 2;
+    justify-self: center;
+}
+
+.runes-meanings-7 .rune-meaning-card:nth-child(7) {
+    grid-column: 4 / 5;
+    grid-row: 2;
+}
+
+/* Reading title ellipsis */
+.reading-title-ellipsis {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
 }
 
 .rune-meaning-card {
@@ -620,6 +746,26 @@
 }
 
 /* Responsive adjustments */
+@media (max-width: 992px) and (min-width: 769px) {
+    /* Medium screens: use 2 columns for larger layouts */
+    .runes-meanings-4,
+    .runes-meanings-5,
+    .runes-meanings-6,
+    .runes-meanings-7 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .runes-meanings-5 .rune-meaning-card:nth-child(4),
+    .runes-meanings-5 .rune-meaning-card:nth-child(5),
+    .runes-meanings-7 .rune-meaning-card:nth-child(5),
+    .runes-meanings-7 .rune-meaning-card:nth-child(6),
+    .runes-meanings-7 .rune-meaning-card:nth-child(7) {
+        grid-column: auto;
+        grid-row: auto;
+        justify-self: auto;
+    }
+}
+
 @media (max-width: 768px) {
     .rune-spread-three-norns {
         gap: 2rem;
@@ -636,58 +782,52 @@
     .rune-symbol-spread {
         font-size: 3rem;
     }
+
+    /* Stack rune meanings vertically on mobile */
+    .runes-meanings-2,
+    .runes-meanings-3,
+    .runes-meanings-4,
+    .runes-meanings-5,
+    .runes-meanings-6,
+    .runes-meanings-7 {
+        grid-template-columns: 1fr;
+    }
+
+    .runes-meanings-5 .rune-meaning-card:nth-child(4),
+    .runes-meanings-5 .rune-meaning-card:nth-child(5),
+    .runes-meanings-7 .rune-meaning-card:nth-child(5),
+    .runes-meanings-7 .rune-meaning-card:nth-child(6),
+    .runes-meanings-7 .rune-meaning-card:nth-child(7) {
+        grid-column: 1;
+        grid-row: auto;
+    }
 }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const questionPreview = document.getElementById('question-preview');
-    const questionFull = document.getElementById('question-full');
-    const questionToggle = document.getElementById('question-toggle');
-
-    // Check if question content is truncated
-    const previewContent = questionPreview.querySelector('.markdown-content');
-    const fullContent = questionFull.querySelector('.markdown-content');
-
-    if (previewContent && fullContent) {
-        // Clone the full content to measure its height
-        const tempDiv = fullContent.cloneNode(true);
-        tempDiv.style.position = 'absolute';
-        tempDiv.style.visibility = 'hidden';
-        tempDiv.style.height = 'auto';
-        tempDiv.style.maxHeight = 'none';
-        tempDiv.style.webkitLineClamp = 'none';
-        tempDiv.style.display = 'block';
-        document.body.appendChild(tempDiv);
-
-        const fullHeight = tempDiv.scrollHeight;
-        const previewHeight = previewContent.scrollHeight;
-
-        document.body.removeChild(tempDiv);
-
-        // If content is actually truncated, show the toggle button
-        if (fullHeight > previewHeight || previewContent.scrollHeight > 72) { // 4.5em ≈ 72px
-            questionToggle.style.display = 'block';
-
-            let isExpanded = false;
-
-            questionToggle.addEventListener('click', function() {
-                if (!isExpanded) {
-                    questionPreview.style.display = 'none';
-                    questionFull.style.display = 'block';
-                    questionToggle.innerHTML = '<small>Show less</small>';
-                    isExpanded = true;
-                } else {
-                    questionPreview.style.display = 'block';
-                    questionFull.style.display = 'none';
-                    questionToggle.innerHTML = '<small>Show more</small>';
-                    isExpanded = false;
-                }
-            });
-        }
+function deleteReading(readingId) {
+    if (confirm('Are you sure you want to delete this reading? This action cannot be undone.')) {
+        fetch('/delete_reading/' + readingId, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Reading deleted successfully');
+                window.location.href = '/';
+            } else {
+                alert('Error deleting reading: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Error deleting reading: ' + error);
+        });
     }
-});
+}
 </script>
 {% endblock %}

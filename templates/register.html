@@ -12,7 +12,7 @@
                 <p class="text-muted">Begin your journey of ancient wisdom</p>
             </div>
 
-            <form method="post" action="{{ url_for('register') }}">
+            <form method="post" action="{{ url_for('auth.register') }}">
                 <div class="mb-3">
                     <label for="username" class="form-label">
                         <i class="bi bi-person"></i> Username
@@ -68,7 +68,7 @@
             <div class="text-center">
                 <p class="text-muted">
                     Already have an account?
-                    <a href="{{ url_for('login') }}" class="text-decoration-none">
+                    <a href="{{ url_for('auth.login') }}" class="text-decoration-none">
                         Sign in here
                     </a>
                 </p>

@@ -22,11 +22,13 @@ class TestHistoryEntry(unittest.TestCase):
         conn = sqlite3.connect(self.test_db_path)
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS history (
+                        reading_id TEXT PRIMARY KEY,
                         username TEXT,
                         question TEXT,
                         hexagram TEXT,
                         reading TEXT,
-                        reading_dt TEXT
+                        reading_dt TEXT,
+                        divination_type TEXT DEFAULT 'iching'
                      )''')
         conn.commit()
         conn.close()
@@ -107,10 +109,11 @@ class TestHistoryEntry(unittest.TestCase):
         conn.close()
 
         self.assertIsNotNone(row)
-        self.assertEqual(row[0], "testuser")
-        self.assertEqual(row[1], "Test question?")
-        self.assertEqual(row[2], "31 Influence")
-        self.assertEqual(row[3], "Test reading")
+        # Note: row[0] is now reading_id, username is row[1]
+        self.assertEqual(row[1], "testuser")
+        self.assertEqual(row[2], "Test question?")
+        self.assertEqual(row[3], "31 Influence")
+        self.assertEqual(row[4], "Test reading")
 
     def test_to_dict_without_markdown(self):
         """Test converting entry to dictionary without markdown rendering"""
@@ -149,11 +152,13 @@ class TestHistory(unittest.TestCase):
         conn = sqlite3.connect(self.test_db_path)
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS history (
+                        reading_id TEXT PRIMARY KEY,
                         username TEXT,
                         question TEXT,
                         hexagram TEXT,
                         reading TEXT,
-                        reading_dt TEXT
+                        reading_dt TEXT,
+                        divination_type TEXT DEFAULT 'iching'
                      )''')
         conn.commit()
         conn.close()
