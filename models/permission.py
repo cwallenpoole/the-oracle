@@ -2,6 +2,7 @@ import sqlite3
 import json
 from typing import Optional, Dict, Any, List
 from enum import Enum
+from models import get_database_path
 
 class LogLevel(Enum):
     """Log level enumeration"""
@@ -26,7 +27,11 @@ class Permission:
                 "can_share": True
             }
         self.settings = settings
-        self.db_file = "data/users.db"
+
+    @property
+    def db_file(self) -> str:
+        """Get the current database file path"""
+        return get_database_path()
 
     @property
     def log_level(self) -> str:
@@ -58,7 +63,7 @@ class Permission:
     @classmethod
     def get_by_username(cls, username: str) -> Optional['Permission']:
         """Get permissions by username from database"""
-        conn = sqlite3.connect("data/users.db")
+        conn = sqlite3.connect(get_database_path())
         c = conn.cursor()
         c.execute("""SELECT username, settings_json
                     FROM user_settings WHERE username = ?""", (username,))
@@ -79,7 +84,7 @@ class Permission:
     @classmethod
     def exists(cls, username: str) -> bool:
         """Check if permissions exist for user in database"""
-        conn = sqlite3.connect("data/users.db")
+        conn = sqlite3.connect(get_database_path())
         c = conn.cursor()
         c.execute("SELECT username FROM user_settings WHERE username = ?", (username,))
         exists = c.fetchone() is not None
@@ -161,7 +166,7 @@ class Permission:
     @classmethod
     def get_all_users_permissions(cls) -> List['Permission']:
         """Get permissions for all users"""
-        conn = sqlite3.connect("data/users.db")
+        conn = sqlite3.connect(get_database_path())
         c = conn.cursor()
         c.execute("""SELECT username, settings_json
                     FROM user_settings ORDER BY username""")

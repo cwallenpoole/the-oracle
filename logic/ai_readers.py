@@ -6,6 +6,7 @@ readings based on divination results and user context.
 """
 
 from openai import OpenAI
+import ollama
 from dotenv import load_dotenv
 import os
 import base64
@@ -15,9 +16,75 @@ from models.llm_request import LLMRequest
 
 load_dotenv()
 
-# Initialize OpenAI client
+# Configuration for LLM providers
+USE_OLLAMA_FOR_TEXT = os.getenv("USE_OLLAMA_FOR_TEXT", "true").lower() == "true"
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3.2")  # Default model for Ollama
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")  # Default Ollama host
+
+# Initialize OpenAI client (still needed for image processing)
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=OPENAI_API_KEY)
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
+
+# Initialize Ollama client
+ollama_client = ollama.Client(host=OLLAMA_HOST)
+
+
+def generate_text_with_llm(system_prompt: str, user_prompt: str, temperature: float = 0.8, max_tokens: int = 1200, logger=None) -> str:
+    """
+    Generate text using either Ollama or OpenAI based on configuration.
+
+    Args:
+        system_prompt: System message for the LLM
+        user_prompt: User message/prompt
+        temperature: Temperature for generation (0.0 to 1.0)
+        max_tokens: Maximum tokens to generate
+        logger: Optional logger
+
+    Returns:
+        Generated text response
+    """
+    if USE_OLLAMA_FOR_TEXT:
+        try:
+            # Use Ollama for text generation
+            response = ollama_client.chat(
+                model=OLLAMA_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                options={
+                    "temperature": temperature,
+                    "num_predict": max_tokens,
+                }
+            )
+
+            if logger:
+                logger.info(f"Using Ollama model: {OLLAMA_MODEL}")
+
+            return response['message']['content']
+
+        except Exception as e:
+            if logger:
+                logger.error(f"Ollama generation failed: {e}, falling back to OpenAI")
+            # Fall back to OpenAI if Ollama fails
+
+    # Use OpenAI (either as fallback or if configured)
+    response = openai_client.chat.completions.create(
+        model="gpt-4.1-nano",
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        max_tokens=max_tokens,
+        temperature=temperature,
+        frequency_penalty=0.2,
+        presence_penalty=0.1,
+    )
+
+    if logger:
+        logger.info(f"Using OpenAI model: gpt-4.1-nano")
+
+    return response.choices[0].message.content
 
 
 def generate_iching_reading(question: str, legacy_reading, user, logger=None, reading_id: str = None) -> str:
@@ -90,12 +157,7 @@ def generate_iching_reading(question: str, legacy_reading, user, logger=None, re
     if logger:
         logger.info(f"Generated prompt: {prompt}")
 
-    response = client.chat.completions.create(
-        model="gpt-4.1-nano",
-        messages=[
-            {
-                "role": "system",
-                "content": f"""
+    system_prompt = f"""
                     You are a mystical I Ching oracle with deep knowledge of the classic text and its
                     interpretations. You are considered tough, unafraid to give a reading which is not what the user
                     wants to hear. Instead you focus on truth. You look for the grief in the user and use the
@@ -121,24 +183,23 @@ def generate_iching_reading(question: str, legacy_reading, user, logger=None, re
                     You are also able to use the user's occupation to support your responses.
                     You are also able to use the user's relationship status to support your responses.
                 """
-            },
-            {"role": "user", "content": prompt},
-        ],
-        max_tokens=1200,
-        temperature=0.8,        # Slightly creative for mystical feel
-        frequency_penalty=0.2,  # Reduce repetition
-        presence_penalty=0.1,   # Encourage diverse topics
-    )
 
-    response_text = response.choices[0].message.content
+    response_text = generate_text_with_llm(
+        system_prompt=system_prompt,
+        user_prompt=prompt,
+        temperature=0.8,
+        max_tokens=1200,
+        logger=logger
+    )
 
     # Store LLM request data if reading_id is provided
     if reading_id:
+        model_used = OLLAMA_MODEL if USE_OLLAMA_FOR_TEXT else "gpt-4.1-nano"
         llm_request = LLMRequest(
             reading_id=reading_id,
             request_data=prompt,
             response_data=response_text,
-            model_used="gpt-4.1-nano",
+            model_used=model_used,
             request_type="initial"
         )
         llm_request.save()
@@ -194,37 +255,31 @@ def generate_followup_reading(question: str, followup_question: str, original_re
     if logger:
         logger.info(f"Follow-up prompt: {prompt}")
 
-    response = client.chat.completions.create(
-        model="gpt-4.1-nano",
-        messages=[
-            {
-                "role": "system",
-                "content": """
+    system_prompt = """
                     You are continuing a mystical divination session. Maintain consistency with your
                     previous reading style and interpretation while providing new insights to answer
                     the follow-up question. Be wise, thoughtful, and maintain the mystical tone
                     established in the original reading.
                 """
-            },
-            {"role": "user", "content": prompt},
-        ],
-        max_tokens=1200,
-        temperature=0.7,        # Slightly lower for consistency
-        frequency_penalty=0.2,  # Reduce repetition
-        presence_penalty=0.1,   # Encourage diverse topics
-    )
 
-    response_text = response.choices[0].message.content
+    response_text = generate_text_with_llm(
+        system_prompt=system_prompt,
+        user_prompt=prompt,
+        temperature=0.7,        # Slightly lower for consistency
+        max_tokens=1200,
+        logger=logger
+    )
 
     if logger:
         logger.info(f"Follow-up OpenAI API Response: {response_text}")
 
     # Store LLM request data
+    model_used = OLLAMA_MODEL if USE_OLLAMA_FOR_TEXT else "gpt-4.1-nano"
     llm_request = LLMRequest(
         reading_id=reading_id,
         request_data=prompt,
         response_data=response_text,
-        model_used="gpt-4.1-nano",
+        model_used=model_used,
         request_type="followup"
     )
     llm_request.save()
@@ -306,12 +361,7 @@ Position {i} - {position_name}: {rune.symbol} {rune.name}{orientation}
     if logger:
         logger.info(f"Runic reading prompt: {prompt}")
 
-    response = client.chat.completions.create(
-        model="gpt-4.1-nano",
-        messages=[
-            {
-                "role": "system",
-                "content": """
+    system_prompt = """
                     You are a mystical runic oracle with deep knowledge of the Elder Futhark and Norse
                     mythology. You are a practitioner of seidr magic and have deep connections to the
                     ancient wisdom of the Norse peoples. You are considered wise and truthful, unafraid
@@ -329,27 +379,26 @@ Position {i} - {position_name}: {rune.symbol} {rune.name}{orientation}
                     You reference the associated Norse deities and elemental correspondences.
                     You connect the reading to the user's question and life circumstances.
                 """
-            },
-            {"role": "user", "content": prompt},
-        ],
-        max_tokens=1200,
-        temperature=0.5,        # Slightly creative for mystical feel
-        frequency_penalty=0.2,  # Reduce repetition
-        presence_penalty=0.4,   # Encourage diverse topics
-    )
 
-    response_text = response.choices[0].message.content
+    response_text = generate_text_with_llm(
+        system_prompt=system_prompt,
+        user_prompt=prompt,
+        temperature=0.5,        # Slightly creative for mystical feel
+        max_tokens=1200,
+        logger=logger
+    )
 
     if logger:
         logger.info(f"OpenAI API Response: {response_text}")
 
     # Store LLM request data if reading_id is provided
     if reading_id:
+        model_used = OLLAMA_MODEL if USE_OLLAMA_FOR_TEXT else "gpt-4.1-nano"
         llm_request = LLMRequest(
             reading_id=reading_id,
             request_data=prompt,
             response_data=response_text,
-            model_used="gpt-4.1-nano",
+            model_used=model_used,
             request_type="initial"
         )
         llm_request.save()
@@ -374,22 +423,30 @@ def analyze_fire_image(image_data: str, logger=None) -> str:
         image_url = f"data:image/png;base64,{image_data}"
 
         prompt = """
-        You are an expert at reading flames and seeing patterns in fire for divination purposes.
-        Please analyze this fire image and describe what you see in detail.
+        You are an oracle who has recently inhaled hallucinogens as part of a ritual. You are going to
+        provide a short phrase or list of words which you see. These will be interpreted by the priests
+        of your religion.
 
         Look for:
-        - Shapes that might resemble animals, people, objects, or symbols
-        - Patterns in the flame structure
-        - Colors and their distribution
+        - Shapes that might resemble animals, people, objects, or symbols.
+        - Objects should be limited to ones which can be made without using electricity.
+        - Patterns, people, animals, objects, and symbols in the image structure
         - Any mystical or symbolic forms
-        - Geometric patterns or natural forms
         - Movement suggestions frozen in the image
+        - Do not make extra effort to find symbols or patterns specific to one religion or culture. Just describe what
+          you see.
 
-        Provide a detailed description of what you observe, focusing on potentially symbolic elements.
-        Be specific about shapes, forms, and patterns you can identify.
+        Provide a description of what you observe, focusing on potentially symbolic elements. It should be less than
+            15 words long. It is at least 4 words long. It could be a list of objects. It must have at least 4 nouns.
+        Skip "filler words" like "the", "a", "an", "and", "or", "but", "if", "then", "else", "because", "so",
+            "therefore", "while", "then", "my", "mine", "fire", "flame"
+        Be specific about animals, patterns, people, objects, and symbols you can identify.
+        Be creative and imaginative.
+        Do not mention sparks, flames, colors, or fire in your response.
+        DO NOT REFERENCE CIRCLES, CONES, SPHERES, SQUARES, OR RECTANGLES IN YOUR RESPONSE.
         """
 
-        response = client.chat.completions.create(
+        response = openai_client.chat.completions.create(
             model="gpt-4o-mini",  # Using vision-capable model
             messages=[
                 {
@@ -409,7 +466,7 @@ def analyze_fire_image(image_data: str, logger=None) -> str:
                 }
             ],
             max_tokens=800,
-            temperature=0.7
+            temperature=1.4
         )
 
         analysis_text = response.choices[0].message.content
@@ -471,12 +528,7 @@ def generate_flame_reading(vision_analysis: str, user, logger=None, reading_id: 
     if logger:
         logger.info(f"Flame reading prompt: {prompt}")
 
-    response = client.chat.completions.create(
-        model="gpt-4.1-nano",
-        messages=[
-            {
-                "role": "system",
-                "content": """
+    system_prompt = """
                     You are an ancient flame keeper and pyromancer with the sacred gift of reading fire.
                     You have studied the mystical arts of flame divination for many years and can see the
                     divine messages hidden in the dance of fire and smoke.
@@ -491,31 +543,31 @@ def generate_flame_reading(vision_analysis: str, user, logger=None, reading_id: 
                     is both mystical and practical, helping people understand their spiritual path
                     and life journey.
 
-                    You use markdown to format your responses beautifully and include flame and fire
-                    emojis where appropriate. You speak with the authority of ancient wisdom while
-                    remaining accessible to modern seekers.
-                """
-            },
-            {"role": "user", "content": prompt},
-        ],
-        max_tokens=1200,
-        temperature=0.8,        # More creative for mystical interpretations
-        frequency_penalty=0.2,  # Reduce repetition
-        presence_penalty=0.3,   # Encourage diverse spiritual themes
-    )
+                    You use markdown to format your responses beautifully and. You speak with the authority of
+                    ancient wisdom while remaining accessible to modern seekers.
 
-    response_text = response.choices[0].message.content
+                    DO NOT USE EMOJIS IN YOUR RESPONSES.
+                """
+
+    response_text = generate_text_with_llm(
+        system_prompt=system_prompt,
+        user_prompt=prompt,
+        temperature=0.8,        # More creative for mystical interpretations
+        max_tokens=1200,
+        logger=logger
+    )
 
     if logger:
         logger.info(f"Flame reading response: {response_text}")
 
     # Store LLM request data if reading_id is provided
     if reading_id:
+        model_used = OLLAMA_MODEL if USE_OLLAMA_FOR_TEXT else "gpt-4.1-nano"
         llm_request = LLMRequest(
             reading_id=reading_id,
             request_data=prompt,
             response_data=response_text,
-            model_used="gpt-4.1-nano",
+            model_used=model_used,
             request_type="initial"
         )
         llm_request.save()

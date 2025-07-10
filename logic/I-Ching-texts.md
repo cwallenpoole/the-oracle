@@ -89,8 +89,8 @@ thought opened the way for an increasingly intricate number symbolism.
 
 #### THE IMAGE
 
- - The movement of heaven is full of power.
- - Thus the superior man makes himself strong and untiring.
+> ##### The movement of heaven is full of power.
+> ##### Thus the superior man makes himself strong and untiring.
 
 Since there is only one heaven, the doubling of the trigram Ch'ien, of which
 heaven is the image, indicates the movement of heaven. One complete

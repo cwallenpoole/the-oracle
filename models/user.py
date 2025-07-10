@@ -1,6 +1,7 @@
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 from typing import Optional, Dict, Any
+from models import get_database_path
 
 class User:
     """User model for handling user data and authentication"""
@@ -14,8 +15,12 @@ class User:
         self.birth_time = birth_time
         self.birth_latitude = birth_latitude
         self.birth_longitude = birth_longitude
-        self.db_file = "data/users.db"
         self._history = None  # Lazy-loaded history
+
+    @property
+    def db_file(self) -> str:
+        """Get the current database file path"""
+        return get_database_path()
 
     @property
     def history(self):
@@ -50,7 +55,7 @@ class User:
     @classmethod
     def get_by_username(cls, username: str) -> Optional['User']:
         """Get user by username from database"""
-        conn = sqlite3.connect("data/users.db")
+        conn = sqlite3.connect(get_database_path())
         c = conn.cursor()
         c.execute("""SELECT username, password_hash, birthdate, about_me,
                            birth_time, birth_latitude, birth_longitude
@@ -66,7 +71,7 @@ class User:
     @classmethod
     def exists(cls, username: str) -> bool:
         """Check if user exists in database"""
-        conn = sqlite3.connect("data/users.db")
+        conn = sqlite3.connect(get_database_path())
         c = conn.cursor()
         c.execute("SELECT username FROM users WHERE username = ?", (username,))
         exists = c.fetchone() is not None

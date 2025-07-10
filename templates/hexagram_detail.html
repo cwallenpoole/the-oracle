@@ -80,6 +80,10 @@
         background: rgba(212, 175, 55, 0.05);
     }
 
+    .accordion-collapse p {
+        background: none !important;
+    }
+
     .accordion-body {
         border-radius: 0 0 0.4rem 0.4rem;
     }
@@ -197,15 +201,17 @@
         </div>
         <div class="card-body">
             {% if hexagram.Judgement.Quote %}
-            <blockquote class="blockquote text-center mb-4">
-                <p class="fs-5 fst-italic text-primary">
-                    {{ hexagram.Judgement.Quote | replace('\n', '<br>') | safe }}
-                </p>
-            </blockquote>
+            <div class="blockquote text-center mb-4 fs-6 fst-italic text-primary">
+                {{ hexagram.Judgement.Quote | markdown | safe }}
+            </div>
             {% endif %}
             {% if hexagram.Judgement.Text %}
             <div class="reading-content p-3">
-                {{ hexagram.Judgement.Text | markdown | replace('  ', '</p><p>') | safe }}
+                {{ hexagram.Judgement.Text
+                    | replace('\n\n', '{[newline]}')
+                    | replace('\n', ' ')
+                    | replace('{[newline]}', '\n\n')
+                    | markdown | safe }}
             </div>
             {% endif %}
         </div>
@@ -222,11 +228,9 @@
         </div>
         <div class="card-body">
             {% if hexagram.Image.Quote %}
-            <blockquote class="blockquote text-center mb-4">
-                <p class="fs-6 fst-italic text-secondary">
-                    {{ hexagram.Image.Quote | replace('\n', '<br>') | safe }}
-                </p>
-            </blockquote>
+            <div class="blockquote text-center mb-4 fs-6 fst-italic text-secondary">
+                {{ hexagram.Image.Quote | markdown | safe }}
+            </div>
             {% endif %}
             {% if hexagram.Image.Text %}
             <div class="reading-content p-3">

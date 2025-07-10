@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Wiki - The Oracle{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-oracle">
+        <li class="breadcrumb-item"><a href="{{ url_for('readings.index') }}">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Wiki</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <!-- Wiki Header -->
+    <div class="card-oracle mb-4">
+        <div class="card-header">
+            <h1 class="mb-0">
+                <i class="bi bi-book"></i>
+                The Oracle Wiki
+            </h1>
+            <p class="mb-0 mt-2">
+                <small class="text-muted">
+                    Explore the wisdom and knowledge referenced in your readings
+                </small>
+            </p>
+        </div>
+    </div>
+
+    <!-- Wiki Categories -->
+    {% for category, entries in entries.items() %}
+        {% if entries %}
+        <div class="card-oracle mb-4">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    {% if category == 'characters' %}
+                        <i class="bi bi-people"></i> Characters
+                    {% elif category == 'events' %}
+                        <i class="bi bi-calendar-event"></i> Events
+                    {% elif category == 'places' %}
+                        <i class="bi bi-geo-alt"></i> Places
+                    {% elif category == 'concepts' %}
+                        <i class="bi bi-lightbulb"></i> Concepts
+                    {% elif category == 'divination_types' %}
+                        <i class="bi bi-magic"></i> Divination Types
+                    {% else %}
+                        <i class="bi bi-collection"></i> {{ category.title() }}
+                    {% endif %}
+                    <span class="badge bg-secondary ms-2">{{ entries|length }}</span>
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for entry in entries %}
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="wiki-entry-card">
+                            <a href="{{ entry.url }}" class="wiki-entry-link">
+                                <div class="d-flex align-items-center">
+                                    {% if entry.is_placeholder %}
+                                        <i class="bi bi-hourglass-split text-warning me-2"></i>
+                                    {% else %}
+                                        <i class="bi bi-check-circle text-success me-2"></i>
+                                    {% endif %}
+                                    <span class="wiki-entry-title">{{ entry.title }}</span>
+                                </div>
+                                {% if entry.is_placeholder %}
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="bi bi-info-circle"></i> Placeholder - Content pending
+                                    </small>
+                                {% elif entry.description %}
+                                    <small class="text-muted d-block mt-1">
+                                        <i class="bi bi-info-circle"></i> {{ entry.description }}
+                                    </small>
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+
+    <!-- Empty State -->
+    {% set total_entries = entries.values() | map('length') | sum %}
+    {% if not entries or total_entries == 0 %}
+    <div class="card-oracle">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-book display-1 text-muted mb-3"></i>
+            <h3 class="text-muted">No Wiki Entries Yet</h3>
+            <p class="text-muted">
+                Wiki entries are automatically created when you get readings that reference characters, events, places, or concepts.
+                <br>
+                Start with an I Ching reading to begin building your personal knowledge base!
+            </p>
+            <a href="{{ url_for('readings.index') }}" class="btn btn-oracle mt-3">
+                <i class="bi bi-arrow-right"></i> Get a Reading
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Navigation -->
+    <div class="mt-4 text-center">
+        <a href="{{ url_for('readings.index') }}" class="btn btn-oracle">
+            <i class="bi bi-arrow-left"></i>
+            Back to Oracle
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Fix card padding issues */
+    .card-oracle .card-header {
+        padding: 1rem 1.5rem;
+    }
+
+    .card-oracle .card-body {
+        padding: 1.5rem;
+    }
+
+    .wiki-entry-card {
+        background: linear-gradient(135deg, rgba(255,215,0,0.05) 0%, rgba(255,215,0,0.1) 100%);
+        border: 1px solid var(--oracle-gold-dark);
+        border-radius: 8px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        align-items: center;
+    }
+
+    .wiki-entry-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        border-color: var(--oracle-gold);
+    }
+
+    .wiki-entry-link {
+        text-decoration: none;
+        color: inherit;
+        width: 100%;
+    }
+
+    .wiki-entry-link:hover {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .wiki-entry-title {
+        font-weight: 600;
+        color: var(--oracle-red);
+        font-size: 1.1rem;
+    }
+
+    .badge {
+        background: var(--oracle-gold-dark) !important;
+        color: var(--oracle-black) !important;
+        font-size: 0.8rem;
+    }
+
+    /* Category icons styling */
+    .card-header i.bi {
+        color: var(--oracle-gold);
+        margin-right: 0.5rem;
+    }
+
+    /* Status icons */
+    .bi-check-circle {
+        color: var(--oracle-gold) !important;
+    }
+
+    .bi-hourglass-split {
+        color: #ffc107 !important;
+    }
+
+    /* Empty state styling */
+    .display-1 {
+        font-size: 4rem;
+        opacity: 0.3;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .col-md-6 {
+            margin-bottom: 1rem;
+        }
+
+        .wiki-entry-card {
+            padding: 0.75rem;
+        }
+
+        .wiki-entry-title {
+            font-size: 1rem;
+        }
+
+        .card-oracle .card-header {
+            padding: 0.75rem 1rem;
+        }
+
+        .card-oracle .card-body {
+            padding: 1rem;
+        }
+    }
+</style>
+{% endblock %}

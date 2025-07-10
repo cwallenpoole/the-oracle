@@ -156,13 +156,15 @@ class IChingCache:
         quotes = []
         texts = []
 
+        is_in_quote = True
         for line in section.splitlines():
             line = line.strip()
-            if not line:
-                continue
-            if line.startswith('>'):
-                quotes.append(line.strip('> #').strip())
-            else:
+            if line and not line.startswith('>'):
+                is_in_quote = False
+
+            if is_in_quote and line:
+                quotes.append(line)
+            elif not is_in_quote:
                 texts.append(line)
 
         return quotes, texts

@@ -64,7 +64,104 @@ def runes_list():
     return render_template("runes_list.html", runes=runes)
 
 
-@nav_bp.route("/demo-fire")
-def demo_fire():
-    """Demo Fire page - showcasing Oracle features and capabilities"""
-    return render_template("demo-fire.html")
+@nav_bp.route("/pyromancy")
+def pyromancy():
+    """Pyromancy page - fire divination and flame readings"""
+    return render_template("pyromancy.html")
+
+
+@nav_bp.route("/wiki")
+def wiki_list():
+    """Display all wiki entries organized by category"""
+    from utils.wiki_utils import list_wiki_entries, WikiEntry
+    from utils.hexagram_utils import get_all_hexagrams
+    from utils.trigram_utils import get_trigram_info
+    from logic.runes import RunicSystem
+
+    # Get all wiki entries
+    entries_by_category = list_wiki_entries()
+
+    # Add divination types as a special category
+    divination_entries = []
+
+    # Add hexagrams
+    hexagrams = get_all_hexagrams()
+    divination_entries.append({
+        'filename': 'hexagrams',
+        'title': 'I Ching Hexagrams',
+        'url': url_for('nav.hexagrams_list'),
+        'is_placeholder': False,
+        'description': f'{len(hexagrams)} hexagrams for divination'
+    })
+
+    # Add trigrams
+    trigrams = get_trigram_info()
+    divination_entries.append({
+        'filename': 'trigrams',
+        'title': 'I Ching Trigrams',
+        'url': url_for('nav.trigrams_list'),
+        'is_placeholder': False,
+        'description': f'{len(trigrams)} trigrams - building blocks of hexagrams'
+    })
+
+    # Add runes
+    runic_system = RunicSystem()
+    runes = runic_system.get_all_elements()
+    divination_entries.append({
+        'filename': 'runes',
+        'title': 'Elder Futhark Runes',
+        'url': url_for('nav.runes_list'),
+        'is_placeholder': False,
+        'description': f'{len(runes)} runes for divination'
+    })
+
+    # Enhance with additional metadata
+    enhanced_entries = {}
+    for category, filenames in entries_by_category.items():
+        enhanced_entries[category] = []
+        for filename in sorted(filenames):
+            entry = WikiEntry(filename, category)
+            title = filename.replace('_', ' ').title()
+            enhanced_entries[category].append({
+                'filename': filename,
+                'title': title,
+                'url': entry.get_url_path(),
+                'is_placeholder': entry.is_placeholder()
+            })
+
+    # Add divination types category
+    enhanced_entries['divination_types'] = divination_entries
+
+    return render_template("wiki_list.html", entries=enhanced_entries)
+
+
+@nav_bp.route("/wiki/<filename>")
+def wiki_entry(filename):
+    """Display a wiki entry"""
+    from utils.wiki_utils import get_wiki_entry_content, load_synonyms
+
+    # Check if this is a synonym that should redirect
+    synonyms = load_synonyms()
+    if filename in synonyms:
+        canonical_info = synonyms[filename]
+        canonical_filename = canonical_info['canonical']
+        # Redirect to the canonical entry
+        return redirect(url_for('nav.wiki_entry', filename=canonical_filename))
+
+    # Get the content (searches across all categories)
+    result = get_wiki_entry_content(filename)
+
+    if result is None:
+        flash("Wiki entry not found.", "error")
+        return redirect(url_for("readings.index"))
+
+    content, category = result
+
+    # Extract title from filename (convert underscores to spaces and title case)
+    title = filename.replace('_', ' ').title()
+
+    return render_template("wiki_entry.html",
+                         content=content,
+                         title=title,
+                         category=category.title(),
+                         filename=filename)

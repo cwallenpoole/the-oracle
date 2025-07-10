@@ -39,13 +39,11 @@ def create_hexagram_url_name(title):
         english_name = parts[0].strip()
 
     # Remove parenthetical sections
-    english_name = re.sub(r'\([^)]*\)', '', english_name).strip()
+    english_name = re.sub(r'[\[(][^\])]*[\])]', '', english_name).strip()
 
     # Convert to lowercase, replace spaces with underscores
-    url_name = english_name.lower().replace(' ', '_')
-
     # Remove any remaining special characters except underscores
-    url_name = re.sub(r'[^a-z0-9_]', '', url_name)
+    url_name = re.sub('\W+', '_', english_name).lower()
 
     return url_name
 

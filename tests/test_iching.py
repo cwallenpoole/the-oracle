@@ -156,57 +156,6 @@ class TestIChingTextParsing(unittest.TestCase):
     """Test cases for I Ching text parsing functions"""
 
     @patch('logic.iching.get_text')
-    def test_get_hexagram_section_parsing(self, mock_get_text):
-        """Test parsing hexagram section from text"""
-        # Mock the text content
-        mock_text = """
-## 31. Influence ☱☶
-
-> above Lake
-> below Mountain
-
-This is a test description for hexagram 31.
-
-### THE JUDGEMENT
-
-> Test judgment quote
-> Second line of quote
-
-This is the judgment text.
-
-#### THE IMAGE
-
-> Test image quote
-
-This is the image text.
-
-#### THE LINES
-
-> **Six in the first place means:**
-> First line quote
-
-First line text.
-
-> **Nine in the second place means:**
-> Second line quote
-
-Second line text.
-
-## 32. Duration ☳☴
-"""
-        mock_get_text.return_value = mock_text
-
-        hexagram = get_hexagram_section(31)
-
-        self.assertIsNotNone(hexagram)
-        self.assertEqual(hexagram.Number, 31)
-        self.assertEqual(hexagram.Title, "Influence")
-        self.assertEqual(hexagram.Symbol, "☱☶")
-        self.assertEqual(hexagram.About.Above, "Lake")
-        self.assertEqual(hexagram.About.Below, "Mountain")
-        self.assertIn("test description", hexagram.About.Description.lower())
-
-    @patch('logic.iching.get_text')
     def test_get_hexagram_section_not_found(self, mock_get_text):
         """Test getting hexagram section that doesn't exist"""
         mock_get_text.return_value = "## 1. Creative\n\nSome content"

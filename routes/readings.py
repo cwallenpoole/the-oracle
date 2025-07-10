@@ -2,6 +2,7 @@
 Reading routes for The Oracle application.
 """
 import sqlite3
+from datetime import datetime
 from flask import Blueprint, request, render_template, redirect, url_for, session, flash, current_app, jsonify
 from logic import iching
 from logic.iching_adapter import create_iching_reading_from_legacy
@@ -235,6 +236,67 @@ def delete_reading(reading_id):
     except Exception as e:
         print(f"Error deleting reading: {e}")
         return jsonify({"error": "Failed to delete reading"}), 500
+
+
+@readings_bp.route("/pyromancy_reading", methods=["POST"])
+def pyromancy_reading():
+    """Handle pyromancy (fire) reading submission"""
+    if "username" not in session:
+        return redirect(url_for("auth.login"))
+
+    user = User.get_by_username(session["username"])
+    if not user:
+        return redirect(url_for("auth.login"))
+
+    # Get question and fire image data from form
+    question = request.form.get("question", "").strip()
+    fire_image_data = request.form.get("fire_image_data", "")
+
+    if not fire_image_data:
+        flash("No fire image captured. Please capture a fire image first.", "error")
+        return redirect(url_for("nav.pyromancy"))
+
+    try:
+        # Import the AI readers functions
+        from logic.ai_readers import analyze_fire_image, generate_flame_reading
+
+        # Analyze the fire image to get vision analysis
+        vision_analysis = analyze_fire_image(fire_image_data, current_app.logger)
+
+        # Create a flame reading object (store the vision analysis)
+        flame_reading_data = {
+            "vision_analysis": vision_analysis,
+            "question": question or "General flame reading",
+            "timestamp": str(datetime.now())
+        }
+
+        # Save to history first to get the reading_id
+        history_entry = user.history.add_reading(
+            question=question or "What do the flames reveal?",
+            hexagram=vision_analysis,  # Store the vision analysis as hexagram
+            reading="",  # Will be filled with the actual reading
+            divination_type="flame_reading"
+        )
+
+        # Generate the flame reading using the vision analysis
+        reading_text = generate_flame_reading(vision_analysis, user, current_app.logger, history_entry.reading_id)
+
+        # Update the history entry with the actual reading text
+        history_entry._reading_string = reading_text
+        history_entry.save()
+
+        if history_entry:
+            flash("Flame reading generated successfully!", "success")
+            # Redirect to the new reading detail page
+            return redirect(url_for('readings.reading_detail', reading_path=history_entry.reading_path))
+        else:
+            flash("Error saving flame reading. Please try again.", "error")
+
+    except Exception as e:
+        current_app.logger.error(f"Error generating flame reading: {e}")
+        flash("Error generating flame reading. Please try again.", "error")
+
+    return redirect(url_for("nav.pyromancy"))
 
 
 @readings_bp.route("/drafts")

@@ -12,6 +12,9 @@ from logic.iching import Reading, IChingHexagram
 # Import new base classes
 from logic.base import DivinationType, DivinationReading
 
+# Import database configuration
+from models import get_database_path
+
 class HistoryEntry:
     """Single history entry for a divination reading"""
 
@@ -25,7 +28,6 @@ class HistoryEntry:
         self.reading_dt = reading_dt or datetime.now().isoformat()
         self.reading_id = reading_id or self._generate_reading_id()
         self.divination_type = divination_type
-        self.db_file = "data/users.db"
         self.reading_path = self.get_reading_path()
 
 
@@ -36,6 +38,11 @@ class HistoryEntry:
         else:
             self._reading_string = reading_data
             self._reading_object = None  # Will be parsed when needed
+
+    @property
+    def db_file(self) -> str:
+        """Get the current database file path"""
+        return get_database_path()
 
     def _generate_reading_id(self) -> str:
         """Generate a unique reading ID based on username, timestamp, and question"""
@@ -79,12 +86,13 @@ class HistoryEntry:
         return self._enhance_reading_with_links(reading_html)
 
     def _enhance_reading_with_links(self, reading_text: str) -> str:
-        """Enhance reading text by adding links to hexagrams and styling transitions"""
+        """Enhance reading text by adding links to hexagrams and wiki entries"""
         if not reading_text:
             return reading_text
 
         # Import here to avoid circular imports
         from logic.iching import get_hexagram_section
+        from utils.wiki_utils import create_wiki_links, schedule_wiki_population
 
         def create_hexagram_url_name(title):
             """Create URL-friendly name from hexagram title"""
@@ -124,6 +132,12 @@ class HistoryEntry:
         # Replace patterns like "Hexagram 20", "hexagram 20", "20: Title"
         enhanced = re.sub(r'[Hh]exagram (\d+)', replace_hexagram_ref, reading_text)
         enhanced = re.sub(r'(\d+):\s*[A-Za-z\']+', replace_hexagram_ref, enhanced)
+
+        # Add wiki links for bracketed content
+        enhanced = create_wiki_links(enhanced)
+
+        # Schedule async population of wiki entries
+        schedule_wiki_population(enhanced)
 
         return enhanced
 
@@ -220,7 +234,11 @@ class History:
 
     def __init__(self, username: str):
         self.username = username
-        self.db_file = "data/users.db"
+
+    @property
+    def db_file(self) -> str:
+        """Get the current database file path"""
+        return get_database_path()
 
     def add_reading(self, question: str, hexagram: Union[str, Reading, DivinationReading], reading: Union[str, Reading, DivinationReading], divination_type: str = 'iching') -> Optional[HistoryEntry]:
         """Add a new reading to history - accepts both string and Reading objects"""
@@ -388,12 +406,11 @@ class History:
             # The date part might have dashes, so we need to be careful
             # Format is username-YYYY-MM-DD-id, so we need to reconstruct
             if len(parts) >= 5:  # username-YYYY-MM-DD-id
-                date_part = f"{parts[1]}-{parts[2]}-{parts[3]}"
                 reading_id = parts[4]
             else:
                 return None
 
-            conn = sqlite3.connect("data/users.db")
+            conn = sqlite3.connect(get_database_path())
             c = conn.cursor()
             c.execute("""SELECT reading_id, username, question, hexagram, reading, reading_dt, divination_type
                        FROM history

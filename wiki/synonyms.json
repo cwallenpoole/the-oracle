@@ -1,0 +1,30 @@
+{
+    "ragnarok": {
+        "canonical": "battle_of_ragnarok",
+        "category": "events"
+    },
+    "ragnarök": {
+        "canonical": "battle_of_ragnarok",
+        "category": "events"
+    },
+    "twilight_of_the_gods": {
+        "canonical": "battle_of_ragnarok",
+        "category": "events"
+    },
+    "world_tree": {
+        "canonical": "yggdrasil",
+        "category": "places"
+    },
+    "all_father": {
+        "canonical": "odin",
+        "category": "characters"
+    },
+    "allfather": {
+        "canonical": "odin",
+        "category": "characters"
+    },
+    "all-father": {
+        "canonical": "odin",
+        "category": "characters"
+    }
+}

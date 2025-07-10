@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title.title() }} - Wiki - The Oracle{% endblock %}
+
+{% block breadcrumb %}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb breadcrumb-oracle">
+        <li class="breadcrumb-item"><a href="{{ url_for('readings.index') }}">Home</a></li>
+        <li class="breadcrumb-item">Wiki</li>
+        <li class="breadcrumb-item active" aria-current="page">{{ title.title() }}</li>
+    </ol>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="p-4 wiki-entry">
+        <!-- Wiki Entry Header -->
+        <div class="card-oracle mb-4">
+            <div class="card-header">
+                <h1 class="mb-0">
+                    <i class="bi bi-book"></i>
+                    {{ title.title() }}
+                </h1>
+                <small class="text-muted">
+                    <i class="bi bi-tag"></i>
+                    {{ category.title() }}
+                </small>
+            </div>
+        </div>
+
+        <!-- Wiki Content -->
+        <div class="card-oracle">
+            <div class="card-body">
+                <div class="wiki-content">
+                    {% set processed_content = content %}
+                    {% if content %}
+                        <!-- Remove "Last updated" line -->
+                        {% set lines = content.split('\n') %}
+                        {% set filtered_lines = [] %}
+                        {% for line in lines %}
+                            {% if not (line.strip().startswith('<p><em>Last updated:') or line.strip().startswith('*Last updated:')) %}
+                                {% set _ = filtered_lines.append(line) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% set processed_content = '\n'.join(filtered_lines) %}
+
+                        <!-- Remove duplicate h1 if it matches the title -->
+                        {% set content_lower = processed_content.lower() %}
+                        {% set title_lower = title.lower() %}
+                        {% if content_lower.startswith('<h1>') and title_lower in content_lower %}
+                            {% set h1_end = processed_content.find('</h1>') + 5 %}
+                            {% if h1_end > 4 %}
+                                {% set h1_text = processed_content[4:h1_end-5].strip() %}
+                                {% if h1_text.lower().replace(' ', '_') == title_lower.replace(' ', '_') %}
+                                    {% set processed_content = processed_content[h1_end:].strip() %}
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                    {{ processed_content | safe }}
+                </div>
+            </div>
+        </div>
+
+                <!-- Navigation -->
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('readings.index') }}" class="btn btn-oracle">
+                <i class="bi bi-arrow-left"></i>
+                Back to Readings
+            </a>
+        </div>
+    </div>
+
+<style>
+    /* Fix card-header padding */
+    .card-oracle .card-header {
+        padding: 1rem 1.5rem;
+    }
+
+    .wiki-entry .text-muted {
+        color: var(--oracle-gold) !important;
+    }
+
+    .wiki-entry .card-body {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* Fix card-body padding */
+    .card-oracle .card-body {
+        padding: 1.5rem;
+    }
+
+    .wiki-content {
+        line-height: 1.6;
+        color: var(--oracle-black);
+    }
+
+    .wiki-content h1,
+    .wiki-content h2,
+    .wiki-content h3,
+    .wiki-content h4,
+    .wiki-content h5,
+    .wiki-content h6 {
+        color: var(--oracle-red);
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .wiki-content h1 {
+        font-size: 2.5rem;
+        border-bottom: 3px solid var(--oracle-gold);
+        padding-bottom: 0.5rem;
+    }
+
+    .wiki-content h2 {
+        font-size: 2rem;
+        border-bottom: 2px solid var(--oracle-gold-dark);
+        padding-bottom: 0.3rem;
+    }
+
+    .wiki-content h3 {
+        font-size: 1.5rem;
+        border-bottom: 1px solid var(--oracle-gold-dark);
+        padding-bottom: 0.2rem;
+    }
+
+    .wiki-content p {
+        margin-bottom: 1.5rem;
+        text-align: justify;
+    }
+
+    .wiki-content blockquote {
+        background: rgba(139,0,0,0.1);
+        border-left: 4px solid var(--oracle-red);
+        padding: 1rem;
+        margin: 1.5rem 0;
+        border-radius: 0 8px 8px 0;
+        font-style: italic;
+    }
+
+    .wiki-content code {
+        background: rgba(255,215,0,0.1);
+        color: var(--oracle-red-dark);
+        padding: 0.2rem 0.4rem;
+        border-radius: 3px;
+        font-family: 'Courier New', monospace;
+    }
+
+    .wiki-content pre {
+        background: rgba(26,26,26,0.05);
+        border: 1px solid var(--oracle-gold-dark);
+        border-radius: 8px;
+        padding: 1rem;
+        overflow-x: auto;
+        margin: 1.5rem 0;
+    }
+
+    .wiki-content ul,
+    .wiki-content ol {
+        margin-bottom: 1.5rem;
+        padding-left: 2rem;
+    }
+
+    .wiki-content li {
+        margin-bottom: 0.5rem;
+    }
+
+    .wiki-content a {
+        color: var(--oracle-red);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .wiki-content a:hover {
+        color: var(--oracle-red-light);
+        text-decoration: underline;
+    }
+
+    .wiki-content em {
+        color: var(--oracle-black-light);
+        font-style: italic;
+    }
+
+    .wiki-content strong {
+        color: var(--oracle-red-dark);
+        font-weight: 600;
+    }
+
+    .wiki-content hr {
+        border: 0;
+        height: 2px;
+        background: linear-gradient(to right, transparent, var(--oracle-gold), transparent);
+        margin: 2rem 0;
+    }
+
+    .wiki-link {
+        color: var(--oracle-red);
+        text-decoration: none;
+        font-weight: 500;
+        border-bottom: 1px dotted var(--oracle-red);
+        transition: all 0.3s ease;
+    }
+
+    .wiki-link:hover {
+        color: var(--oracle-red-light);
+        text-decoration: none;
+        border-bottom: 1px solid var(--oracle-red-light);
+    }
+</style>
+{% endblock %}

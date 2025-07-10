@@ -2,14 +2,15 @@ import unittest
 import os
 import sqlite3
 import tempfile
-from unittest.mock import patch, MagicMock
 import sys
+from pathlib import Path
 
 # Add the parent directory to the path so we can import our modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
+# Import database configuration
+from models import set_database_path, reset_database_path, get_database_path
 from models.user import User
-from models.history import History
 
 class TestUser(unittest.TestCase):
     """Test cases for the User model"""
@@ -17,163 +18,222 @@ class TestUser(unittest.TestCase):
     def setUp(self):
         """Set up test database and test data"""
         # Create a temporary database file for testing
-        self.test_db_fd, self.test_db_path = tempfile.mkstemp()
+        self.test_db_fd, self.test_db_path = tempfile.mkstemp(suffix='.db')
 
-        # Patch the db_file in User class to use our test database
-        self.db_patcher = patch.object(User, '__init__')
-        self.mock_init = self.db_patcher.start()
+        # Set the test database path
+        set_database_path(self.test_db_path)
 
-        def custom_init(self, username, password_hash="", birthdate="", about_me=""):
-            self.username = username
-            self.password_hash = password_hash
-            self.birthdate = birthdate
-            self.about_me = about_me
-            self.db_file = self.test_db_path
-            self._history = None
-
-        self.mock_init.side_effect = custom_init
-
-        # Initialize test database
+        # Create and initialize the test database
         self._init_test_db()
 
     def tearDown(self):
-        """Clean up after tests"""
-        self.db_patcher.stop()
+        """Clean up test database"""
+        # Reset database path to default
+        reset_database_path()
+
+        # Close and remove temporary database file
         os.close(self.test_db_fd)
-        os.unlink(self.test_db_path)
+        if os.path.exists(self.test_db_path):
+            os.unlink(self.test_db_path)
 
     def _init_test_db(self):
         """Initialize test database with required tables"""
         conn = sqlite3.connect(self.test_db_path)
         c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS users (
-                        username TEXT PRIMARY KEY,
-                        password_hash TEXT,
-                        birthdate TEXT,
-                        about_me TEXT
-                     )''')
-        c.execute('''CREATE TABLE IF NOT EXISTS history (
-                        reading_id TEXT PRIMARY KEY,
-                        username TEXT,
-                        question TEXT,
-                        hexagram TEXT,
-                        reading TEXT,
-                        reading_dt TEXT,
-                        divination_type TEXT DEFAULT 'iching'
-                     )''')
+
+        # Create users table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                username TEXT PRIMARY KEY,
+                password_hash TEXT NOT NULL,
+                birthdate TEXT,
+                about_me TEXT,
+                birth_time TEXT,
+                birth_latitude TEXT,
+                birth_longitude TEXT
+            )
+        ''')
+
+        # Create history table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                reading_id TEXT,
+                username TEXT,
+                question TEXT,
+                hexagram TEXT,
+                reading TEXT,
+                reading_dt TEXT,
+                divination_type TEXT DEFAULT 'iching'
+            )
+        ''')
+
+        # Create user_settings table
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS user_settings (
+                username TEXT PRIMARY KEY,
+                settings_json TEXT
+            )
+        ''')
+
         conn.commit()
         conn.close()
 
     def test_user_creation(self):
-        """Test basic user creation"""
-        user = User("testuser", "hash123", "1990-01-01", "Test about me")
-        self.assertEqual(user.username, "testuser")
-        self.assertEqual(user.password_hash, "hash123")
-        self.assertEqual(user.birthdate, "1990-01-01")
-        self.assertEqual(user.about_me, "Test about me")
-
-    def test_user_create_new(self):
-        """Test creating a new user via User.create()"""
-        user = User.create("newuser", "password123", "1985-05-15", "New user bio")
+        """Test user creation"""
+        # Test successful user creation
+        user = User.create("testuser", "password123", "1990-01-01", "Test user")
         self.assertIsNotNone(user)
-        self.assertEqual(user.username, "newuser")
-        self.assertEqual(user.birthdate, "1985-05-15")
-        self.assertEqual(user.about_me, "New user bio")
+        self.assertEqual(user.username, "testuser")
+        self.assertEqual(user.birthdate, "1990-01-01")
+        self.assertEqual(user.about_me, "Test user")
 
-    def test_user_create_duplicate(self):
-        """Test that creating a duplicate user returns None"""
-        User.create("duplicate", "password123")
-        duplicate_user = User.create("duplicate", "password456")
+        # Test duplicate user creation fails
+        duplicate_user = User.create("testuser", "password456")
         self.assertIsNone(duplicate_user)
 
-    def test_user_authentication_success(self):
-        """Test successful user authentication"""
-        original_user = User.create("authuser", "password123")
-        authenticated_user = User.authenticate("authuser", "password123")
-        self.assertIsNotNone(authenticated_user)
-        self.assertEqual(authenticated_user.username, "authuser")
+    def test_user_authentication(self):
+        """Test user authentication"""
+        # Create a user first
+        User.create("authuser", "securepass", "1985-05-15")
 
-    def test_user_authentication_failure(self):
-        """Test failed user authentication"""
-        User.create("authuser", "password123")
-        authenticated_user = User.authenticate("authuser", "wrongpassword")
-        self.assertIsNone(authenticated_user)
+        # Test successful authentication
+        user = User.authenticate("authuser", "securepass")
+        self.assertIsNotNone(user)
+        self.assertEqual(user.username, "authuser")
+        self.assertEqual(user.birthdate, "1985-05-15")
 
-    def test_user_get_by_username(self):
-        """Test getting user by username"""
-        User.create("getuser", "password123", "1990-01-01", "Get user test")
-        retrieved_user = User.get_by_username("getuser")
-        self.assertIsNotNone(retrieved_user)
-        self.assertEqual(retrieved_user.username, "getuser")
-        self.assertEqual(retrieved_user.birthdate, "1990-01-01")
-        self.assertEqual(retrieved_user.about_me, "Get user test")
+        # Test failed authentication with wrong password
+        user = User.authenticate("authuser", "wrongpass")
+        self.assertIsNone(user)
+
+        # Test failed authentication with non-existent user
+        user = User.authenticate("nonexistent", "password")
+        self.assertIsNone(user)
 
     def test_user_exists(self):
         """Test user existence check"""
-        self.assertFalse(User.exists("nonexistent"))
-        User.create("existsuser", "password123")
-        self.assertTrue(User.exists("existsuser"))
+        # User doesn't exist initially
+        self.assertFalse(User.exists("existuser"))
+
+        # Create user
+        User.create("existuser", "password")
+
+        # User should exist now
+        self.assertTrue(User.exists("existuser"))
+
+    def test_get_by_username(self):
+        """Test getting user by username"""
+        # Create a user with full profile
+        User.create("profileuser", "password", "1992-03-20", "Profile description",
+                   "14:30", "40.7128", "-74.0060")
+
+        # Get user by username
+        user = User.get_by_username("profileuser")
+        self.assertIsNotNone(user)
+        self.assertEqual(user.username, "profileuser")
+        self.assertEqual(user.birthdate, "1992-03-20")
+        self.assertEqual(user.about_me, "Profile description")
+        self.assertEqual(user.birth_time, "14:30")
+        self.assertEqual(user.birth_latitude, "40.7128")
+        self.assertEqual(user.birth_longitude, "-74.0060")
+
+        # Test non-existent user
+        user = User.get_by_username("nonexistent")
+        self.assertIsNone(user)
 
     def test_update_profile(self):
         """Test updating user profile"""
-        user = User.create("updateuser", "password123")
-        success = user.update_profile(birthdate="1995-12-25", about_me="Updated bio")
+        # Create a user
+        user = User.create("updateuser", "password", "1990-01-01")
+        self.assertIsNotNone(user)
+
+        # Update profile
+        success = user.update_profile(
+            birthdate="1991-02-02",
+            about_me="Updated description",
+            birth_time="09:15",
+            birth_latitude="51.5074",
+            birth_longitude="-0.1278"
+        )
         self.assertTrue(success)
 
-        # Verify the update persisted
+        # Verify updates by getting user from database
         updated_user = User.get_by_username("updateuser")
-        self.assertEqual(updated_user.birthdate, "1995-12-25")
-        self.assertEqual(updated_user.about_me, "Updated bio")
+        self.assertEqual(updated_user.birthdate, "1991-02-02")
+        self.assertEqual(updated_user.about_me, "Updated description")
+        self.assertEqual(updated_user.birth_time, "09:15")
+        self.assertEqual(updated_user.birth_latitude, "51.5074")
+        self.assertEqual(updated_user.birth_longitude, "-0.1278")
 
     def test_change_password(self):
         """Test changing user password"""
-        user = User.create("pwduser", "oldpassword")
-        success = user.change_password("newpassword")
+        # Create a user
+        user = User.create("passuser", "oldpassword")
+        self.assertIsNotNone(user)
+
+        # Change password successfully
+        success = user.change_password("oldpassword", "newpassword")
         self.assertTrue(success)
 
-        # Verify old password doesn't work
-        self.assertIsNone(User.authenticate("pwduser", "oldpassword"))
+        # Test authentication with new password
+        auth_user = User.authenticate("passuser", "newpassword")
+        self.assertIsNotNone(auth_user)
 
-        # Verify new password works
-        self.assertIsNotNone(User.authenticate("pwduser", "newpassword"))
+        # Test authentication with old password fails
+        auth_user = User.authenticate("passuser", "oldpassword")
+        self.assertIsNone(auth_user)
+
+        # Test changing password with wrong current password
+        success = user.change_password("wrongold", "anotherpass")
+        self.assertFalse(success)
 
     def test_to_dict(self):
         """Test converting user to dictionary"""
-        user = User.create("dictuser", "password123", "1990-01-01", "Dict test")
+        user = User.create("dictuser", "password", "1988-12-25", "Dictionary user",
+                          "16:45", "48.8566", "2.3522")
         user_dict = user.to_dict()
 
-        expected_keys = {'username', 'birthdate', 'about_me'}
-        self.assertEqual(set(user_dict.keys()), expected_keys)
-        self.assertEqual(user_dict['username'], "dictuser")
-        self.assertEqual(user_dict['birthdate'], "1990-01-01")
-        self.assertEqual(user_dict['about_me'], "Dict test")
+        expected_dict = {
+            'username': 'dictuser',
+            'birthdate': '1988-12-25',
+            'about_me': 'Dictionary user',
+            'birth_time': '16:45',
+            'birth_latitude': '48.8566',
+            'birth_longitude': '2.3522'
+        }
+
+        self.assertEqual(user_dict, expected_dict)
+        # Ensure password hash is not included
         self.assertNotIn('password_hash', user_dict)
 
-    @patch('models.history.History')
-    def test_lazy_history_property(self, mock_history_class):
-        """Test lazy-loaded history property"""
-        mock_history_instance = MagicMock()
-        mock_history_class.return_value = mock_history_instance
-
-        user = User.create("historyuser", "password123")
-
-        # First access should create the history object
-        history1 = user.history
-        mock_history_class.assert_called_once_with("historyuser")
-        self.assertEqual(history1, mock_history_instance)
-
-        # Second access should return the same cached object
-        history2 = user.history
-        # Should still only be called once (cached)
-        mock_history_class.assert_called_once()
-        self.assertEqual(history1, history2)
-
-    def test_str_representation(self):
+    def test_user_string_representation(self):
         """Test string representation of user"""
-        user = User("testuser", "hash", "1990-01-01", "About me")
-        str_repr = str(user)
-        self.assertIn("testuser", str_repr)
-        self.assertIn("1990-01-01", str_repr)
+        user = User.create("stringuser", "password", "1995-06-10")
+        user_str = str(user)
+        self.assertIn("stringuser", user_str)
+        self.assertIn("1995-06-10", user_str)
+
+    def test_db_file_property(self):
+        """Test that db_file property returns correct path"""
+        user = User("testuser")
+        self.assertEqual(user.db_file, self.test_db_path)
+
+    def test_history_property(self):
+        """Test that history property is lazy-loaded"""
+        user = User.create("historyuser", "password")
+
+        # History should be lazy-loaded
+        self.assertIsNone(user._history)
+
+        # Accessing history should load it
+        history = user.history
+        self.assertIsNotNone(history)
+        self.assertEqual(history.username, "historyuser")
+
+        # Second access should return the same object
+        history2 = user.history
+        self.assertIs(history, history2)
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}Demo Fire - The Oracle{% endblock %}
+{% block title %}Pyromancy - The Oracle{% endblock %}
 
-{% block body_class %}demo-fire{% endblock %}
+{% block body_class %}pyromancy{% endblock %}
 
 {% block breadcrumb %}
 <nav aria-label="breadcrumb" class="mt-2">
@@ -13,7 +13,7 @@
             </a>
         </li>
         <li class="breadcrumb-item active text-white" aria-current="page">
-            <i class="bi bi-fire"></i> Demo Fire
+            <i class="bi bi-fire"></i> Pyromancy
         </li>
     </ol>
 </nav>
@@ -21,63 +21,16 @@
 
 {% block content %}
 <div class="p-4">
-    <!-- Hero Section -->
-    <div class="card card-oracle mb-4 demo-fire-hero">
-        <div class="card-header bg-gradient text-white card-header-gradient">
-            <div class="text-center">
-                <h1 class="oracle-title-large mb-3">
-                    <i class="bi bi-fire oracle-red-icon"></i> Demo Fire
-                </h1>
-                <p class="oracle-subtitle mb-0">
-                    Igniting Ancient Wisdom with Modern Technology
-                </p>
-            </div>
-        </div>
-        <div class="card-body text-center p-5">
-            <div class="demo-fire-flames mb-4">
-                🔥 🌟 🔥 🌟 🔥
-            </div>
-            <h2 class="oracle-red-text mb-3">Welcome to the Sacred Flames</h2>
-            <p class="lead mb-4">
-                Experience the transformative power of The Oracle through interactive demonstrations
-                of I Ching hexagrams, runic wisdom, and mystical insights.
-            </p>
-            <div class="demo-fire-stats row text-center">
-                <div class="col-md-4">
-                    <div class="stat-item">
-                        <h3 class="oracle-gold-text">64</h3>
-                        <p class="text-muted">Hexagrams</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-item">
-                        <h3 class="oracle-gold-text">24</h3>
-                        <p class="text-muted">Elder Runes</p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="stat-item">
-                        <h3 class="oracle-gold-text">∞</h3>
-                        <p class="text-muted">Possibilities</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Interactive Fire Canvas -->
     <div class="card card-oracle mb-4">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-start">
                 <div>
                     <h3 class="mb-0">
-                        <i class="bi bi-flame oracle-gold-icon"></i> Sacred Flames Interactive Demo
+                        <i class="bi bi-flame oracle-gold-icon"></i> Sacred Flames Pyromancy
                     </h3>
-                    <p class="mb-0 mt-2 text-muted">
-                        <small><i class="bi bi-hand-index"></i> Click anywhere on the flames to add magical incense bursts</small>
-                    </p>
                 </div>
-                <div class="demo-controls">
+                <div class="pyromancy-controls">
                     <button id="captureFireBtn" class="btn btn-oracle btn-sm">
                         <i class="bi bi-camera"></i> Capture Fire Image
                     </button>
@@ -109,6 +62,46 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Question and Reading Form -->
+    <div class="card card-oracle mb-4">
+        <div class="card-header">
+            <h3 class="mb-0">
+                <i class="bi bi-question-circle oracle-gold-icon"></i> Seek Wisdom from the Flames
+            </h3>
+        </div>
+        <div class="card-body">
+            <form id="pyromancyForm" method="post" action="{{ url_for('readings.pyromancy_reading') }}">
+                <div class="mb-3">
+                    <label for="question" class="form-label">
+                        <i class="bi bi-chat-quote"></i> What guidance do you seek from the sacred flames?
+                    </label>
+                    <textarea
+                        class="form-control"
+                        id="question"
+                        name="question"
+                        rows="3"
+                        placeholder="Enter your question here... (Optional - you can also receive a general reading)"
+                    ></textarea>
+                    <div class="form-text">
+                        <i class="bi bi-info-circle"></i>
+                        Your question will guide the interpretation of the flame patterns. Leave blank for a general reading.
+                    </div>
+                </div>
+                <input type="hidden" id="fireImageData" name="fire_image_data" />
+                <div class="text-center">
+                    <button type="submit" class="btn btn-oracle btn-lg" id="pyromancySubmitBtn">
+                        <i class="bi bi-fire"></i> Read the Flames
+                    </button>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            Capture a fire image above for enhanced reading, or proceed without for a general flame divination
+                        </small>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -300,12 +293,12 @@
 
 {% block extra_css %}
 <style>
-/* Demo Fire specific styling */
-.demo-fire-hero {
+/* Pyromancy specific styling */
+.pyromancy-hero {
     background: linear-gradient(135deg, rgba(139,0,0,0.1) 0%, rgba(255,215,0,0.1) 100%);
 }
 
-.demo-fire-flames {
+.pyromancy-flames {
     font-size: 2rem;
     animation: flicker 2s infinite alternate;
 }
@@ -319,7 +312,7 @@
 .fire-canvas-container {
     position: relative;
     width: 100%;
-    height: 500px;
+    height: 300px;
     background: linear-gradient(180deg, #0a0a0f 0%, #1a0f0a 70%, #2a1a0f 100%);
     border-radius: 0 0 10px 10px;
     overflow: hidden;
@@ -369,7 +362,7 @@
 .flame-green { background: #44ff88; }
 .flame-purple { background: #8844ff; }
 
-.demo-fire-stats .stat-item h3 {
+.pyromancy-stats .stat-item h3 {
     font-size: 2.5rem;
     font-weight: bold;
     margin-bottom: 0.5rem;
@@ -495,7 +488,7 @@
     }
 
     .fire-canvas-container {
-        height: 400px;
+        height: 250px;
     }
 
     .fire-instructions {
@@ -1156,6 +1149,41 @@ document.addEventListener('DOMContentLoaded', function() {
     if (captureBtn) {
         captureBtn.addEventListener('click', function() {
             captureFireImage(false);
+            // Enable the submit button after capturing
+            const submitBtn = document.getElementById('pyromancySubmitBtn');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-fire"></i> Read the Flames';
+            }
+        });
+    }
+
+    // Pyromancy form submission handler
+    const pyromancyForm = document.getElementById('pyromancyForm');
+    if (pyromancyForm) {
+        pyromancyForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Get the canvas and convert to base64
+            const canvas = document.getElementById('fire-canvas');
+            if (!canvas) {
+                alert('Fire canvas not found. Please refresh the page.');
+                return;
+            }
+
+            try {
+                const imageData = canvas.toDataURL('image/png').split(',')[1];
+                const fireImageInput = document.getElementById('fireImageData');
+                if (fireImageInput) {
+                    fireImageInput.value = imageData;
+                }
+
+                // Submit the form
+                this.submit();
+            } catch (error) {
+                console.error('Error capturing fire image:', error);
+                alert('Error capturing fire image. Please try again.');
+            }
         });
     }
 

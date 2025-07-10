@@ -114,7 +114,7 @@ def get_hgram_text(hgram: IChingHexagram):
 def get_hexagram_section(number):
     text = get_text()
     # Find the section for the given number
-    pattern = re.compile(rf"^##\s+{number}\.\s+(?P<title>.+?)\s+(?P<symbol>䷀|䷁|䷂|䷃|䷄|䷅|䷆|䷇|䷈|䷉|䷊|䷋|䷌|䷍|䷎|䷏|䷐|䷑|䷒|䷓|䷔|䷕|䷖|䷗|䷘|䷙|䷚|䷛|䷜|䷝|䷞|䷟|䷠|䷡|䷢|䷣|䷤|䷥|䷦|䷧|䷨|䷩|䷪|䷫|䷬|䷭|䷮|䷯|䷰|䷱|䷲|䷳|䷴|䷵|䷶|䷷|䷸|䷹|䷺|䷻|䷼|䷽|䷾|䷿)$", re.MULTILINE)
+    pattern = re.compile(rf"##\s+{number}\.\s+(?P<title>.+?)\s+(?P<symbol>䷀|䷁|䷂|䷃|䷄|䷅|䷆|䷇|䷈|䷉|䷊|䷋|䷌|䷍|䷎|䷏|䷐|䷑|䷒|䷓|䷔|䷕|䷖|䷗|䷘|䷙|䷚|䷛|䷜|䷝|䷞|䷟|䷠|䷡|䷢|䷣|䷤|䷥|䷦|䷧|䷨|䷩|䷪|䷫|䷬|䷭|䷮|䷯|䷰|䷱|䷲|䷳|䷴|䷵|䷶|䷷|䷸|䷹|䷺|䷻|䷼|䷽|䷾|䷿)$", re.MULTILINE)
     match = pattern.search(text)
 
     if not match:

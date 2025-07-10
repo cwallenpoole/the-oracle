@@ -2,6 +2,7 @@ import sqlite3
 import json
 from datetime import datetime
 from typing import Optional, Dict, Any, List
+from models import get_database_path
 
 class LLMRequest:
     """Model for storing LLM requests associated with divination readings"""
@@ -14,7 +15,11 @@ class LLMRequest:
         self.model_used = model_used
         self.request_dt = request_dt or datetime.now().isoformat()
         self.request_type = request_type  # "initial" or "followup"
-        self.db_file = "data/users.db"
+
+    @property
+    def db_file(self) -> str:
+        """Get the current database file path"""
+        return get_database_path()
 
     def save(self) -> bool:
         """Save LLM request to database"""
@@ -36,7 +41,7 @@ class LLMRequest:
     @classmethod
     def get_by_reading_id(cls, reading_id: str) -> List['LLMRequest']:
         """Get all LLM requests for a specific reading_id"""
-        conn = sqlite3.connect("data/users.db")
+        conn = sqlite3.connect(get_database_path())
         c = conn.cursor()
         c.execute("""SELECT reading_id, request_data, response_data, model_used, request_dt, request_type
                     FROM llm_requests WHERE reading_id = ? ORDER BY request_dt""", (reading_id,))
@@ -48,7 +53,7 @@ class LLMRequest:
     @classmethod
     def get_initial_request(cls, reading_id: str) -> Optional['LLMRequest']:
         """Get the initial LLM request for a specific reading"""
-        conn = sqlite3.connect("data/users.db")
+        conn = sqlite3.connect(get_database_path())
         c = conn.cursor()
         c.execute("""SELECT reading_id, request_data, response_data, model_used, request_dt, request_type
                     FROM llm_requests WHERE reading_id = ? AND request_type = 'initial'
@@ -63,7 +68,7 @@ class LLMRequest:
     @classmethod
     def get_followups(cls, reading_id: str) -> List['LLMRequest']:
         """Get all follow-up requests for a specific reading"""
-        conn = sqlite3.connect("data/users.db")
+        conn = sqlite3.connect(get_database_path())
         c = conn.cursor()
         c.execute("""SELECT reading_id, request_data, response_data, model_used, request_dt, request_type
                     FROM llm_requests WHERE reading_id = ? AND request_type = 'followup'
