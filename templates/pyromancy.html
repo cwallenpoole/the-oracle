@@ -34,9 +34,9 @@
                     <button id="captureFireBtn" class="btn btn-oracle btn-sm">
                         <i class="bi bi-camera"></i> Capture Fire Image
                     </button>
-                    <div id="captureStatus" class="mt-2 text-center" style="display: none;">
-                        <small class="text-muted"></small>
-                    </div>
+                </div>
+                <div id="captureStatus" class="mt-2 text-center" style="display: none;">
+                    <small class="text-muted"></small>
                 </div>
             </div>
         </div>
@@ -44,20 +44,16 @@
             <div class="fire-canvas-container" id="fire-container">
                 <canvas id="fire-canvas"></canvas>
                 <div class="fire-instructions">
-                    <div class="instruction-item">
-                        <span class="flame-dot flame-red"></span>
-                        <span>Sacred Fire</span>
+                    <div class="instruction-item clickable-color" data-color="primary">
+                        <span>Mixed Colors</span>
                     </div>
-                    <div class="instruction-item">
-                        <span class="flame-dot flame-blue"></span>
+                    <div class="instruction-item clickable-color" data-color="incense_blue">
                         <span>Mystic Incense</span>
                     </div>
-                    <div class="instruction-item">
-                        <span class="flame-dot flame-green"></span>
+                    <div class="instruction-item clickable-color" data-color="incense_green">
                         <span>Healing Herbs</span>
                     </div>
-                    <div class="instruction-item">
-                        <span class="flame-dot flame-purple"></span>
+                    <div class="instruction-item clickable-color" data-color="incense_purple">
                         <span>Spirit Smoke</span>
                     </div>
                 </div>
@@ -78,16 +74,28 @@
                     <label for="question" class="form-label">
                         <i class="bi bi-chat-quote"></i> What guidance do you seek from the sacred flames?
                     </label>
-                    <textarea
-                        class="form-control"
-                        id="question"
-                        name="question"
-                        rows="3"
-                        placeholder="Enter your question here... (Optional - you can also receive a general reading)"
-                    ></textarea>
-                    <div class="form-text">
-                        <i class="bi bi-info-circle"></i>
-                        Your question will guide the interpretation of the flame patterns. Leave blank for a general reading.
+                    <div class="row">
+                        <div class="col-md-10">
+                            <textarea
+                                class="form-control"
+                                id="question"
+                                name="question"
+                                rows="3"
+                                placeholder="Enter your question here... (Optional - you can also receive a general reading)"
+                            ></textarea>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                Your question will guide the interpretation of the flame patterns. Leave blank for a general reading.
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div id="capturedImagePreview" class="captured-image-preview" style="display: none;">
+                                <img id="capturedImageDisplay" class="captured-image-display" alt="Captured Fire" />
+                                <div class="captured-image-label">
+                                    <i class="bi bi-fire"></i> Captured Flame
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <input type="hidden" id="fireImageData" name="fire_image_data" />
@@ -308,6 +316,10 @@
     100% { opacity: 1; }
 }
 
+#captureStatus .text-muted {
+    color: var(--oracle-gold) !important;
+}
+
 /* Fire Canvas Container */
 .fire-canvas-container {
     position: relative;
@@ -350,17 +362,42 @@
     margin-bottom: 0;
 }
 
-.flame-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    display: inline-block;
+.clickable-color {
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
 }
 
-.flame-red { background: #ff4444; }
-.flame-blue { background: #4488ff; }
-.flame-green { background: #44ff88; }
-.flame-purple { background: #8844ff; }
+.clickable-color:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.clickable-color.active {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: var(--oracle-gold);
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+}
+
+.clickable-color[data-color="primary"] {
+    border-left: 3px solid #ff4444;
+}
+
+.clickable-color[data-color="incense_blue"] {
+    border-left: 3px solid #4488ff;
+}
+
+.clickable-color[data-color="incense_green"] {
+    border-left: 3px solid #44ff88;
+}
+
+.clickable-color[data-color="incense_purple"] {
+    border-left: 3px solid #8844ff;
+}
+
+
 
 .pyromancy-stats .stat-item h3 {
     font-size: 2.5rem;
@@ -496,6 +533,40 @@
         left: 10px;
         padding: 8px 12px;
     }
+
+    .captured-image-preview {
+        margin-top: 10px;
+    }
+}
+
+/* Captured Image Preview */
+.captured-image-preview {
+    border: 2px solid var(--oracle-gold);
+    border-radius: 10px;
+    padding: 10px;
+    background: linear-gradient(135deg, rgba(255,69,0,0.1) 0%, rgba(255,140,0,0.1) 100%);
+    text-align: center;
+}
+
+.captured-image-display {
+    width: 100%;
+    height: 96px;
+    object-fit: contain;
+    border-radius: 8px;
+    border: 1px solid var(--oracle-gold-dark);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+#pyromancyForm textarea.form-control {
+  min-height: 147px;
+}
+
+.captured-image-label {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--oracle-red);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
 }
 </style>
 {% endblock %}
@@ -511,6 +582,7 @@ class EnhancedFire {
         this.sparks = [];
         this.sparks2 = [];
         this.running = false;
+        this.activeColor = 'primary'; // Default active color
 
                           // Three flame sources positioned at bottom - very close together with depth
          this.flameSources = [
@@ -528,9 +600,9 @@ class EnhancedFire {
         };
 
         this.init();
-    }
+     }
 
-         init() {
+    init() {
          this.resizeCanvas();
 
          // Add event listeners with better binding
@@ -539,6 +611,9 @@ class EnhancedFire {
          this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
          window.addEventListener('resize', this.resizeCanvas.bind(this));
 
+         // Setup color selection
+         this.setupColorSelection();
+
          // Ensure canvas is interactive
          this.canvas.style.pointerEvents = 'auto';
          this.canvas.style.touchAction = 'none';
@@ -546,6 +621,28 @@ class EnhancedFire {
          console.log('Fire system initialized - canvas size:', this.canvas.width, 'x', this.canvas.height);
          this.start();
      }
+
+    setupColorSelection() {
+        const colorItems = document.querySelectorAll('.clickable-color');
+
+        // Set default active color
+        const defaultActive = document.querySelector('.clickable-color[data-color="primary"]');
+        if (defaultActive) {
+            defaultActive.classList.add('active');
+        }
+
+        colorItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                // Remove active class from all items
+                colorItems.forEach(i => i.classList.remove('active'));
+                // Add active class to clicked item
+                item.classList.add('active');
+                // Set active color
+                this.activeColor = item.dataset.color;
+                console.log('Active color changed to:', this.activeColor);
+            });
+        });
+    }
 
     resizeCanvas() {
         const container = this.canvas.parentElement;
@@ -559,7 +656,7 @@ class EnhancedFire {
         });
     }
 
-         handleClick(e) {
+    handleClick(e) {
          e.preventDefault();
          const rect = this.canvas.getBoundingClientRect();
          const scaleX = this.canvas.width / rect.width;
@@ -570,16 +667,20 @@ class EnhancedFire {
 
          console.log('Fire click at:', x, y); // Debug log
 
-         // Add a temporary incense flame source at click position
-         const incenseColors = ['incense_blue', 'incense_green', 'incense_purple'];
-         const randomColor = incenseColors[Math.floor(Math.random() * incenseColors.length)];
+         // Use the active color for the flame burst
 
-         console.log('Adding incense burst:', randomColor); // Debug log
+         // Create burst of flames with active color - bigger and longer lasting
 
-         // Create burst of incense flames - bigger and longer lasting
+        let activeColor = this.activeColor;
+        if (activeColor === 'primary') {
+            const colorValues = Object.keys(this.flameColors);
+            activeColor = colorValues[Math.ceil(Math.random() * (colorValues.length - 1))];
+            console.log('Active is "default" - using random color:', activeColor); // Debug log
+        }
+        console.log('Adding flame burst with active color:', activeColor); // Debug log
          for (let i = 0; i < 20; i++) {
              setTimeout(() => {
-                 this.addIncenseFlame(x, y, randomColor);
+                 this.addIncenseFlame(x, y, activeColor);
              }, i * 20);
          }
 
@@ -599,10 +700,10 @@ class EnhancedFire {
         this.mouseY = e.clientY - rect.top;
     }
 
-              addIncenseFlame(x, y, colorType) {
-         const colors = this.flameColors[colorType];
+    addIncenseFlame(x, y, colorType) {
+        const colors = this.flameColors[colorType];
 
-                  // Create multiple large incense flames for dramatic effect
+        // Create multiple large incense flames for dramatic effect
          for (let i = 0; i < 3; i++) {
              const flame = new Flame(
                  {x: x + this.rand(-15, 15), y: y + this.rand(-10, 10)},
@@ -1061,8 +1162,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 captureBtn.disabled = true;
             }
 
-            // Capture the canvas as a data URL
-            const imageData = canvas.toDataURL('image/png');
+            // Capture the canvas as a data URL with cropping
+            const imageData = captureCanvasWithCrop(canvas, 0.3, 0, 0.4, 1); // Crop 30% from left and right
+
+            // Display the captured image in the preview area
+            displayCapturedImage(imageData);
 
             // Prepare the data to send
             const data = {
@@ -1172,7 +1276,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             try {
-                const imageData = canvas.toDataURL('image/png').split(',')[1];
+                const croppedImageData = captureCanvasWithCrop(canvas, 0.3, 0, 0.4, 1); // Crop 30% from left and right
+                const imageData = croppedImageData.split(',')[1];
                 const fireImageInput = document.getElementById('fireImageData');
                 if (fireImageInput) {
                     fireImageInput.value = imageData;
@@ -1217,6 +1322,45 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 captureStatus.style.display = 'none';
             }, 3000);
+        }
+    }
+
+        function captureCanvasWithCrop(sourceCanvas, cropX, cropY, cropWidth, cropHeight) {
+        // Create a temporary canvas for cropping
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+
+        // Calculate crop dimensions
+        const sourceWidth = sourceCanvas.width;
+        const sourceHeight = sourceCanvas.height;
+        const cropStartX = Math.floor(sourceWidth * cropX);
+        const cropStartY = Math.floor(sourceHeight * cropY);
+        const cropPixelWidth = Math.floor(sourceWidth * cropWidth);
+        const cropPixelHeight = Math.floor(sourceHeight * cropHeight);
+
+        // Set the temp canvas size to the cropped dimensions
+        tempCanvas.width = cropPixelWidth;
+        tempCanvas.height = cropPixelHeight;
+
+        // Draw the cropped portion of the source canvas to the temp canvas
+        tempCtx.drawImage(
+            sourceCanvas,
+            cropStartX, cropStartY, cropPixelWidth, cropPixelHeight, // Source rectangle
+            0, 0, cropPixelWidth, cropPixelHeight // Destination rectangle
+        );
+
+        // Return the data URL of the cropped canvas
+        return tempCanvas.toDataURL('image/png');
+    }
+
+    function displayCapturedImage(imageData) {
+        const previewContainer = document.getElementById('capturedImagePreview');
+        const imageDisplay = document.getElementById('capturedImageDisplay');
+
+        if (previewContainer && imageDisplay) {
+            imageDisplay.src = imageData;
+            previewContainer.style.display = 'block';
+            console.log('Captured image displayed in preview area');
         }
     }
 

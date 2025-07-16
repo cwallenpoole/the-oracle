@@ -27,6 +27,7 @@
             --oracle-primary: var(--oracle-red);
             --oracle-secondary: var(--oracle-red-light);
             --oracle-accent: var(--oracle-gold);
+            --oracle-gold-rgb: 255, 215, 0;
         }
 
         body {
@@ -184,12 +185,14 @@
         }
 
         .card-subtitle,
+        .text-muted,
         .accordion-header .text-muted,
         .card-subtitle.text-muted {
             color: var(--oracle-black-light) !important;
         }
-        .text-muted {
-            color: var(--oracle-gold) !important;
+
+        .profile-info .text-muted {
+            color: var(--oracle-gold-rgb) !important;
         }
 
         /* Icon styling */

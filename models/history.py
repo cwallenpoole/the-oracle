@@ -5,6 +5,7 @@ import markdown
 import json
 import re
 import hashlib
+import os
 
 # Import Reading class from logic.iching
 from logic.iching import Reading, IChingHexagram
@@ -72,6 +73,32 @@ class HistoryEntry:
     def reading_html(self) -> str:
         """Get the reading as HTML with hexagram links"""
         return self.get_enhanced_reading_html()
+
+    @property
+    def hexagram_html(self) -> str:
+        """Get the hexagram as HTML with hexagram links"""
+        return self.get_enhanced_hexagram_html()
+
+    def get_enhanced_hexagram_html(self) -> str:
+        """Get the hexagram as HTML with hexagram links"""
+        hexagram_text = self.hexagram.replace('-', '\n-')
+        return markdown.markdown(hexagram_text)
+
+    @property
+    def image_path(self) -> Optional[str]:
+        """Get the path to the image file if it exists, based on reading_id"""
+        if not self.reading_id:
+            return None
+
+        # Construct the expected filename based on reading_id
+        filename = f"fire_{self.reading_id}.png"
+        filepath = os.path.join("static", "fire-captures", filename)
+
+        # Check if the file exists
+        if os.path.exists(filepath):
+            return filename
+
+        return None
 
     def get_reading_string(self) -> str:
         """Get the reading as a string, converting from Reading object if necessary"""

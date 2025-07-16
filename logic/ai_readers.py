@@ -436,14 +436,16 @@ def analyze_fire_image(image_data: str, logger=None) -> str:
         - Do not make extra effort to find symbols or patterns specific to one religion or culture. Just describe what
           you see.
 
-        Provide a description of what you observe, focusing on potentially symbolic elements. It should be less than
-            15 words long. It is at least 4 words long. It could be a list of objects. It must have at least 4 nouns.
+        Create a five item, unordered list. Each item should be at least one adjective and one noun. Each noun should
+            be something which related to practical, real world objects but can also have a mystical or symbolic
+            meaning.
+        Focus on nouns that someone can point to in a flat image.
         Skip "filler words" like "the", "a", "an", "and", "or", "but", "if", "then", "else", "because", "so",
             "therefore", "while", "then", "my", "mine", "fire", "flame"
         Be specific about animals, patterns, people, objects, and symbols you can identify.
-        Be creative and imaginative.
         Do not mention sparks, flames, colors, or fire in your response.
         DO NOT REFERENCE CIRCLES, CONES, SPHERES, SQUARES, OR RECTANGLES IN YOUR RESPONSE.
+        DO NOT USE EMOJIS IN YOUR RESPONSES.
         """
 
         response = openai_client.chat.completions.create(

@@ -77,88 +77,30 @@ def save_fire_image():
         captures_dir = os.path.join('static', 'fire-captures')
         os.makedirs(captures_dir, exist_ok=True)
 
-        # Generate filename with timestamp
+        # Generate temporary filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]  # Include milliseconds
         username = session.get('username', 'anonymous')
-        filename = f"fire_{username}_{timestamp}.png"
-        filepath = os.path.join(captures_dir, filename)
+        temp_filename = f"fire_{username}_{timestamp}.png"
+        temp_filepath = os.path.join(captures_dir, temp_filename)
 
-        # Save the image
-        with open(filepath, 'wb') as f:
+        # Save the image with temporary filename
+        with open(temp_filepath, 'wb') as f:
             f.write(image_bytes)
 
         # Get additional metadata if provided
         metadata = data.get('metadata', {})
 
         # Log the save event
-        current_app.logger.info(f"Fire image saved: {filepath} for user {username}")
+        current_app.logger.info(f"Fire image saved: {temp_filepath} for user {username}")
 
-        # Initialize response
+        # Initialize response with temporary filename
         response_data = {
             'success': True,
-            'filename': filename,
-            'path': filepath,
+            'filename': temp_filename,
+            'path': temp_filepath,
             'timestamp': timestamp,
             'message': 'Fire image saved successfully'
         }
-
-        # If user is logged in, perform vision analysis and create flame reading
-        if username != 'anonymous' and 'username' in session:
-            try:
-                # Get user object
-                user = User.get_by_username(username)
-                if user:
-                    # Analyze the fire image using AI vision
-                    current_app.logger.info("Starting fire image analysis...")
-                    vision_analysis = analyze_fire_image(clean_image_data, current_app.logger)
-
-                    if vision_analysis and vision_analysis != "Unable to analyze the fire image at this time.":
-                        # Create a flame reading entry
-                        current_app.logger.info("Creating flame reading...")
-
-                        # Create a history entry for the flame reading
-                        flame_question = f"Sacred fire vision captured on {timestamp}"
-                        history_entry = user.history.add_reading(
-                            question=flame_question,
-                            hexagram=f"flame_vision_{timestamp}",
-                            reading="",  # Will be filled by AI
-                            divination_type="flame_reading"
-                        )
-
-                        if history_entry:
-                            # Generate the flame reading using AI
-                            flame_reading = generate_flame_reading(
-                                vision_analysis=vision_analysis,
-                                user=user,
-                                logger=current_app.logger,
-                                reading_id=history_entry.reading_id
-                            )
-
-                            # Update the history entry with the actual reading
-                            history_entry._reading_string = flame_reading
-                            history_entry.save()
-
-                            # Add reading info to response
-                            response_data.update({
-                                'flame_reading_created': True,
-                                'reading_id': history_entry.reading_id,
-                                'reading_path': history_entry.reading_path,
-                                'vision_analysis': vision_analysis,
-                                'flame_reading': flame_reading
-                            })
-
-                            current_app.logger.info(f"Flame reading created: {history_entry.reading_id}")
-                        else:
-                            current_app.logger.warning("Failed to create flame reading history entry")
-                    else:
-                        current_app.logger.warning("Vision analysis failed or returned error")
-                        response_data['vision_analysis_error'] = "Unable to analyze fire image"
-                else:
-                    current_app.logger.warning(f"User not found: {username}")
-
-            except Exception as e:
-                current_app.logger.error(f"Error creating flame reading: {e}")
-                response_data['flame_reading_error'] = str(e)
 
         return jsonify(response_data)
 

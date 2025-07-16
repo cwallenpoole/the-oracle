@@ -32,24 +32,24 @@
                 <i class="bi bi-fire"></i> What the Flames Revealed
             </h5>
 
-            <div class="flame-vision-display">
+            <div class="">
                 <div class="flame-vision-content d-flex align-items-start gap-4">
-                    <div class="flame-image-container">
-                        {% if reading_entry.flame_image_path %}
-                            <img src="{{ url_for('static', filename='fire-captures/' + reading_entry.flame_image_path) }}"
-                                 alt="Captured Flame"
-                                 class="flame-captured-image">
-                        {% else %}
-                            <div class="flame-placeholder">
-                                <i class="bi bi-image text-muted"></i>
-                            </div>
-                        {% endif %}
-                    </div>
-                    <div class="flame-vision-text flex-grow-1">
-                        <blockquote class="blockquote fs-6 text-muted fst-italic">
-                            {{ reading_entry.hexagram }}
+                    {% if reading_entry.image_path %}
+                    <div class="flex-grow-1">
+                        <blockquote class="blockquote fs-10 text-muted fst-italic">
+                            {{ reading_entry.hexagram_html | safe }}
                         </blockquote>
                     </div>
+                    <div class="flame-image-container">
+                        <img src="{{ url_for('static', filename='fire-captures/' + reading_entry.image_path) }}"
+                             alt="Captured Flame"
+                             class="flame-captured-image">
+                    </div>
+                    {% else %}
+                        <blockquote class="blockquote fs-6 text-muted fst-italic">
+                            {{ reading_entry.hexagram_html | safe }}
+                        </blockquote>
+                    {% endif %}
                 </div>
             </div>
         </div>

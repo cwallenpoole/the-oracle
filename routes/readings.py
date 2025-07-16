@@ -1,6 +1,7 @@
 """
 Reading routes for The Oracle application.
 """
+import base64
 import sqlite3
 from datetime import datetime
 from flask import Blueprint, request, render_template, redirect, url_for, session, flash, current_app, jsonify
@@ -11,6 +12,7 @@ from models.user import User
 from models.history import History
 from models.llm_request import LLMRequest
 from utils.db_utils import DB_FILE
+import os
 
 readings_bp = Blueprint('readings', __name__)
 
@@ -263,13 +265,6 @@ def pyromancy_reading():
         # Analyze the fire image to get vision analysis
         vision_analysis = analyze_fire_image(fire_image_data, current_app.logger)
 
-        # Create a flame reading object (store the vision analysis)
-        flame_reading_data = {
-            "vision_analysis": vision_analysis,
-            "question": question or "General flame reading",
-            "timestamp": str(datetime.now())
-        }
-
         # Save to history first to get the reading_id
         history_entry = user.history.add_reading(
             question=question or "What do the flames reveal?",
@@ -285,8 +280,11 @@ def pyromancy_reading():
         history_entry._reading_string = reading_text
         history_entry.save()
 
+        filename = f"fire_{history_entry.reading_id}.png"
+        filepath = os.path.join("static", "fire-captures", filename)
+        with open(filepath, 'wb') as f:
+            f.write(base64.b64decode(fire_image_data))
         if history_entry:
-            flash("Flame reading generated successfully!", "success")
             # Redirect to the new reading detail page
             return redirect(url_for('readings.reading_detail', reading_path=history_entry.reading_path))
         else:
