@@ -21,6 +21,158 @@
         font-size: 1.5rem;
     }
 
+    .star-chart-container {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .natal-chart {
+        background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(248,249,250,0.9) 100%);
+        border: 4px solid var(--oracle-gold-dark);
+        border-radius: 50%;
+        box-shadow:
+            0 0 20px rgba(139,0,0,0.3),
+            inset 0 0 30px rgba(218,165,32,0.2);
+        transition: all 0.3s ease;
+    }
+
+    .natal-chart:hover {
+        box-shadow:
+            0 0 30px rgba(139,0,0,0.4),
+            inset 0 0 40px rgba(218,165,32,0.3);
+    }
+
+    .chart-info-panel {
+        background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,249,250,0.9) 100%);
+        border: 2px solid var(--oracle-gold-dark);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .chart-info-panel h4 {
+        color: var(--oracle-red);
+        margin-bottom: 0.75rem;
+        font-weight: bold;
+        border-bottom: 2px solid var(--oracle-gold-dark);
+        padding-bottom: 0.25rem;
+    }
+
+    .aspect-info {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .generate-chart-btn {
+        background: linear-gradient(135deg, var(--oracle-red) 0%, #b71c1c 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 8px rgba(139,0,0,0.3);
+        font-size: 1rem;
+    }
+
+    .generate-chart-btn:hover {
+        background: linear-gradient(135deg, #b71c1c 0%, var(--oracle-red) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(139,0,0,0.4);
+    }
+
+    .generate-chart-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .natal-form .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .natal-form label {
+        display: block;
+        margin-bottom: 0.3rem;
+        font-weight: bold;
+        color: var(--oracle-black);
+    }
+
+    .natal-form input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 2px solid var(--oracle-gold-dark);
+        border-radius: 4px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+
+    .natal-form input:focus {
+        outline: none;
+        border-color: var(--oracle-red);
+        box-shadow: 0 0 5px rgba(139,0,0,0.3);
+    }
+
+    /* Professional chart styling */
+    .zodiac-symbol-natal {
+        font-family: 'Times New Roman', serif;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        cursor: pointer;
+    }
+
+    .zodiac-symbol-natal:hover {
+        fill: var(--oracle-red) !important;
+        font-size: 20px !important;
+    }
+
+    .planet-natal:hover {
+        r: 18 !important;
+        stroke-width: 3 !important;
+    }
+
+    /* Tooltip styling */
+    svg [title]:hover {
+        filter: brightness(1.2);
+    }
+
+    /* Responsive design for smaller screens */
+    @media (max-width: 768px) {
+        .star-chart-container svg {
+            width: 350px;
+            height: 350px;
+        }
+
+        .natal-input-section {
+            flex-direction: column;
+        }
+
+        .natal-form {
+            max-width: none;
+        }
+    }
+
+    /* Natal input section styling */
+    .natal-input-section {
+        background: rgba(139,0,0,0.05);
+        border: 2px solid var(--oracle-gold-dark);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .natal-form {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    /* Other widgets styling */
     .zodiac-circle {
         max-width: 100%;
         height: auto;
@@ -44,15 +196,6 @@
         dominant-baseline: central;
     }
 
-    .constellation-group {
-        opacity: 0.6;
-        transition: opacity 0.3s ease;
-    }
-
-    .constellation-group:hover {
-        opacity: 1;
-    }
-
     .moon-container {
         display: flex;
         justify-content: center;
@@ -65,8 +208,6 @@
         text-align: center;
         color: var(--oracle-black);
     }
-
-
 
     .planet-info {
         background: rgba(139,0,0,0.1);
@@ -103,19 +244,38 @@
 <!--
 URL Parameter Usage:
 - ?date=2024-01-15 - Set specific date (YYYY-MM-DD format)
-- ?time=14:30 - Set specific time (HH:MM format, 24-hour)
+- ?time=14:30 - Set specific time (24-hour format: HH:MM)
+- ?time=2:30pm - Set specific time (12-hour format with am/pm)
+- ?location=San%20Francisco,%20CA - Set birth location (URL-encoded)
 - ?date=2024-01-15&time=14:30 - Set both date and time
+- ?date=2024-01-15&time=2:30pm&location=New%20York,%20NY - Set all birth data
+
+Time Format Support:
+- 24-hour: 14:30, 09:15, 23:45
+- 12-hour: 2:30pm, 9:15am, 11:45pm
+- Without minutes: 2pm, 9am (defaults to :00)
+- Timezone handling: Automatically detects timezone from location, IP, system, or defaults to UTC
+
+Timezone Detection (in order of priority):
+1. Location parameter (e.g., "London" → Europe/London timezone)
+2. User's IP address geolocation
+3. System/browser timezone
+4. UTC fallback
 
 Examples:
 - /drafts?date=2024-12-21 - Winter solstice 2024
-- /drafts?date=2024-06-21&time=12:00 - Summer solstice 2024 at noon
-- /drafts?time=03:00 - Current date at 3 AM
-- /drafts?date=2025-07-04&time=20:00 - July 4th 2025 at 8 PM
+- /drafts?date=2024-06-21&time=12:00 - Summer solstice 2024 at noon (24-hour)
+- /drafts?time=3am - Current date at 3 AM (12-hour)
+- /drafts?date=2025-07-04&time=8pm - July 4th 2025 at 8 PM (12-hour)
+- /drafts?date=1990-06-21&time=2:30pm&location=San%20Francisco,%20CA - Complete birth data
+- /drafts?time=9:15am&location=London,%20UK - Morning time in London timezone
+- /drafts?time=14:30&location=Tokyo,%20Japan - Afternoon time in Tokyo timezone
 
 Widgets affected:
 - Planet positions will show planetary alignments for the specified date
 - Moon phase will show lunar phase for the specified date
 - Time widget will show sun/moon positions for the specified time
+- Personal Natal Chart will pre-fill birth data fields from URL parameters with intelligent timezone handling
 -->
 <div class="container-fluid p-4">
     <div class="row">
@@ -126,6 +286,71 @@ Widgets affected:
             <p class="text-center text-muted mb-4">
                 These are experimental widgets not yet integrated into the main application.
             </p>
+        </div>
+    </div>
+
+    <!-- Personal Star Chart Widget -->
+    <div class="row">
+        <div class="col-12">
+            <div class="widget-container">
+                <h3 class="widget-title">Personal Natal Chart</h3>
+
+                <!-- Birth Data Input -->
+                <div class="natal-input-section">
+                    <div class="natal-form">
+                        <div class="form-group">
+                            <label for="birthDate">Birth Date</label>
+                            <input type="date" id="birthDate" value="1990-06-21">
+                        </div>
+                        <div class="form-group">
+                            <label for="birthTime">Birth Time</label>
+                            <input type="time" id="birthTime" value="14:30">
+                        </div>
+                        <div class="form-group">
+                            <label for="birthLocation">Birth Location</label>
+                            <input type="text" id="birthLocation" placeholder="City, Country or State" value="San Francisco, CA">
+                        </div>
+                        <div class="form-group">
+                            <button class="generate-chart-btn" onclick="generateNatalChart()">
+                                <i class="bi bi-stars"></i> Generate Natal Chart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="star-chart-container">
+                    <svg id="natalChart" width="500" height="500" viewBox="0 0 500 500" class="natal-chart">
+                        <!-- Outer zodiac circle -->
+                        <circle cx="250" cy="250" r="230" fill="none" stroke="var(--oracle-gold-dark)" stroke-width="3"/>
+
+                        <!-- Inner house circle -->
+                        <circle cx="250" cy="250" r="180" fill="none" stroke="var(--oracle-red)" stroke-width="2"/>
+
+                        <!-- Planet orbit circle -->
+                        <circle cx="250" cy="250" r="150" fill="none" stroke="var(--oracle-gold-dark)" stroke-width="1" opacity="0.3"/>
+
+                        <!-- Inner aspect circle -->
+                        <circle cx="250" cy="250" r="120" fill="none" stroke="var(--oracle-black)" stroke-width="1" opacity="0.2"/>
+
+                        <!-- Background circles for depth -->
+                        <circle cx="250" cy="250" r="90" fill="none" stroke="var(--oracle-gold-dark)" stroke-width="1" opacity="0.2"/>
+                        <circle cx="250" cy="250" r="60" fill="none" stroke="var(--oracle-red)" stroke-width="1" opacity="0.2"/>
+
+                        <!-- Zodiac signs and houses will be added by JavaScript -->
+                        <g id="natalZodiacSigns"></g>
+                        <g id="natalHouses"></g>
+                        <g id="natalAspects"></g>
+                        <g id="natalPlanets"></g>
+                    </svg>
+                </div>
+
+                <div id="natalChartInfo" class="chart-info-panel">
+                    <div id="aspectInfo" class="aspect-info"></div>
+                    <div id="planetInfo" class="planet-info" style="margin-top: 1rem;">
+                        <div id="natalPlanetList" class="planet-list"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -218,22 +443,620 @@ const planets = [
     {name: 'Pluto', symbol: '♇', color: '#8B4513', period: 90560, longitude0: 238.0, meanMotion: 0.0040}
 ];
 
-// Get current date/time or from URL parameters
-function getCurrentDateTime() {
+// Aspect data for natal chart
+const aspectTypes = [
+    {name: 'Conjunction', angle: 0, orb: 8, color: '#ff6b6b'},
+    {name: 'Opposition', angle: 180, orb: 8, color: '#4ecdc4'},
+    {name: 'Trine', angle: 120, orb: 6, color: '#45b7d1'},
+    {name: 'Square', angle: 90, orb: 6, color: '#f9ca24'},
+    {name: 'Sextile', angle: 60, orb: 4, color: '#6c5ce7'}
+];
+
+// Generate Natal Chart
+async function generateNatalChart() {
+    const birthDate = document.getElementById('birthDate').value;
+    const birthTime = document.getElementById('birthTime').value;
+    const birthLocation = document.getElementById('birthLocation').value;
+
+    if (!birthDate || !birthTime || !birthLocation) {
+        alert('Please enter birth date, time, and location');
+        return;
+    }
+
+    // Show loading state
+    const button = document.querySelector('.generate-chart-btn');
+    const originalText = button.textContent;
+    button.textContent = 'Calculating Chart...';
+    button.disabled = true;
+
+    try {
+        // First geocode the location
+        const geocodeResponse = await fetch(`/api/geocode?address=${encodeURIComponent(birthLocation)}`);
+        const geocodeData = await geocodeResponse.json();
+
+        if (!geocodeData.found) {
+            throw new Error('Location not found. Please try a different location.');
+        }
+
+        // Now calculate the natal chart
+        const chartResponse = await fetch('/api/natal-chart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                birth_date: birthDate,
+                birth_time: birthTime,
+                latitude: geocodeData.latitude,
+                longitude: geocodeData.longitude,
+                timezone: 'UTC'  // For now, using UTC - could be enhanced with timezone detection
+            })
+        });
+
+        const chartData = await chartResponse.json();
+
+        if (chartData.error) {
+            throw new Error(chartData.error);
+        }
+
+        // Draw the accurate natal chart
+        drawAccurateNatalChart(chartData);
+
+        // Update info panel with accurate data
+        updateAccurateNatalInfo(chartData, birthLocation);
+
+    } catch (error) {
+        console.error('Error generating natal chart:', error);
+        alert(`Error generating natal chart: ${error.message}`);
+    } finally {
+        // Restore button state
+        button.textContent = originalText;
+        button.disabled = false;
+    }
+}
+
+function drawAccurateNatalChart(chartData) {
+    const centerX = 250;
+    const centerY = 250;
+    const zodiacRadius = 210;
+    const houseRadius = 165;
+    const planetRadius = 135;
+
+    // Clear previous chart
+    document.getElementById('natalZodiacSigns').innerHTML = '';
+    document.getElementById('natalHouses').innerHTML = '';
+    document.getElementById('natalPlanets').innerHTML = '';
+    document.getElementById('natalAspects').innerHTML = '';
+
+    // Draw zodiac signs
+    drawAccurateZodiacSigns(centerX, centerY, zodiacRadius, chartData.zodiac_signs);
+
+    // Draw houses with accurate cusps
+    drawAccurateHouses(centerX, centerY, houseRadius, chartData.houses);
+
+    // Draw planets with accurate positions
+    drawAccuratePlanets(chartData.planets, centerX, centerY, planetRadius);
+
+    // Draw chart angles (Ascendant, Midheaven, etc.)
+    drawChartAngles(chartData.angles, centerX, centerY, houseRadius + 15);
+
+    // Draw aspects
+    drawAccurateAspects(chartData.aspects, chartData.planets, centerX, centerY);
+}
+
+function drawAccurateZodiacSigns(centerX, centerY, radius, zodiacSigns) {
+    const zodiacGroup = document.getElementById('natalZodiacSigns');
+
+    zodiacSigns.forEach((sign, index) => {
+        const angle = (sign.start_degree - 90) * Math.PI / 180;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+
+        // Zodiac symbol
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y);
+        text.setAttribute('class', 'zodiac-symbol-natal');
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '18');
+        text.setAttribute('fill', 'var(--oracle-gold-dark)');
+        text.setAttribute('font-weight', 'bold');
+        text.textContent = sign.symbol;
+        zodiacGroup.appendChild(text);
+
+        // Division lines
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', centerX + Math.cos(angle) * (radius - 30));
+        line.setAttribute('y1', centerY + Math.sin(angle) * (radius - 30));
+        line.setAttribute('x2', centerX + Math.cos(angle) * (radius + 20));
+        line.setAttribute('y2', centerY + Math.sin(angle) * (radius + 20));
+        line.setAttribute('stroke', 'var(--oracle-gold-dark)');
+        line.setAttribute('stroke-width', '1');
+        line.setAttribute('opacity', '0.5');
+        zodiacGroup.appendChild(line);
+    });
+}
+
+function drawAccurateHouses(centerX, centerY, radius, houses) {
+    const houseGroup = document.getElementById('natalHouses');
+
+    Object.entries(houses).forEach(([houseNum, houseData]) => {
+        const angle = (houseData.cusp_longitude - 90) * Math.PI / 180;
+
+        // House cusp lines
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', centerX);
+        line.setAttribute('y1', centerY);
+        line.setAttribute('x2', centerX + Math.cos(angle) * radius);
+        line.setAttribute('y2', centerY + Math.sin(angle) * radius);
+        line.setAttribute('stroke', 'var(--oracle-red)');
+        line.setAttribute('stroke-width', houseNum == 1 || houseNum == 10 || houseNum == 7 || houseNum == 4 ? '2' : '1');
+        line.setAttribute('opacity', '0.8');
+        houseGroup.appendChild(line);
+
+        // House numbers
+        const houseNumberAngle = angle;
+        const numberX = centerX + Math.cos(houseNumberAngle) * (radius - 20);
+        const numberY = centerY + Math.sin(houseNumberAngle) * (radius - 20);
+
+        const houseNumber = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        houseNumber.setAttribute('x', numberX);
+        houseNumber.setAttribute('y', numberY);
+        houseNumber.setAttribute('text-anchor', 'middle');
+        houseNumber.setAttribute('font-size', '12');
+        houseNumber.setAttribute('fill', 'var(--oracle-red)');
+        houseNumber.setAttribute('font-weight', 'bold');
+        houseNumber.textContent = houseNum;
+        houseGroup.appendChild(houseNumber);
+    });
+}
+
+function drawAccuratePlanets(planets, centerX, centerY, radius) {
+    const planetGroup = document.getElementById('natalPlanets');
+    const natalPlanetList = document.getElementById('natalPlanetList');
+    natalPlanetList.innerHTML = '';
+
+    // Planet symbols and colors (enhanced for advanced astrology)
+    const planetSymbols = {
+        'Sun': '☉',
+        'Moon': '☽',
+        'Mercury': '☿',
+        'Venus': '♀',
+        'Mars': '♂',
+        'Jupiter': '♃',
+        'Saturn': '♄',
+        'Uranus': '♅',
+        'Neptune': '♆',
+        'Pluto': '♇',
+        'North Node': '☊',
+        'Chiron': '⚷',
+        // Major asteroids for advanced astrology
+        'Ceres': '⚳',      // Goddess of harvest & nurturing
+        'Pallas': '⚴',     // Goddess of wisdom & strategy
+        'Juno': '⚵',       // Goddess of marriage & commitment
+        'Vesta': '⚶'       // Goddess of hearth & devotion
+    };
+
+    const planetColors = {
+        'Sun': '#FFD700',
+        'Moon': '#C0C0C0',
+        'Mercury': '#FFA500',
+        'Venus': '#FFC0CB',
+        'Mars': '#FF4500',
+        'Jupiter': '#FF8C00',
+        'Saturn': '#DAA520',
+        'Uranus': '#4FD0E3',
+        'Neptune': '#4169E1',
+        'Pluto': '#8B4513',
+        'North Node': '#9370DB',
+        'Chiron': '#CD853F',
+        // Advanced astrology asteroid colors
+        'Ceres': '#8BC34A',    // Earth green for harvest goddess
+        'Pallas': '#607D8B',   // Blue-grey for wisdom goddess
+        'Juno': '#E91E63',     // Deep pink for marriage goddess
+        'Vesta': '#FF5722'     // Orange-red for hearth goddess
+    };
+
+    Object.entries(planets).forEach(([planetName, planetData]) => {
+        const angle = (planetData.longitude - 90) * Math.PI / 180;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+
+        // Store position for aspect calculations
+        planetData.x = x;
+        planetData.y = y;
+
+        const color = planetColors[planetName] || '#666666';
+
+        // Planet background
+        const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        bgCircle.setAttribute('cx', x);
+        bgCircle.setAttribute('cy', y);
+        bgCircle.setAttribute('r', 15);
+
+        // Convert hex color to rgba
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+        const bgColor = `rgba(${r}, ${g}, ${b}, 0.3)`;
+
+        bgCircle.setAttribute('fill', bgColor);
+        bgCircle.setAttribute('stroke', color);
+        bgCircle.setAttribute('stroke-width', '2');
+        const retrogradeText = planetData.sign.retrograde_indicator ? ' ℞' : '';
+        bgCircle.setAttribute('title', `${planetName}: ${planetData.sign.full_position}${retrogradeText}`);
+        planetGroup.appendChild(bgCircle);
+
+        // Planet symbol
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y + 5);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '20');
+        text.setAttribute('fill', 'white');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('stroke', color);
+        text.setAttribute('stroke-width', '2');
+        text.setAttribute('paint-order', 'stroke fill');
+        text.textContent = planetSymbols[planetName] || '?';
+        planetGroup.appendChild(text);
+
+        // Add to planet list
+        const planetItem = document.createElement('div');
+        planetItem.className = 'planet-item';
+        planetItem.innerHTML = `
+            <span class="planet-symbol" style="color: ${color};">${planetSymbols[planetName] || '?'}</span>
+            <span><strong>${planetName}</strong>: ${planetData.sign.full_position}${planetData.sign.retrograde_indicator ? ' ℞' : ''}</span>
+        `;
+        natalPlanetList.appendChild(planetItem);
+    });
+}
+
+function drawChartAngles(angles, centerX, centerY, radius) {
+    const houseGroup = document.getElementById('natalHouses');
+
+    // Chart angles with special emphasis
+    const angleSymbols = {
+        'Ascendant': 'ASC',
+        'Midheaven': 'MC',
+        'Descendant': 'DSC',
+        'Imum Coeli': 'IC'
+    };
+
+    Object.entries(angles).forEach(([angleName, angleData]) => {
+        const angle = (angleData.longitude - 90) * Math.PI / 180;
+        const x = centerX + Math.cos(angle) * (radius + 10);
+        const y = centerY + Math.sin(angle) * (radius + 10);
+
+        // Angle marker
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '10');
+        text.setAttribute('fill', 'var(--oracle-black)');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('title', `${angleName}: ${angleData.sign.full_position}`);
+        text.textContent = angleSymbols[angleName];
+        houseGroup.appendChild(text);
+    });
+}
+
+function drawAccurateAspects(aspects, planets, centerX, centerY) {
+    const aspectGroup = document.getElementById('natalAspects');
+
+    aspects.forEach(aspect => {
+        const planet1Data = planets[aspect.planet1];
+        const planet2Data = planets[aspect.planet2];
+
+        if (!planet1Data || !planet2Data) return;
+
+        const angle1 = (planet1Data.longitude - 90) * Math.PI / 180;
+        const angle2 = (planet2Data.longitude - 90) * Math.PI / 180;
+
+        const radius = 100; // Inner aspect circle
+        const x1 = centerX + Math.cos(angle1) * radius;
+        const y1 = centerY + Math.sin(angle1) * radius;
+        const x2 = centerX + Math.cos(angle2) * radius;
+        const y2 = centerY + Math.sin(angle2) * radius;
+
+        // Determine aspect color and style based on type (enhanced for advanced astrology)
+        const aspectColors = {
+            // Major aspects
+            'conjunction': '#ff6b35',
+            'opposition': '#ff1744',
+            'trine': '#4caf50',
+            'square': '#ff9800',
+            'sextile': '#2196f3',
+            // Minor aspects
+            'semi-sextile': '#9C27B0',
+            'semi-square': '#FF5722',
+            'sesquiquadrate': '#FF7043',
+            'quincunx': '#607D8B',
+            // Creative aspects
+            'quintile': '#E91E63',
+            'biquintile': '#AD1457'
+        };
+        const aspectColor = aspectColors[aspect.aspect] || '#666666';
+
+        // Determine line thickness and opacity based on aspect type and orb
+        let lineWidth = 2;
+        let opacity = 0.7;
+
+        if (aspect.type === 'major') {
+            lineWidth = aspect.orb <= 2 ? 3 : 2;
+            opacity = 0.8;
+        } else if (aspect.type === 'minor') {
+            lineWidth = 1;
+            opacity = 0.5;
+        } else if (aspect.type === 'creative') {
+            lineWidth = 1.5;
+            opacity = 0.6;
+        }
+
+        // Don't draw minor aspects if there are too many total aspects (visual clarity)
+        if (aspect.type !== 'major' && aspects.length > 20) {
+            return;
+        }
+
+        // Aspect line
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('stroke', aspectColor);
+        line.setAttribute('stroke-width', lineWidth);
+        line.setAttribute('opacity', opacity);
+        line.setAttribute('title', `${aspect.planet1} ${aspect.aspect} ${aspect.planet2} (${aspect.orb.toFixed(1)}° orb) - ${aspect.type}`);
+
+        // Different line styles for different aspects
+        if (aspect.aspect === 'opposition') {
+            line.setAttribute('stroke-dasharray', '5,5');
+        } else if (aspect.aspect === 'square') {
+            line.setAttribute('stroke-dasharray', '3,3');
+        } else if (aspect.type === 'minor') {
+            line.setAttribute('stroke-dasharray', '2,2');
+        } else if (aspect.type === 'creative') {
+            line.setAttribute('stroke-dasharray', '4,2,1,2');
+        }
+
+        aspectGroup.appendChild(line);
+    });
+}
+
+function updateAccurateNatalInfo(chartData, birthLocation) {
+    const aspectInfo = document.getElementById('aspectInfo');
+
+    aspectInfo.innerHTML = `
+        <h4>Birth Information</h4>
+        <div style="margin-bottom: 1rem;">
+            <strong>Date:</strong> ${chartData.birth_info.date}<br>
+            <strong>Time:</strong> ${chartData.birth_info.time}<br>
+            <strong>Location:</strong> ${birthLocation}<br>
+            <strong>Coordinates:</strong> ${chartData.birth_info.latitude.toFixed(4)}°, ${chartData.birth_info.longitude.toFixed(4)}°
+        </div>
+
+        <h4>Chart Angles</h4>
+        <div style="margin-bottom: 1rem;">
+            ${Object.entries(chartData.angles).map(([angle, data]) =>
+                `<strong>${angle}:</strong> ${data.sign.full_position}<br>`
+            ).join('')}
+        </div>
+
+        ${chartData.houses && chartData.houses.length > 0 ? `
+        <h4>House Cusps</h4>
+        <div style="max-height: 150px; overflow-y: auto; margin-bottom: 1rem; font-size: 0.9em;">
+            ${chartData.houses.map(house => {
+                const houseNames = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+                const romanNumeral = houseNames[house.house] || house.house;
+                return `<div style="margin: 0.25rem 0; display: flex; justify-content: space-between;">
+                    <strong>House ${romanNumeral}:</strong>
+                    <span>${house.full_position}</span>
+                </div>`;
+            }).join('')}
+        </div>` : ''}
+
+        <h4>Major Aspects (${chartData.aspects.filter(a => a.type === 'major').length})</h4>
+        <div style="max-height: 150px; overflow-y: auto; margin-bottom: 1rem;">
+            ${chartData.aspects.filter(a => a.type === 'major').slice(0, 10).map(aspect => {
+                const aspectColors = {
+                    'conjunction': '#ff6b35',
+                    'opposition': '#ff1744',
+                    'trine': '#4caf50',
+                    'square': '#ff9800',
+                    'sextile': '#2196f3'
+                };
+                const aspectColor = aspectColors[aspect.aspect] || '#666666';
+                const exactIndicator = aspect.exact ? '⭐' : '';
+                return `<div style="margin: 0.25rem 0; color: ${aspectColor};">
+                    <strong>${aspect.planet1}</strong> ${aspect.aspect} <strong>${aspect.planet2}</strong>
+                    <span style="font-size: 0.8em; opacity: 0.8;">(${aspect.orb.toFixed(1)}°)</span> ${exactIndicator}
+                </div>`;
+            }).join('')}
+        </div>
+
+        ${chartData.aspects.filter(a => a.type === 'minor').length > 0 ? `
+        <h4>Minor Aspects (${chartData.aspects.filter(a => a.type === 'minor').length})</h4>
+        <div style="max-height: 100px; overflow-y: auto; margin-bottom: 1rem; font-size: 0.9em;">
+            ${chartData.aspects.filter(a => a.type === 'minor').slice(0, 8).map(aspect =>
+                `<div style="margin: 0.2rem 0; color: #888;">
+                    <strong>${aspect.planet1}</strong> ${aspect.aspect} <strong>${aspect.planet2}</strong>
+                    <span style="font-size: 0.8em;">(${aspect.orb.toFixed(1)}°)</span>
+                </div>`
+            ).join('')}
+        </div>` : ''}
+
+        ${chartData.aspects.filter(a => a.type === 'creative').length > 0 ? `
+        <h4>Creative Aspects (${chartData.aspects.filter(a => a.type === 'creative').length})</h4>
+        <div style="max-height: 80px; overflow-y: auto; margin-bottom: 1rem; font-size: 0.9em;">
+            ${chartData.aspects.filter(a => a.type === 'creative').slice(0, 6).map(aspect =>
+                `<div style="margin: 0.2rem 0; color: #9c27b0;">
+                    <strong>${aspect.planet1}</strong> ${aspect.aspect} <strong>${aspect.planet2}</strong>
+                    <span style="font-size: 0.8em;">(${aspect.orb.toFixed(1)}°)</span>
+                </div>`
+            ).join('')}
+        </div>` : ''}
+
+        ${chartData.aspects.filter(a => a.type === 'spiritual').length > 0 ? `
+        <h4>Spiritual Aspects (${chartData.aspects.filter(a => a.type === 'spiritual').length})</h4>
+        <div style="max-height: 80px; overflow-y: auto; margin-bottom: 1rem; font-size: 0.9em;">
+            ${chartData.aspects.filter(a => a.type === 'spiritual').slice(0, 6).map(aspect =>
+                `<div style="margin: 0.2rem 0; color: #607d8b;">
+                    <strong>${aspect.planet1}</strong> ${aspect.aspect} <strong>${aspect.planet2}</strong>
+                    <span style="font-size: 0.8em;">(${aspect.orb.toFixed(1)}°)</span>
+                </div>`
+            ).join('')}
+        </div>` : ''}
+
+        ${chartData.arabic_parts && Object.keys(chartData.arabic_parts).length > 0 ? `
+        <h4>Arabic Parts</h4>
+        <div style="max-height: 120px; overflow-y: auto; margin-bottom: 1rem; font-size: 0.9em;">
+            ${Object.entries(chartData.arabic_parts).map(([partName, partData]) =>
+                `<div style="margin: 0.3rem 0;">
+                    <strong>${partName}:</strong> ${partData.sign.name} ${partData.sign.degree.toFixed(1)}°
+                    <div style="font-size: 0.8em; opacity: 0.7; margin-top: 0.1rem;">${partData.description}</div>
+                </div>`
+            ).join('')}
+        </div>` : ''}
+
+        ${chartData.dignities && Object.keys(chartData.dignities).length > 0 ? `
+        <h4>Planetary Dignities</h4>
+        <div style="max-height: 120px; overflow-y: auto; margin-bottom: 1rem; font-size: 0.9em;">
+            ${Object.entries(chartData.dignities).map(([planet, dignityData]) => {
+                const strengthColor = dignityData.total_strength > 0 ? '#4caf50' : '#ff5722';
+                return `<div style="margin: 0.3rem 0;">
+                    <strong>${planet}</strong> in ${dignityData.sign}
+                    <span style="color: ${strengthColor}; font-weight: bold;">(${dignityData.total_strength > 0 ? '+' : ''}${dignityData.total_strength})</span>
+                    <div style="font-size: 0.8em; opacity: 0.7;">
+                        ${dignityData.dignities.map(d => d.description).join(', ')}
+                    </div>
+                </div>`;
+            }).join('')}
+                 </div>` : ''}
+
+        ${chartData.aspects && chartData.aspects.length > 0 ? `
+        <h4>Complete Aspect Table</h4>
+        <div style="max-height: 200px; overflow-y: auto; margin-bottom: 1rem; font-size: 0.85em;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                <thead>
+                    <tr style="background: rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.2);">
+                        <th style="padding: 0.3rem; text-align: left;">Planet 1</th>
+                        <th style="padding: 0.3rem; text-align: center;">Aspect</th>
+                        <th style="padding: 0.3rem; text-align: left;">Planet 2</th>
+                        <th style="padding: 0.3rem; text-align: center;">Orb</th>
+                        <th style="padding: 0.3rem; text-align: center;">Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${chartData.aspects.slice(0, 15).map(aspect => {
+                        const aspectColors = {
+                            'conjunction': '#ff6b35', 'opposition': '#ff1744', 'trine': '#4caf50',
+                            'square': '#ff9800', 'sextile': '#2196f3', 'quincunx': '#9c27b0',
+                            'semi-sextile': '#888', 'semi-square': '#888', 'sesquiquadrate': '#888',
+                            'quintile': '#9c27b0', 'biquintile': '#9c27b0', 'octile': '#888'
+                        };
+                        const aspectColor = aspectColors[aspect.aspect] || '#666666';
+                        const strengthRating = aspect.orb <= 1 ? '★★★' : aspect.orb <= 3 ? '★★☆' : '★☆☆';
+                        const exactIndicator = aspect.exact ? ' ⭐' : '';
+
+                        return `<tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <td style="padding: 0.3rem; font-weight: bold;">${aspect.planet1}</td>
+                            <td style="padding: 0.3rem; text-align: center; color: ${aspectColor}; font-weight: bold;">
+                                ${aspect.aspect}${exactIndicator}
+                            </td>
+                            <td style="padding: 0.3rem; font-weight: bold;">${aspect.planet2}</td>
+                            <td style="padding: 0.3rem; text-align: center;">${aspect.orb.toFixed(1)}°</td>
+                            <td style="padding: 0.3rem; text-align: center; font-size: 0.8em;">
+                                ${aspect.type} ${strengthRating}
+                            </td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>` : ''}
+
+        ${chartData.element_modality_stats ? `
+        <h4>Element & Modality Analysis</h4>
+        <div style="margin-bottom: 1rem; font-size: 0.9em;">
+            <div style="margin-bottom: 0.5rem;">
+                <strong>Elements (Traditional Planets):</strong><br>
+                <div style="margin: 0.3rem 0; padding: 0.2rem; background: rgba(255,255,255,0.03); border-radius: 3px;">
+                    ${chartData.element_modality_stats.analysis.element_summary}
+                </div>
+            </div>
+            <div style="margin-bottom: 0.5rem;">
+                <strong>Modalities (Traditional Planets):</strong><br>
+                <div style="margin: 0.3rem 0; padding: 0.2rem; background: rgba(255,255,255,0.03); border-radius: 3px;">
+                    ${chartData.element_modality_stats.analysis.modality_summary}
+                </div>
+            </div>
+            ${chartData.element_modality_stats.analysis.dominant_element !== 'None' ? `
+            <div style="margin-bottom: 0.3rem;">
+                <strong>Dominant Element:</strong> <span style="color: #4caf50;">${chartData.element_modality_stats.analysis.dominant_element}</span>
+            </div>` : ''}
+            ${chartData.element_modality_stats.analysis.dominant_modality !== 'None' ? `
+            <div style="margin-bottom: 0.3rem;">
+                <strong>Dominant Modality:</strong> <span style="color: #2196f3;">${chartData.element_modality_stats.analysis.dominant_modality}</span>
+            </div>` : ''}
+            ${chartData.element_modality_stats.analysis.missing_elements.length > 0 ? `
+            <div style="margin-bottom: 0.3rem;">
+                <strong>Missing Elements:</strong> <span style="color: #ff9800;">${chartData.element_modality_stats.analysis.missing_elements.join(', ')}</span>
+            </div>` : ''}
+        </div>` : ''}
+
+        ${chartData.chart_patterns && chartData.chart_patterns.length > 0 ? `
+        <h4>Chart Patterns</h4>
+        <div style="max-height: 150px; overflow-y: auto; margin-bottom: 1rem; font-size: 0.9em;">
+            ${chartData.chart_patterns.map(pattern => {
+                const strengthColors = {
+                    'very strong': '#ff1744',
+                    'strong': '#ff9800',
+                    'moderate': '#2196f3'
+                };
+                const strengthColor = strengthColors[pattern.strength] || '#666';
+                return `<div style="margin: 0.4rem 0; padding: 0.3rem; background: rgba(255,255,255,0.05); border-radius: 4px;">
+                    <strong style="color: ${strengthColor};">${pattern.type}</strong>
+                    ${pattern.planets ? `<div style="font-size: 0.8em; margin-top: 0.2rem;">Planets: ${pattern.planets.join(', ')}</div>` : ''}
+                    ${pattern.element ? `<div style="font-size: 0.8em;">Element: ${pattern.element}</div>` : ''}
+                    ${pattern.modality ? `<div style="font-size: 0.8em;">Modality: ${pattern.modality}</div>` : ''}
+                    <div style="font-size: 0.8em; opacity: 0.8; margin-top: 0.2rem;">${pattern.description}</div>
+                </div>`;
+            }).join('')}
+        </div>` : ''}
+    `;
+}
+
+// Get current date/time or from URL parameters with smart time parsing
+async function getCurrentDateTime() {
     const urlParams = new URLSearchParams(window.location.search);
     const dateParam = urlParams.get('date'); // Format: YYYY-MM-DD
-    const timeParam = urlParams.get('time'); // Format: HH:MM
+    const timeParam = urlParams.get('time'); // Format: HH:MM or 12-hour with am/pm
+    const locationParam = urlParams.get('location');
 
     if (dateParam) {
         let targetDate = new Date(dateParam);
 
         if (timeParam) {
-            const [hours, minutes] = timeParam.split(':').map(Number);
-            targetDate.setHours(hours, minutes, 0, 0);
+            // Use the same smart time parsing as natal chart
+            const formattedTime = await parseAndFormatTime(timeParam, locationParam);
+            if (formattedTime) {
+                const [hours, minutes] = formattedTime.split(':').map(Number);
+                targetDate.setHours(hours, minutes, 0, 0);
+            }
         }
 
         // Check if the date is valid
         if (!isNaN(targetDate.getTime())) {
+            return targetDate;
+        }
+    } else if (timeParam) {
+        // If only time is provided, use today's date with smart time parsing
+        let targetDate = new Date();
+        const formattedTime = await parseAndFormatTime(timeParam, locationParam);
+        if (formattedTime) {
+            const [hours, minutes] = formattedTime.split(':').map(Number);
+            targetDate.setHours(hours, minutes, 0, 0);
             return targetDate;
         }
     }
@@ -241,28 +1064,352 @@ function getCurrentDateTime() {
     return new Date(); // Default to current time
 }
 
+// Synchronous version for compatibility with existing code
+function getCurrentDateTimeSync() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateParam = urlParams.get('date');
+    const timeParam = urlParams.get('time');
+
+    if (dateParam) {
+        let targetDate = new Date(dateParam);
+
+        if (timeParam) {
+            // Basic parsing for synchronous calls - will be enhanced by async version
+            try {
+                // Try simple 24-hour format first
+                const [hours, minutes] = timeParam.split(':').map(Number);
+                if (!isNaN(hours) && !isNaN(minutes)) {
+                    targetDate.setHours(hours, minutes, 0, 0);
+                }
+            } catch (e) {
+                console.warn('Basic time parsing failed, using default time');
+            }
+        }
+
+        if (!isNaN(targetDate.getTime())) {
+            return targetDate;
+        }
+    }
+
+    return new Date();
+}
+
+// Function to populate birth data fields from URL parameters
+async function populateBirthDataFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Get query parameters
+    const dateParam = urlParams.get('date');
+    const timeParam = urlParams.get('time');
+    const locationParam = urlParams.get('location');
+
+    // Get input elements
+    const birthDateInput = document.getElementById('birthDate');
+    const birthTimeInput = document.getElementById('birthTime');
+    const birthLocationInput = document.getElementById('birthLocation');
+
+    // Populate date field if date parameter exists
+    if (dateParam && birthDateInput) {
+        // Validate date format (YYYY-MM-DD)
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (dateRegex.test(dateParam)) {
+            birthDateInput.value = dateParam;
+        }
+    }
+
+    // Populate time field if time parameter exists
+    if (timeParam && birthTimeInput) {
+        const formattedTime = await parseAndFormatTime(timeParam, locationParam);
+        if (formattedTime) {
+            birthTimeInput.value = formattedTime;
+        }
+    }
+
+    // Populate location field if location parameter exists
+    if (locationParam && birthLocationInput) {
+        // Decode URL-encoded location
+        const decodedLocation = decodeURIComponent(locationParam);
+        birthLocationInput.value = decodedLocation;
+    }
+}
+
+// Parse time parameter supporting both 12-hour (am/pm) and 24-hour formats
+// Apply timezone conversion based on location or fallbacks
+async function parseAndFormatTime(timeParam, locationParam) {
+    try {
+        // Clean up the time parameter
+        const cleanTime = timeParam.toLowerCase().trim();
+
+        // Check if it's 12-hour format (contains am/pm)
+        const is12Hour = /\b(am|pm)\b/.test(cleanTime);
+
+        let hours, minutes;
+
+                if (is12Hour) {
+            // Parse 12-hour format - handle various formats like "2:30pm", "2pm", "2:30 pm"
+            const timeMatch = cleanTime.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/);
+            if (!timeMatch) return null;
+
+            hours = parseInt(timeMatch[1]);
+            minutes = parseInt(timeMatch[2] || '0');
+            const ampm = timeMatch[3];
+
+            // Convert to 24-hour format
+            if (ampm === 'pm' && hours !== 12) {
+                hours += 12;
+            } else if (ampm === 'am' && hours === 12) {
+                hours = 0;
+            }
+        } else {
+            // Parse 24-hour format
+            const timeMatch = cleanTime.match(/^(\d{1,2}):(\d{2})$/);
+            if (!timeMatch) return null;
+
+            hours = parseInt(timeMatch[1]);
+            minutes = parseInt(timeMatch[2]);
+        }
+
+        // Validate time ranges
+        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+            return null;
+        }
+
+        // Get target timezone
+        const targetTimezone = await getTargetTimezone(locationParam);
+
+        // Create a date object for today with the parsed time in the target timezone
+        const today = new Date();
+        const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+
+        // If we have timezone information, convert to local time
+        if (targetTimezone && targetTimezone !== 'UTC') {
+            try {
+                // Create date in target timezone
+                const dateInTargetTz = new Date(today.toDateString() + ' ' + timeString);
+
+                // Convert to local time (this is approximate - for precise conversion we'd need a timezone library)
+                // For now, we'll use the time as-is but could enhance this with proper timezone conversion
+                return timeString;
+            } catch (e) {
+                console.warn('Timezone conversion failed, using time as-is:', e);
+                return timeString;
+            }
+        }
+
+        return timeString;
+
+    } catch (error) {
+        console.error('Error parsing time parameter:', error);
+        return null;
+    }
+}
+
+// Get target timezone with multiple fallbacks
+async function getTargetTimezone(locationParam) {
+    try {
+        // 1. If location parameter is provided, try to get timezone from location
+        if (locationParam) {
+            const locationTimezone = await getTimezoneFromLocation(locationParam);
+            if (locationTimezone) return locationTimezone;
+        }
+
+        // 2. Try to get timezone from user's IP address
+        const ipTimezone = await getTimezoneFromIP();
+        if (ipTimezone) return ipTimezone;
+
+        // 3. Try to get system timezone
+        const systemTimezone = getSystemTimezone();
+        if (systemTimezone) return systemTimezone;
+
+        // 4. Final fallback to UTC
+        return 'UTC';
+
+    } catch (error) {
+        console.error('Error determining timezone:', error);
+        return 'UTC';
+    }
+}
+
+// Get timezone from location name
+async function getTimezoneFromLocation(location) {
+    try {
+        // This would ideally use a geocoding service to get lat/lng, then timezone
+        // For now, we'll implement a comprehensive mapping for common locations
+        const locationTimezones = {
+            // North America
+            'new york': 'America/New_York',
+            'ny': 'America/New_York',
+            'nyc': 'America/New_York',
+            'los angeles': 'America/Los_Angeles',
+            'la': 'America/Los_Angeles',
+            'san francisco': 'America/Los_Angeles',
+            'sf': 'America/Los_Angeles',
+            'chicago': 'America/Chicago',
+            'toronto': 'America/Toronto',
+            'vancouver': 'America/Vancouver',
+            'montreal': 'America/Montreal',
+            'denver': 'America/Denver',
+            'phoenix': 'America/Phoenix',
+            'seattle': 'America/Los_Angeles',
+            'boston': 'America/New_York',
+            'washington': 'America/New_York',
+            'dc': 'America/New_York',
+            'miami': 'America/New_York',
+            'atlanta': 'America/New_York',
+            'dallas': 'America/Chicago',
+            'houston': 'America/Chicago',
+            'mexico city': 'America/Mexico_City',
+
+            // Europe
+            'london': 'Europe/London',
+            'paris': 'Europe/Paris',
+            'berlin': 'Europe/Berlin',
+            'madrid': 'Europe/Madrid',
+            'rome': 'Europe/Rome',
+            'amsterdam': 'Europe/Amsterdam',
+            'zurich': 'Europe/Zurich',
+            'vienna': 'Europe/Vienna',
+            'prague': 'Europe/Prague',
+            'stockholm': 'Europe/Stockholm',
+            'copenhagen': 'Europe/Copenhagen',
+            'oslo': 'Europe/Oslo',
+            'helsinki': 'Europe/Helsinki',
+            'brussels': 'Europe/Brussels',
+            'lisbon': 'Europe/Lisbon',
+            'dublin': 'Europe/Dublin',
+            'moscow': 'Europe/Moscow',
+            'istanbul': 'Europe/Istanbul',
+            'athens': 'Europe/Athens',
+            'budapest': 'Europe/Budapest',
+            'warsaw': 'Europe/Warsaw',
+
+            // Asia
+            'tokyo': 'Asia/Tokyo',
+            'beijing': 'Asia/Shanghai',
+            'shanghai': 'Asia/Shanghai',
+            'hong kong': 'Asia/Hong_Kong',
+            'singapore': 'Asia/Singapore',
+            'mumbai': 'Asia/Kolkata',
+            'delhi': 'Asia/Kolkata',
+            'bangalore': 'Asia/Kolkata',
+            'dubai': 'Asia/Dubai',
+            'doha': 'Asia/Qatar',
+            'riyadh': 'Asia/Riyadh',
+            'tel aviv': 'Asia/Jerusalem',
+            'bangkok': 'Asia/Bangkok',
+            'jakarta': 'Asia/Jakarta',
+            'kuala lumpur': 'Asia/Kuala_Lumpur',
+            'manila': 'Asia/Manila',
+            'seoul': 'Asia/Seoul',
+            'taipei': 'Asia/Taipei',
+
+            // Australia/Oceania
+            'sydney': 'Australia/Sydney',
+            'melbourne': 'Australia/Melbourne',
+            'brisbane': 'Australia/Brisbane',
+            'perth': 'Australia/Perth',
+            'auckland': 'Pacific/Auckland',
+            'wellington': 'Pacific/Auckland',
+
+            // Africa
+            'cairo': 'Africa/Cairo',
+            'johannesburg': 'Africa/Johannesburg',
+            'lagos': 'Africa/Lagos',
+            'nairobi': 'Africa/Nairobi',
+            'casablanca': 'Africa/Casablanca',
+
+            // South America
+            'sao paulo': 'America/Sao_Paulo',
+            'rio de janeiro': 'America/Sao_Paulo',
+            'buenos aires': 'America/Argentina/Buenos_Aires',
+            'lima': 'America/Lima',
+            'bogota': 'America/Bogota',
+            'santiago': 'America/Santiago',
+            'caracas': 'America/Caracas'
+        };
+
+        // Try multiple variations of the location
+        const locationLower = location.toLowerCase().trim();
+        const variations = [
+            locationLower,
+            locationLower.split(',')[0].trim(), // First part before comma
+            locationLower.split(',')[0].trim().replace(/\s+/g, ''), // Remove spaces
+            locationLower.replace(/\s+/g, '') // Full location without spaces
+        ];
+
+        for (const variation of variations) {
+            if (locationTimezones[variation]) {
+                return locationTimezones[variation];
+            }
+        }
+
+        return null;
+
+    } catch (error) {
+        console.error('Error getting timezone from location:', error);
+        return null;
+    }
+}
+
+// Get timezone from user's IP address
+async function getTimezoneFromIP() {
+    try {
+        // Use a free IP geolocation service
+        const response = await fetch('https://ipapi.co/timezone/', {
+            method: 'GET',
+            timeout: 5000
+        });
+
+        if (response.ok) {
+            const timezone = await response.text();
+            return timezone.trim();
+        }
+
+        return null;
+    } catch (error) {
+        console.error('Error getting timezone from IP:', error);
+        return null;
+    }
+}
+
+// Get system timezone
+function getSystemTimezone() {
+    try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (error) {
+        console.error('Error getting system timezone:', error);
+        return null;
+    }
+}
+
 // Initialize all widgets
-document.addEventListener('DOMContentLoaded', function() {
-    initZodiacWheel();
-    initMoonPhase();
-    initTimeWidget();
-    displayCurrentDateTime();
+document.addEventListener('DOMContentLoaded', async function() {
+    // Parse URL parameters and populate birth data fields
+    await populateBirthDataFromUrl();
+
+    // Initialize natal chart with default data
+    generateNatalChart();
+
+    await initZodiacWheel();
+    await initMoonPhase();
+    await initTimeWidget();
+    await displayCurrentDateTime();
 
     // Only auto-update if we're not using custom parameters
     const urlParams = new URLSearchParams(window.location.search);
     if (!urlParams.get('date') && !urlParams.get('time')) {
         // Update every minute for real-time mode
-        setInterval(() => {
-            updateMoonPhase();
-            updateTimeWidget();
-            displayCurrentDateTime();
+        setInterval(async () => {
+            await updateMoonPhase();
+            await updateTimeWidget();
+            await displayCurrentDateTime();
         }, 60000);
     }
 });
 
 // Display what date/time we're currently showing
-function displayCurrentDateTime() {
-    const currentTime = getCurrentDateTime();
+async function displayCurrentDateTime() {
+    const currentTime = await getCurrentDateTime();
     const urlParams = new URLSearchParams(window.location.search);
     const isCustomTime = urlParams.get('date') || urlParams.get('time');
 
@@ -307,7 +1454,7 @@ function displayCurrentDateTime() {
     document.body.appendChild(display);
 }
 
-function initZodiacWheel() {
+async function initZodiacWheel() {
     // Draw zodiac signs
     const zodiacGroup = document.getElementById('zodiacSigns');
 
@@ -337,7 +1484,7 @@ function initZodiacWheel() {
     });
 
     // Calculate planet positions using astronomical orbital mechanics
-    simulatePlanetPositions();
+    await simulatePlanetPositions();
 }
 
 // Calculate accurate planet position using real orbital mechanics
@@ -386,7 +1533,7 @@ function calculatePlanetPosition(planet, date) {
     };
 }
 
-function simulatePlanetPositions() {
+async function simulatePlanetPositions() {
     const planetGroup = document.getElementById('planetPositions');
     const planetList = document.getElementById('planetList');
 
@@ -394,9 +1541,9 @@ function simulatePlanetPositions() {
     planetGroup.innerHTML = '';
     planetList.innerHTML = '';
 
-    planets.forEach((planet, index) => {
+    planets.forEach(async (planet, index) => {
         // Calculate actual astronomical position
-        const now = getCurrentDateTime();
+        const now = await getCurrentDateTime();
         const position = calculatePlanetPosition(planet, now);
         const baseAngle = position.longitude;
         const angle = (baseAngle - 90) * Math.PI / 180;
@@ -463,12 +1610,12 @@ function getDayOfYear(date) {
     return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
-function initMoonPhase() {
-    updateMoonPhase();
+async function initMoonPhase() {
+    await updateMoonPhase();
 }
 
-function updateMoonPhase() {
-    const now = getCurrentDateTime();
+async function updateMoonPhase() {
+    const now = await getCurrentDateTime();
     const moonPhase = calculateMoonPhase(now);
 
     // Update moon visual
@@ -528,8 +1675,8 @@ function calculateMoonPhase(date) {
 
 
 
-function initTimeWidget() {
-    updateTimeWidget();
+async function initTimeWidget() {
+    await updateTimeWidget();
 }
 
 function createAztecSun(centerX, centerY, size = 60) {
@@ -649,8 +1796,8 @@ function createAztecMoon(centerX, centerY, size = 60) {
     return g;
 }
 
-function updateTimeWidget() {
-    const now = getCurrentDateTime();
+async function updateTimeWidget() {
+    const now = await getCurrentDateTime();
     const hours = now.getHours();
     const minutes = now.getMinutes();
     const totalMinutes = hours * 60 + minutes;
