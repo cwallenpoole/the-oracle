@@ -136,6 +136,72 @@
         </div>
     </div>
 
+    <!-- Vision Images Section -->
+    <div class="card card-oracle mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-image"></i> Mystic Visions
+                </h4>
+                <button id="generateVisionImagesBtn" class="btn btn-oracle btn-sm" onclick="generateVisionImages()">
+                    <i class="bi bi-magic"></i> Generate Vision Images
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="visionImagesContent">
+                {% if reading_entry.vision_images_list %}
+                <!-- Existing Vision Images -->
+                <div id="existingVisionImages">
+                    <div class="row g-3">
+                        {% for image in reading_entry.vision_images_list %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="vision-image-card">
+                                <div class="vision-image-container">
+                                    <img src="{{ image.url }}" alt="{{ image.vision }}" class="vision-image" loading="lazy">
+                                </div>
+                                <div class="vision-image-caption">
+                                    <h6 class="mb-1">{{ image.vision }}</h6>
+                                    <small class="text-muted">Mystic Vision</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <button id="generateVisionImagesBtn" class="btn btn-oracle btn-sm" onclick="generateVisionImages()">
+                            <i class="bi bi-arrow-clockwise"></i> Regenerate Vision Images
+                        </button>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Placeholder for generating new images -->
+                <div class="vision-images-placeholder">
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-image" style="font-size: 3rem;"></i>
+                        <p class="mt-3">Click "Generate Vision Images" to create visual interpretations of the mystic visions found in your flame reading.</p>
+                        <small>The AI will analyze your reading and create artistic representations of any visions described within.</small>
+                    </div>
+                </div>
+                {% endif %}
+                <div id="visionImagesLoading" class="d-none">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Generating...</span>
+                        </div>
+                        <p class="mt-3">Generating vision images... This may take a few moments.</p>
+                        <div id="generationProgress"></div>
+                    </div>
+                </div>
+                <div id="visionImagesGrid" class="d-none">
+                    <div class="row g-3" id="visionImagesContainer">
+                        <!-- Vision images will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Follow-up Section -->
     <div class="card card-oracle mb-4">
         <div class="card-header">
@@ -220,6 +286,188 @@ function confirmDelete(readingId) {
         });
     }
 }
+
+// Vision Images Functionality
+let currentGenerationId = null;
+let generationCheckInterval = null;
+
+function extractVisionsFromReading() {
+    const visions = [];
+
+    // First, try to extract from the hexagram content (flame visions)
+    const hexagramContent = document.querySelector('.flame-vision-content blockquote');
+    if (hexagramContent) {
+        // Look for list items in the hexagram content
+        const listItems = hexagramContent.querySelectorAll('li');
+        listItems.forEach(li => {
+            const visionText = li.textContent.trim();
+            visions.push(visionText);
+        });
+    }
+
+    return visions;
+}
+
+function generateVisionImages() {
+    const btn = document.getElementById('generateVisionImagesBtn');
+    const placeholder = document.querySelector('.vision-images-placeholder');
+    const loading = document.getElementById('visionImagesLoading');
+    const grid = document.getElementById('visionImagesGrid');
+
+    // Extract visions from the reading
+    const visions = extractVisionsFromReading();
+
+    if (visions.length === 0) {
+        alert('No clear visions found in this reading to visualize. The AI looks for specific mystical descriptions in the text.');
+        return;
+    }
+
+    // Prepare request data
+    const requestData = {
+        reading_id: '{{ reading_entry.reading_id }}',
+        fire_image_filename: '{{ reading_entry.image_path }}',
+        visions: visions
+    };
+
+    // Update UI
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Generating...';
+    placeholder.classList.add('d-none');
+    loading.classList.remove('d-none');
+    grid.classList.add('d-none');
+
+    // Update progress
+    document.getElementById('generationProgress').innerHTML =
+        `<small>Found ${visions.length} visions: ${visions.join(', ')}</small>`;
+
+    // Start generation
+    fetch('/api/generate-vision-images', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            currentGenerationId = data.generation_id;
+            console.log('Vision generation started:', data.generation_id);
+
+            // Start checking for completed images
+            generationCheckInterval = setInterval(checkGenerationStatus, 3000);
+        } else {
+            throw new Error(data.error || 'Failed to start generation');
+        }
+    })
+    .catch(error => {
+        console.error('Error starting vision generation:', error);
+        alert('Error starting vision generation: ' + error.message);
+        resetVisionUI();
+    });
+}
+
+function checkGenerationStatus() {
+    if (!currentGenerationId) return;
+
+    let imageCount = 5;
+    fetch(`/api/vision-images-status/${currentGenerationId}`)
+    .then(response => response.json())
+    .then(data => {
+        const progress = document.getElementById('generationProgress');
+
+        if (data.completed_images && data.completed_images.length > 0) {
+            // Images are ready
+            displayVisionImages(data.completed_images);
+            if (data.completed_images.length === imageCount) {
+                clearInterval(generationCheckInterval);
+            }
+        } else {
+            // Still generating
+            progress.innerHTML = `<small>Generating images... Please wait.</small>`;
+        }
+    })
+    .catch(error => {
+        console.error('Error checking generation status:', error);
+        clearInterval(generationCheckInterval);
+        alert('Error checking generation status');
+        resetVisionUI();
+    });
+}
+
+function displayVisionImages(images) {
+    const loading = document.getElementById('visionImagesLoading');
+    const grid = document.getElementById('visionImagesGrid');
+    const container = document.getElementById('visionImagesContainer');
+    const placeholder = document.querySelector('.vision-images-placeholder');
+    const existingImages = document.getElementById('existingVisionImages');
+
+    // Hide loading elements
+    loading.classList.add('d-none');
+    if (placeholder) placeholder.classList.add('d-none');
+    if (existingImages) existingImages.classList.add('d-none');
+
+    // Show grid
+    grid.classList.remove('d-none');
+
+    // Clear container
+    container.innerHTML = '';
+
+    // Add images
+    images.forEach(image => {
+        const col = document.createElement('div');
+        col.className = 'col-md-6 col-lg-4';
+
+        col.innerHTML = `
+            <div class="vision-image-card">
+                <div class="vision-image-container">
+                    <img src="${image.url}" alt="${image.vision}" class="vision-image" loading="lazy">
+                </div>
+                <div class="vision-image-caption">
+                    <h6 class="mb-1">${image.vision}</h6>
+                    <small class="text-muted">Mystic Vision</small>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(col);
+    });
+
+    // Add regenerate button to the grid
+    const buttonCol = document.createElement('div');
+    buttonCol.className = 'col-12 text-center mt-3';
+    buttonCol.innerHTML = `
+        <button id="generateVisionImagesBtn" class="btn btn-oracle btn-sm" onclick="generateVisionImages()">
+            <i class="bi bi-arrow-clockwise"></i> Regenerate Vision Images
+        </button>
+    `;
+    container.appendChild(buttonCol);
+
+    // Reset button state
+    const btn = document.getElementById('generateVisionImagesBtn');
+    if (btn) {
+        btn.disabled = false;
+    }
+}
+
+function resetVisionUI() {
+    const btn = document.getElementById('generateVisionImagesBtn');
+    const placeholder = document.querySelector('.vision-images-placeholder');
+    const loading = document.getElementById('visionImagesLoading');
+    const grid = document.getElementById('visionImagesGrid');
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-magic"></i> Generate Vision Images';
+    placeholder.classList.remove('d-none');
+    loading.classList.add('d-none');
+    grid.classList.add('d-none');
+
+    if (generationCheckInterval) {
+        clearInterval(generationCheckInterval);
+        generationCheckInterval = null;
+    }
+    currentGenerationId = null;
+}
 </script>
 {% endblock %}
 
@@ -272,6 +520,59 @@ function confirmDelete(readingId) {
 
 .text-oracle-gold {
     color: var(--oracle-gold-dark) !important;
+}
+
+/* Vision Images Styles */
+.vision-image-card {
+    background: linear-gradient(135deg, rgba(255,215,0,0.05) 0%, rgba(139,0,0,0.05) 100%);
+    border: 1px solid var(--oracle-gold-dark);
+    border-radius: 15px;
+    padding: 15px;
+    height: 100%;
+    transition: all 0.3s ease;
+}
+
+.vision-image-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    background: linear-gradient(135deg, rgba(255,215,0,0.1) 0%, rgba(139,0,0,0.1) 100%);
+}
+
+.vision-image-container {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border: 2px solid var(--oracle-gold);
+}
+
+.vision-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.vision-image:hover {
+    transform: scale(1.05);
+}
+
+.vision-image-caption h6 {
+    color: var(--oracle-red);
+    font-weight: 600;
+}
+
+.vision-images-placeholder {
+    border: 2px dashed var(--oracle-gold);
+    border-radius: 15px;
+    background: rgba(255,215,0,0.05);
+}
+
+@media (max-width: 768px) {
+    .vision-image-container {
+        height: 150px;
+    }
 }
 </style>
 {% endblock %}

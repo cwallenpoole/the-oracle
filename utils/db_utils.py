@@ -98,6 +98,7 @@ def init_db():
     # Add new columns to existing history table if they don't exist
     _add_column_if_not_exists(c, "history", "reading_id", "TEXT")
     _add_column_if_not_exists(c, "history", "divination_type", "TEXT DEFAULT 'iching'")
+    _add_column_if_not_exists(c, "history", "vision_images", "TEXT")  # JSON array of vision image URLs
 
     conn.commit()
     conn.close()

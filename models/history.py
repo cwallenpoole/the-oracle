@@ -19,7 +19,7 @@ from models import get_database_path
 class HistoryEntry:
     """Single history entry for a divination reading"""
 
-    def __init__(self, username: str, question: str, hexagram: str, reading_data: Union[str, Reading, DivinationReading], reading_dt: str = None, reading_id: str = None, divination_type: str = 'iching'):
+    def __init__(self, username: str, question: str, hexagram: str, reading_data: Union[str, Reading, DivinationReading], reading_dt: str = None, reading_id: str = None, divination_type: str = 'iching', vision_images: str = None):
 
         self.username = username
         self.question = question
@@ -30,6 +30,7 @@ class HistoryEntry:
         self.reading_id = reading_id or self._generate_reading_id()
         self.divination_type = divination_type
         self.reading_path = self.get_reading_path()
+        self.vision_images = vision_images  # JSON string of vision image URLs
 
 
         # Handle the reading_data parameter - could be string, Reading object, or DivinationReading
@@ -99,6 +100,30 @@ class HistoryEntry:
             return filename
 
         return None
+
+    @property
+    def vision_images_list(self) -> List[Dict[str, str]]:
+        """Get vision images as a list of dictionaries"""
+        if not self.vision_images:
+            return []
+        try:
+            return json.loads(self.vision_images)
+        except (json.JSONDecodeError, TypeError):
+            return []
+
+    def set_vision_images(self, vision_images: List[Dict[str, str]]) -> None:
+        """Set vision images from a list of dictionaries"""
+        self.vision_images = json.dumps(vision_images) if vision_images else None
+
+    def add_vision_image(self, vision: str, image_url: str, filename: str) -> None:
+        """Add a single vision image to the collection"""
+        current_images = self.vision_images_list
+        current_images.append({
+            'vision': vision,
+            'url': image_url,
+            'filename': filename
+        })
+        self.set_vision_images(current_images)
 
     def get_reading_string(self) -> str:
         """Get the reading as a string, converting from Reading object if necessary"""
@@ -211,9 +236,9 @@ class HistoryEntry:
         try:
             conn = sqlite3.connect(self.db_file)
             c = conn.cursor()
-            c.execute("""INSERT INTO history (reading_id, username, question, hexagram, reading, reading_dt, divination_type)
-                       VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                     (self.reading_id, self.username, self.question, self.hexagram, reading_string, self.reading_dt, self.divination_type))
+            c.execute("""INSERT OR REPLACE INTO history (reading_id, username, question, hexagram, reading, reading_dt, divination_type, vision_images)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                     (self.reading_id, self.username, self.question, self.hexagram, reading_string, self.reading_dt, self.divination_type, self.vision_images))
             conn.commit()
             conn.close()
             return True
@@ -279,7 +304,7 @@ class History:
         try:
             conn = sqlite3.connect(self.db_file)
             c = conn.cursor()
-            c.execute("""SELECT reading_id, username, question, hexagram, reading, reading_dt, divination_type
+            c.execute("""SELECT reading_id, username, question, hexagram, reading, reading_dt, divination_type, vision_images
                        FROM history
                        WHERE username = ?
                             AND NULLIF(TRIM(reading), '') IS NOT NULL
@@ -293,7 +318,8 @@ class History:
                 # Handle backward compatibility for databases without divination_type
                 divination_type = row[6] if len(row) > 6 else 'iching'
                 reading_id = row[0] if len(row) > 0 else None
-                entry = HistoryEntry(row[1], row[2], row[3], row[4], row[5], reading_id, divination_type)
+                vision_images = row[7] if len(row) > 7 else None
+                entry = HistoryEntry(row[1], row[2], row[3], row[4], row[5], reading_id, divination_type, vision_images)
                 entries.append(entry)
             return entries
         except Exception as e:
@@ -305,7 +331,7 @@ class History:
         try:
             conn = sqlite3.connect(self.db_file)
             c = conn.cursor()
-            c.execute("""SELECT reading_id, username, question, hexagram, reading, reading_dt, divination_type
+            c.execute("""SELECT reading_id, username, question, hexagram, reading, reading_dt, divination_type, vision_images
                        FROM history
                        WHERE username = ?
                        ORDER BY rowid DESC""", (self.username,))
@@ -317,7 +343,8 @@ class History:
                 # Handle backward compatibility for databases without divination_type
                 divination_type = row[6] if len(row) > 6 else 'iching'
                 reading_id = row[0] if len(row) > 0 else None
-                entry = HistoryEntry(row[1], row[2], row[3], row[4], row[5], reading_id, divination_type)
+                vision_images = row[7] if len(row) > 7 else None
+                entry = HistoryEntry(row[1], row[2], row[3], row[4], row[5], reading_id, divination_type, vision_images)
                 entries.append(entry)
             return entries
         except Exception as e:
@@ -343,7 +370,7 @@ class History:
 
             conn = sqlite3.connect(self.db_file)
             c = conn.cursor()
-            c.execute("""SELECT reading_id, username, question, hexagram, reading, reading_dt, divination_type
+            c.execute("""SELECT reading_id, username, question, hexagram, reading, reading_dt, divination_type, vision_images
                        FROM history
                        WHERE username = ? AND reading_id = ?""", (username, reading_id))
             row = c.fetchone()
@@ -352,7 +379,8 @@ class History:
             if row:
                 divination_type = row[6] if len(row) > 6 else 'iching'
                 reading_id_val = row[0] if len(row) > 0 else None
-                return HistoryEntry(row[1], row[2], row[3], row[4], row[5], reading_id_val, divination_type)
+                vision_images = row[7] if len(row) > 7 else None
+                return HistoryEntry(row[1], row[2], row[3], row[4], row[5], reading_id_val, divination_type, vision_images)
             return None
         except Exception as e:
             print(f"Error getting reading by path: {e}")
@@ -439,7 +467,7 @@ class History:
 
             conn = sqlite3.connect(get_database_path())
             c = conn.cursor()
-            c.execute("""SELECT reading_id, username, question, hexagram, reading, reading_dt, divination_type
+            c.execute("""SELECT reading_id, username, question, hexagram, reading, reading_dt, divination_type, vision_images
                        FROM history
                        WHERE
                             username = ?
@@ -451,7 +479,8 @@ class History:
             if row:
                 divination_type = row[6] if len(row) > 6 else 'iching'
                 reading_id_val = row[0] if len(row) > 0 else None
-                return HistoryEntry(row[1], row[2], row[3], row[4], row[5], reading_id_val, divination_type)
+                vision_images = row[7] if len(row) > 7 else None
+                return HistoryEntry(row[1], row[2], row[3], row[4], row[5], reading_id_val, divination_type, vision_images)
             return None
         except Exception as e:
             print(f"Error getting reading by path: {e}")

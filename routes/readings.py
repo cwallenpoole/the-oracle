@@ -16,6 +16,9 @@ import os
 
 readings_bp = Blueprint('readings', __name__)
 
+# Constants
+PYROMANCY_ROUTE = "nav.pyromancy"
+
 
 @readings_bp.route("/", methods=["GET", "POST"])
 def index():
@@ -240,6 +243,43 @@ def delete_reading(reading_id):
         return jsonify({"error": "Failed to delete reading"}), 500
 
 
+def _load_fire_image(fire_image_data):
+    """Helper function to load fire image data from filename or base64"""
+    if fire_image_data.endswith('.png') or fire_image_data.endswith('.jpg'):
+        # It's a filename - load from server storage
+        image_path = os.path.join("static", "fire-captures", fire_image_data)
+        if not os.path.exists(image_path):
+            return None, "Fire image not found on server. Please capture a new image."
+
+        with open(image_path, 'rb') as f:
+            image_bytes = f.read()
+            fire_image_base64 = base64.b64encode(image_bytes).decode('utf-8')
+            current_app.logger.info(f"Using server-stored image: {image_path}")
+            return fire_image_base64, None
+    else:
+        # It's base64 data - use as is (fallback)
+        current_app.logger.info("Using base64 image data directly")
+        return fire_image_data, None
+
+
+def _save_fire_image_for_reading(fire_image_data, fire_image_base64, reading_id):
+    """Helper function to save fire image for reading"""
+    final_filename = f"fire_{reading_id}.png"
+    final_filepath = os.path.join("static", "fire-captures", final_filename)
+
+    if fire_image_data.endswith('.png') or fire_image_data.endswith('.jpg'):
+        # Rename server-stored image to final name
+        source_path = os.path.join("static", "fire-captures", fire_image_data)
+        if os.path.exists(source_path):
+            os.rename(source_path, final_filepath)
+            current_app.logger.info(f"Renamed {source_path} to {final_filepath}")
+    else:
+        # Save base64 data as image file (fallback)
+        with open(final_filepath, 'wb') as f:
+            f.write(base64.b64decode(fire_image_base64))
+        current_app.logger.info(f"Saved base64 image to {final_filepath}")
+
+
 @readings_bp.route("/pyromancy_reading", methods=["POST"])
 def pyromancy_reading():
     """Handle pyromancy (fire) reading submission"""
@@ -256,14 +296,20 @@ def pyromancy_reading():
 
     if not fire_image_data:
         flash("No fire image captured. Please capture a fire image first.", "error")
-        return redirect(url_for("nav.pyromancy"))
+        return redirect(url_for(PYROMANCY_ROUTE))
 
     try:
         # Import the AI readers functions
         from logic.ai_readers import analyze_fire_image, generate_flame_reading
 
+        # Load fire image data
+        fire_image_base64, error_msg = _load_fire_image(fire_image_data)
+        if error_msg:
+            flash(error_msg, "error")
+            return redirect(url_for(PYROMANCY_ROUTE))
+
         # Analyze the fire image to get vision analysis
-        vision_analysis = analyze_fire_image(fire_image_data, current_app.logger)
+        vision_analysis = analyze_fire_image(fire_image_base64, current_app.logger)
 
         # Save to history first to get the reading_id
         history_entry = user.history.add_reading(
@@ -280,10 +326,9 @@ def pyromancy_reading():
         history_entry._reading_string = reading_text
         history_entry.save()
 
-        filename = f"fire_{history_entry.reading_id}.png"
-        filepath = os.path.join("static", "fire-captures", filename)
-        with open(filepath, 'wb') as f:
-            f.write(base64.b64decode(fire_image_data))
+        # Handle image storage for the reading
+        _save_fire_image_for_reading(fire_image_data, fire_image_base64, history_entry.reading_id)
+
         if history_entry:
             # Redirect to the new reading detail page
             return redirect(url_for('readings.reading_detail', reading_path=history_entry.reading_path))
@@ -294,7 +339,7 @@ def pyromancy_reading():
         current_app.logger.error(f"Error generating flame reading: {e}")
         flash("Error generating flame reading. Please try again.", "error")
 
-    return redirect(url_for("nav.pyromancy"))
+    return redirect(url_for(PYROMANCY_ROUTE))
 
 
 @readings_bp.route("/drafts")

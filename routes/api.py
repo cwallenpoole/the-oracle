@@ -7,10 +7,15 @@ import json
 import base64
 import os
 import math
+import re
+import asyncio
+import threading
+import random
 from datetime import datetime, timezone
 from flask import Blueprint, request, current_app, jsonify, session
 from logic.ai_readers import analyze_fire_image, generate_flame_reading
 from models.user import User
+from openai import OpenAI
 
 api_bp = Blueprint('api', __name__)
 
@@ -1539,7 +1544,7 @@ def get_zodiac_signs():
 
 @api_bp.route("/api/save-fire-image", methods=['POST'])
 def save_fire_image():
-    """Save a captured fire animation image and optionally create a flame reading"""
+    """Save a captured fire animation image and return the server URL"""
     try:
         data = request.get_json()
         if not data or 'image' not in data:
@@ -1566,28 +1571,33 @@ def save_fire_image():
         captures_dir = os.path.join('static', 'fire-captures')
         os.makedirs(captures_dir, exist_ok=True)
 
-        # Generate temporary filename with timestamp
+        # Generate filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]  # Include milliseconds
         username = session.get('username', 'anonymous')
-        temp_filename = f"fire_{username}_{timestamp}.png"
-        temp_filepath = os.path.join(captures_dir, temp_filename)
+        filename = f"fire_{username}_{timestamp}.png"
+        filepath = os.path.join(captures_dir, filename)
 
-        # Save the image with temporary filename
-        with open(temp_filepath, 'wb') as f:
+        # Save the image
+        with open(filepath, 'wb') as f:
             f.write(image_bytes)
+
+        # Generate the URL for the saved image
+        image_url = f"/static/fire-captures/{filename}"
 
         # Get additional metadata if provided
         metadata = data.get('metadata', {})
 
         # Log the save event
-        current_app.logger.info(f"Fire image saved: {temp_filepath} for user {username}")
+        current_app.logger.info(f"Fire image saved: {filepath} for user {username}")
 
-        # Initialize response with temporary filename
+        # Prepare response with image URL
         response_data = {
             'success': True,
-            'filename': temp_filename,
-            'path': temp_filepath,
+            'filename': filename,
+            'filepath': filepath,
+            'image_url': image_url,
             'timestamp': timestamp,
+            'metadata': metadata,
             'message': 'Fire image saved successfully'
         }
 
@@ -1596,6 +1606,309 @@ def save_fire_image():
     except Exception as e:
         current_app.logger.error(f"Error saving fire image: {e}")
         return jsonify({'error': 'Failed to save fire image'}), 500
+
+
+@api_bp.route("/api/generate-vision-images", methods=['POST'])
+def generate_vision_images():
+    """Generate LLM-powered images for mystic visions found in fire readings"""
+    try:
+        if "username" not in session:
+            return jsonify({'error': 'Authentication required'}), 401
+
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+
+        reading_id = data.get('reading_id')
+        fire_image_filename = data.get('fire_image_filename')
+        visions = data.get('visions', [])
+
+        if not reading_id or not visions:
+            return jsonify({'error': 'Reading ID and visions are required'}), 400
+
+        # Validate visions format
+        if not isinstance(visions, list) or len(visions) == 0:
+            return jsonify({'error': 'Visions must be a non-empty list'}), 400
+
+        username = session.get('username', 'anonymous')
+        current_app.logger.info(f"Generating vision images for reading {reading_id}, user {username}")
+
+        # Start async generation process
+        generation_id = f"visions_{reading_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+        # Create a thread to handle async generation
+        thread = threading.Thread(
+            target=_generate_vision_images_async,
+            args=(generation_id, reading_id, fire_image_filename, visions, username)
+        )
+        thread.daemon = True
+        thread.start()
+
+        return jsonify({
+            'success': True,
+            'generation_id': generation_id,
+            'message': f'Generating {len(visions)} vision images...',
+            'expected_images': len(visions)
+        })
+
+    except Exception as e:
+        current_app.logger.error(f"Error starting vision image generation: {e}")
+        return jsonify({'error': 'Failed to start vision image generation'}), 500
+
+
+@api_bp.route("/api/vision-images-status/<generation_id>", methods=['GET'])
+def get_vision_images_status(generation_id):
+    """Get the status of vision image generation"""
+    try:
+        if "username" not in session:
+            return jsonify({'error': 'Authentication required'}), 401
+
+        username = session.get('username', 'anonymous')
+
+        # Check for completed images in the vision-images directory
+        vision_images_dir = os.path.join('static', 'vision-images', username)
+
+        if not os.path.exists(vision_images_dir):
+            return jsonify({
+                'status': 'generating',
+                'completed_images': [],
+                'total_expected': 0
+            })
+
+        # Find images matching the generation ID
+        completed_images = []
+        for filename in os.listdir(vision_images_dir):
+            if filename.startswith(f"{generation_id}_") and filename.endswith('.png'):
+                image_url = f"/static/vision-images/{username}/{filename}"
+                # Extract vision description from filename
+                vision_name = filename.replace(f"{generation_id}_", "").replace(".png", "").replace("_", " ")
+                completed_images.append({
+                    'filename': filename,
+                    'url': image_url,
+                    'vision': vision_name
+                })
+
+        return jsonify({
+            'status': 'completed' if len(completed_images) > 0 else 'generating',
+            'completed_images': completed_images,
+            'generation_id': generation_id
+        })
+
+    except Exception as e:
+        current_app.logger.error(f"Error checking vision images status: {e}")
+        return jsonify({'error': 'Failed to check status'}), 500
+
+
+def _extract_visions_from_text(reading_text):
+    """Extract vision descriptions from flame reading text"""
+    visions = []
+
+    # Common patterns for vision descriptions in flame readings
+    patterns = [
+        r'(?:saw|sees|witnessed|observed|beheld|glimpsed)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)',
+        r'(?:vision of|image of|shape of)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)',
+        r'([A-Z][a-z]+\s+[A-Z][a-z]+)(?:\s+appears?|\s+emerges?|\s+manifests?)',
+        r'(?:the|a)\s+([A-Z][a-z]+\s+[A-Z][a-z]+)(?:\s+reveals?|\s+shows?|\s+indicates?)'
+    ]
+
+    for pattern in patterns:
+        matches = re.findall(pattern, reading_text)
+        for match in matches:
+            # Clean up the match
+            vision = match.strip()
+            if len(vision.split()) >= 2 and vision not in visions:
+                visions.append(vision)
+
+    return visions[:5]  # Limit to 5 visions max
+
+
+def _generate_vision_images_async(generation_id, reading_id, fire_image_filename, visions, username):
+    """Async function to generate vision images using OpenAI DALL-E"""
+    try:
+        from models.history import History, HistoryEntry
+
+        # Initialize OpenAI client
+        openai_client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+        # Create vision images directory
+        vision_images_dir = os.path.join('static', 'vision-images', username)
+        os.makedirs(vision_images_dir, exist_ok=True)
+
+        # Load and analyze the original fire image using GPT-4 Vision
+        fire_image_analysis = ""
+        fire_image_base64 = None
+        if fire_image_filename:
+            fire_image_path = os.path.join('static', 'fire-captures', fire_image_filename)
+            if os.path.exists(fire_image_path):
+                try:
+                    # Read and encode the fire image
+                    with open(fire_image_path, 'rb') as f:
+                        fire_image_data = f.read()
+                        fire_image_base64 = base64.b64encode(fire_image_data).decode('utf-8')
+
+                    # Analyze the fire image for shapes, colors, and textures
+                    vision_response = openai_client.chat.completions.create(
+                        model="gpt-4o",
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "text",
+                                        "text": "Analyze this fire image in detail. Describe: 1) The dominant colors (specific oranges, reds, yellows, blues at the base, etc.), 2) The textures and patterns in the flames (smooth gradients, sharp edges, wispy tendrils, etc.), 3) The overall mood and atmosphere, 4) Specific locations where vision shapes might be visible. Focus on colors, textures, and visual qualities that could be referenced in artwork."
+                                    },
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": f"data:image/png;base64,{fire_image_base64}"
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        max_tokens=300
+                    )
+                    fire_image_analysis = vision_response.choices[0].message.content
+                    print(f"🔥 Fire image analysis: {fire_image_analysis}")
+
+                except Exception as e:
+                    print(f"⚠️ Could not analyze fire image: {e}")
+                    fire_image_analysis = "mystical dancing flames with ethereal patterns"
+
+        # Store generated vision images
+        generated_images = []
+
+        # Generate each vision image
+        for i, vision in enumerate(visions):
+            try:
+                # Get specific analysis for this vision if we have the fire image
+                vision_specific_analysis = ""
+                if fire_image_base64:
+                    try:
+                        specific_response = openai_client.chat.completions.create(
+                            model="gpt-4o",
+                            messages=[
+                                {
+                                    "role": "user",
+                                    "content": [
+                                        {
+                                            "type": "text",
+                                            "text": f"Look at this fire image and find where '{vision}' appears. Describe: 1) The specific flame edges that form the {vision} shape, 2) The colors in that area (exact oranges, reds, yellows, etc.), 3) The texture qualities (smooth, rough, wispy, sharp), 4) The lighting and glow effects. Focus on visual qualities that could be captured in artwork referencing this fire."
+                                        },
+                                        {
+                                            "type": "image_url",
+                                            "image_url": {
+                                                "url": f"data:image/png;base64,{fire_image_base64}"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            max_tokens=200
+                        )
+                        vision_specific_analysis = specific_response.choices[0].message.content
+                        print(f"🎯 Specific analysis for {vision}: {vision_specific_analysis}")
+                    except Exception as e:
+                        print(f"⚠️ Could not get specific analysis for {vision}: {e}")
+
+                # Select random drawing medium style
+                drawing_styles = [
+                    "charcoal drawing style with soft, organic lines and natural texture",
+                    "pencil sketch style with clean, precise lines and subtle shading variations",
+                    "fountain pen drawing style with confident, flowing strokes and ink-like consistency"
+                ]
+                selected_style = random.choice(drawing_styles)
+
+                # Create prompt incorporating fire reference colors and textures
+                if vision_specific_analysis:
+                    prompt = f"Create a {selected_style} drawing of '{vision}' that references this fire analysis: '{vision_specific_analysis}'. Use the EXACT colors, textures, and lighting described from the fire. Trace the flame edges that form the {vision} shape while incorporating the fire's color palette and texture qualities. The artwork should visually reference the original fire through its colors and textures. ABSOLUTELY NO TEXT. NEVER include words, letters, numbers, or writing of any kind. Pure visual art only."
+                elif fire_image_analysis:
+                    prompt = f"Create a {selected_style} drawing of '{vision}' that references this fire: '{fire_image_analysis}'. Use the colors, textures, and visual qualities described from the fire. The {vision} should incorporate the fire's color palette and texture characteristics. The artwork should feel connected to the original fire through its visual qualities. ABSOLUTELY NO TEXT. NEVER include words, letters, numbers, or writing of any kind. Pure visual art only."
+                else:
+                    prompt = f"Create a {selected_style} drawing of '{vision}' with warm fire-inspired colors (oranges, reds, yellows) and flame-like textures. The artwork should feel connected to fire through its color palette and texture qualities. ABSOLUTELY NO TEXT. NEVER include words, letters, numbers, or writing of any kind. Pure visual art only."
+
+                print(f"Generating image {i+1}/{len(visions)}: {vision}")
+                print(f"Drawing style: {selected_style}")
+                print(f"Using prompt: {prompt}")
+
+                # Try to generate with image input using different approaches
+                image_generated = False
+
+                # Method 1: Use DALL-E 3 with enhanced prompt from fire analysis
+                try:
+                    response = openai_client.images.generate(
+                        model="dall-e-3",
+                        prompt=prompt,
+                        size="1024x1024",
+                        quality="standard",
+                        n=1,
+                        style="natural"
+                    )
+                    image_url = response.data[0].url
+                    image_generated = True
+                    print(f"✅ Generated with DALL-E 3 + Vision analysis")
+
+                except Exception as dall_e_error:
+                    print(f"⚠️ DALL-E 3 failed: {dall_e_error}")
+
+                if not image_generated:
+                    # Could add other AI services here that support image input
+                    # For now, fallback to basic DALL-E
+                    response = openai_client.images.generate(
+                        model="dall-e-3",
+                        prompt=f"Simple line drawing of {vision}. Black ink on white background.",
+                        size="1024x1024",
+                        quality="standard",
+                        n=1
+                    )
+                    image_url = response.data[0].url
+                    print(f"✅ Generated with fallback DALL-E 3")
+
+                # Download and save the generated image
+                image_response = urllib.request.urlopen(image_url)
+                image_data = image_response.read()
+
+                # Create filename
+                safe_vision_name = re.sub(r'[^a-zA-Z0-9\s]', '', vision).replace(' ', '_')
+                filename = f"{generation_id}_{safe_vision_name}.png"
+                filepath = os.path.join(vision_images_dir, filename)
+
+                # Save image
+                with open(filepath, 'wb') as f:
+                    f.write(image_data)
+
+                # Store image info for database update
+                image_url_path = f"/static/vision-images/{username}/{filename}"
+                generated_images.append({
+                    'vision': vision,
+                    'url': image_url_path,
+                    'filename': filename
+                })
+
+                print(f"✅ Generated and saved: {filepath}")
+
+            except Exception as e:
+                print(f"❌ Error generating image for '{vision}': {e}")
+                continue
+
+        # Update the reading entry with vision images
+        if generated_images:
+            try:
+                # Find and update the history entry
+                reading_entry = HistoryEntry.get_reading_by_id(username, reading_id)
+                if reading_entry:
+                    reading_entry.set_vision_images(generated_images)
+                    reading_entry.save()
+                    print(f"✅ Updated reading {reading_id} with {len(generated_images)} vision images")
+                else:
+                    print(f"⚠️ Could not find reading {reading_id} to update with vision images")
+            except Exception as e:
+                print(f"❌ Error updating reading with vision images: {e}")
+
+        print(f"🎨 Vision image generation completed for {generation_id}")
+
+    except Exception as e:
+        print(f"❌ Error in async vision generation: {e}")
 
 
 # ====================

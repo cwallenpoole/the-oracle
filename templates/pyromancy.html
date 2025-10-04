@@ -1165,9 +1165,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Capture the canvas as a data URL with cropping
             const imageData = captureCanvasWithCrop(canvas, 0.3, 0, 0.4, 1); // Crop 30% from left and right
 
-            // Display the captured image in the preview area
-            displayCapturedImage(imageData);
-
             // Prepare the data to send
             const data = {
                 image: imageData,
@@ -1179,7 +1176,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             };
 
-            // Send to backend
+            // Send to backend via AJAX
             fetch('/api/save-fire-image', {
                 method: 'POST',
                 headers: {
@@ -1190,6 +1187,16 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(result => {
                 if (result.success) {
+                    // Update the preview with the server-provided URL
+                    const serverImageUrl = result.image_url;
+                    displayCapturedImageFromServer(serverImageUrl);
+
+                    // Store the image URL for form submission
+                    const fireImageInput = document.getElementById('fireImageData');
+                    if (fireImageInput) {
+                        fireImageInput.value = result.filename; // Store filename for backend reference
+                    }
+
                     let message;
                     if (result.flame_reading_created) {
                         message = isAutoCapture
@@ -1268,26 +1275,35 @@ document.addEventListener('DOMContentLoaded', function() {
         pyromancyForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Get the canvas and convert to base64
-            const canvas = document.getElementById('fire-canvas');
-            if (!canvas) {
-                alert('Fire canvas not found. Please refresh the page.');
-                return;
-            }
+            const fireImageInput = document.getElementById('fireImageData');
 
-            try {
-                const croppedImageData = captureCanvasWithCrop(canvas, 0.3, 0, 0.4, 1); // Crop 30% from left and right
-                const imageData = croppedImageData.split(',')[1];
-                const fireImageInput = document.getElementById('fireImageData');
-                if (fireImageInput) {
-                    fireImageInput.value = imageData;
+            // Check if we have a server-stored image filename
+            if (fireImageInput && fireImageInput.value) {
+                // Use the existing server-stored image
+                console.log('Using server-stored image:', fireImageInput.value);
+                this.submit();
+            } else {
+                // Fallback: capture a new image if none is stored
+                const canvas = document.getElementById('fire-canvas');
+                if (!canvas) {
+                    alert('Fire canvas not found. Please refresh the page.');
+                    return;
                 }
 
-                // Submit the form
-                this.submit();
-            } catch (error) {
-                console.error('Error capturing fire image:', error);
-                alert('Error capturing fire image. Please try again.');
+                try {
+                    const croppedImageData = captureCanvasWithCrop(canvas, 0.3, 0, 0.4, 1);
+                    const imageData = croppedImageData.split(',')[1];
+
+                    if (fireImageInput) {
+                        fireImageInput.value = imageData;
+                    }
+
+                    // Submit the form
+                    this.submit();
+                } catch (error) {
+                    console.error('Error capturing fire image:', error);
+                    alert('Error capturing fire image. Please try again.');
+                }
             }
         });
     }
@@ -1361,6 +1377,17 @@ document.addEventListener('DOMContentLoaded', function() {
             imageDisplay.src = imageData;
             previewContainer.style.display = 'block';
             console.log('Captured image displayed in preview area');
+        }
+    }
+
+    function displayCapturedImageFromServer(imageUrl) {
+        const previewContainer = document.getElementById('capturedImagePreview');
+        const imageDisplay = document.getElementById('capturedImageDisplay');
+
+        if (previewContainer && imageDisplay) {
+            imageDisplay.src = imageUrl;
+            previewContainer.style.display = 'block';
+            console.log('Server image displayed in preview area:', imageUrl);
         }
     }
 
