@@ -392,21 +392,6 @@ The `cursor-sql/` directory contains the complete development conversation histo
 ## 📚 Documentation
 
 - **API Documentation**: Complete endpoint reference
-- **Development Guide**: Contributing and setup instructions
 - **Testing Guide**: Comprehensive testing documentation
 - **Deployment Guide**: Production deployment instructions
 
-## 🤝 Contributing
-
-We welcome contributions from developers interested in the intersection of ancient wisdom and modern technology. Please see our contributing guidelines for more information.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- **Ancient Wisdom**: Traditional I Ching and Runic practitioners
-- **Modern AI**: OpenAI, Ollama, and Pinecone for their powerful tools
-- **Cursor.ai**: For revolutionizing the development process
-- **Open Source Community**: For the foundational technologies that make this possible
