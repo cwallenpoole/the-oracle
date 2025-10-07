@@ -14,6 +14,9 @@ followed. But even if the data comes out of the LLM and is particularly strange,
 things like temperature and number of tokens to see what would happen. Most of the time, having a relatively low temperature makes sense for most uses, but in 
 this case, turning that number up could still end up working. (You'll note that most of the time, temperature is around 0.8) 
 
+I also happen to find the esoteric fascinating and already have several resources on the same. Mr. Clarke's comments aside, computers are not magic and that's not
+the purpose here.
+
 ### Complete features
 
 - I Ching readings (the original PoC)
@@ -43,7 +46,7 @@ or similar to extract the contors and identify "objects" in the frame. These wou
 These words were supposed to be fed back into DALL-E along with the original distilled objects in hope that I could get DALL-E to draw an image along the lines of
 the original contors. Basically, it was a Rorsach test for computers.
 
-##### Main problems in implementation
+###### Main problems in implementation
 
 There were two problems that I consistently encountered. It didn't seem to matter what I put into the prompt, the image recognition part kept giving words like 
 "flowing wing" or "mystic flame". This tool won't work unless the machine can provide something more varied. Second, the image generation part was continually
@@ -52,19 +55,27 @@ actually directly modifying the code. I tried discussing the issue with Claude a
 nor did any research propose additional suggestions. I suspect that this is something which is *solveable*, but not in the amount of time that I've had for this 
 project.
 
-##### Cost
+###### Cost
 
 Unlike the rest of the site, this actually requires a subscription which supports image manipulation. I tried to look through the other options online and 
 nothing offerend any type of comparable ability which was at all satisfying. Any of the open source or local image manipulation turned out to be particularly slow
 and costly.
 
-##### Problems in definition
+###### Problems in definition
 
 In addition, and this is similar to the problems I had with Astrology, my undertanding of ancient pyromancy practice was actually deficient. While yes, the images 
 that someone sees in the flames and smoke are used in the process of pyromancy, more common are the way that the flame burns and cracks. The origin of the
 I Ching actually had something closer to what I'm doing here: they would place a bone into a fire. If it would crack, then that would be a "yin", if not, that
 would be a "yang". Similarly, the way that fire affects the fuel in the fire is as much a part of the traditional part of pyromancy as anything else. Add that
 to the fact that my pyromancy widget doesn't properly handle wind and the disparity takes some of the luster out of it.
+
+### Project outcome
+
+This project was never intended to be able to predict the future. 
+(Though a historically informed understanding of divination doesn't really do that either ¯\_(ツ)\_/¯).
+Instead, this was a way for me to develop an understanding of what it meant to use an LLM to build a site from scratch by instructing instead of acting primarily
+as a programmer. I was mostly satisfied, the LLMs functioned as a mostly capable junior developer. It wasn't without headaches, but the point was to understand
+the headaches and how to avoid them.
 
 --------------
 
