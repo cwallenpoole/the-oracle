@@ -72,10 +72,12 @@ to the fact that my pyromancy widget doesn't properly handle wind and the dispar
 ### Project outcome
 
 This project was never intended to be able to predict the future. 
-(Though a historically informed understanding of divination doesn't really do that either ¯\_(ツ)\_/¯).
+(Though a historically informed understanding of divination doesn't really do that either ¯\\\_(ツ)\_/¯).
 Instead, this was a way for me to develop an understanding of what it meant to use an LLM to build a site from scratch by instructing instead of acting primarily
 as a programmer. I was mostly satisfied, the LLMs functioned as a mostly capable junior developer. It wasn't without headaches, but the point was to understand
 the headaches and how to avoid them.
+
+And now, without further adieu, below is the computer's description of this project:
 
 --------------
 
